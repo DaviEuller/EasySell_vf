@@ -111,6 +111,7 @@ const ScrollExpand: React.FC<ScrollExpandProps> = ({
     frame.style.clipPath = `inset(${iy}% ${ix}% ${iy}% ${ix}% round ${r}px)`;
 
     media.style.transform = `scale(${c.mediaZoom + (1 - c.mediaZoom) * e})`;
+    media.style.opacity = '0';
 
     if (scrimRef.current) scrimRef.current.style.opacity = `${c.overlayScrim * e}`;
 
@@ -248,11 +249,11 @@ const ScrollExpand: React.FC<ScrollExpandProps> = ({
   return (
     <div
       ref={rootRef}
-      className={`relative w-full h-full ${useWindowScroll ? '' : 'overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'} ${className}`.trim()}
+      className={`relative w-full h-full border-0 outline-none shadow-none ${useWindowScroll ? '' : 'overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'} ${className}`.trim()}
       style={style}
       {...rest}
     >
-      <div ref={trackRef} className="relative w-full">
+        <div ref={trackRef} className="relative w-full">
         <div ref={stageRef} className="sticky top-0 w-full overflow-hidden [--se-title-size:4rem]">
           <div
             ref={frameRef}
