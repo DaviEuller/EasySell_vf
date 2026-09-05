@@ -4,7 +4,7 @@ import VariableProximity from '../../components/ui/Varibleproximity/VariableProx
 import ScrollExpand from "@/components/ScrollExpand"
 import BlurText from "@/components/BlurText";
 import TextType from "@/components/TextType/TextType";
-import CRTWarp from '@/components/CrtWarp/CrtWarp';
+import CrtWarp from '@/components/CrtWarp/CrtWarp';
 import SpotlightCard from "@/components/Spotlight Card/SpotlightCard"
 import heroBg from "@/assets/hero-bg.svg"
 import { useRef } from 'react';
@@ -27,7 +27,7 @@ export function Home() {
 
       {/* CRTWarp como background fixo cobrindo o site inteiro — opacidade reduzida para não competir com o conteúdo */}
       <div className="pointer-events-none fixed inset-0 z-0 opacity-30" style={{ width: '100%', height: '100%' }}>
-        <CRTWarp
+        <CrtWarp
           color="#3b82f6"
           backgroundColor="#05010a"
           speed={0.5}

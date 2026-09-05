@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import * as THREE from 'three';
-import './CRTWarp.css';
+import './CrtWarp.css';
 
-interface CRTWarpProps {
+interface CrtWarpProps {
   color?: string;
   backgroundColor?: string;
   speed?: number;
@@ -149,7 +149,7 @@ void main() {
 }
 `;
 
-export default function CRTWarp({
+export default function CrtWarp({
   color = '#3b82f6',
   backgroundColor = '#05010a',
   speed = 0.5,
@@ -172,7 +172,7 @@ export default function CRTWarp({
   paused = false,
   className,
   style
-}: CRTWarpProps) {
+}: CrtWarpProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const materialRef = useRef<THREE.ShaderMaterial | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
