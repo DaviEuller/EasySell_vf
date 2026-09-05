@@ -26,7 +26,7 @@ export interface ScrollExpandProps {
   mediaType?: 'image' | 'video';
   poster?: string;
   alt?: string;
-  title?: string;
+  title?: ReactNode;
   scrollHint?: string;
   startWidth?: number;
   startHeight?: number;
@@ -276,7 +276,7 @@ const ScrollExpand: React.FC<ScrollExpandProps> = ({
           {title ? (
             <div
               ref={titleRef}
-              className="absolute inset-0 flex items-center justify-center m-0 px-[6%] text-center font-bold leading-none tracking-[-0.03em] text-white [font-size:var(--se-title-size)] [text-shadow:0_2px_24px_rgba(0,0,0,0.45)] pointer-events-none [will-change:opacity,transform]"
+              className="absolute inset-0 z-10 flex items-center justify-center m-0 px-[6%] text-center font-bold leading-none tracking-[-0.03em] text-white [font-size:var(--se-title-size)] [text-shadow:0_2px_24px_rgba(0,0,0,0.45)] pointer-events-none [will-change:opacity,transform]"
             >
               {title}
             </div>
