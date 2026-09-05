@@ -1,0 +1,60 @@
+<svg width="1600" height="2000" viewBox="0 0 1600 2000" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="glow1" cx="50%" cy="18%" r="60%">
+      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.55"/>
+      <stop offset="45%" stop-color="#1d4ed8" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="80%" cy="75%" r="55%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow3" cx="12%" cy="70%" r="45%">
+      <stop offset="0%" stop-color="#1e40af" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#05070d"/>
+      <stop offset="55%" stop-color="#01030a"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M 64 0 L 0 0 0 64" fill="none" stroke="#3b82f6" stroke-opacity="0.08" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#60a5fa" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="2000" fill="url(#base)"/>
+  <rect width="1600" height="2000" fill="url(#grid)"/>
+  <rect width="1600" height="2000" fill="url(#glow1)"/>
+  <rect width="1600" height="2000" fill="url(#glow2)"/>
+  <rect width="1600" height="2000" fill="url(#glow3)"/>
+
+  <g opacity="0.5">
+    <path d="M -100 300 L 1700 700" stroke="url(#lineGrad)" stroke-width="2"/>
+    <path d="M -100 900 L 1700 500" stroke="url(#lineGrad)" stroke-width="2"/>
+    <path d="M -100 1400 L 1700 1050" stroke="url(#lineGrad)" stroke-width="2"/>
+    <path d="M -100 1750 L 1700 1500" stroke="url(#lineGrad)" stroke-width="1.5"/>
+  </g>
+
+  <g opacity="0.7">
+    <circle cx="1180" cy="360" r="3" fill="#93c5fd"/>
+    <circle cx="1260" cy="420" r="2" fill="#60a5fa"/>
+    <circle cx="340" cy="620" r="2.5" fill="#93c5fd"/>
+    <circle cx="260" cy="1180" r="3" fill="#60a5fa"/>
+    <circle cx="1100" cy="1320" r="2" fill="#93c5fd"/>
+    <circle cx="820" cy="1650" r="2.5" fill="#60a5fa"/>
+    <circle cx="1420" cy="1600" r="2" fill="#93c5fd"/>
+    <circle cx="180" cy="1780" r="2" fill="#60a5fa"/>
+  </g>
+
+  <g transform="translate(800,1000)" opacity="0.9">
+    <circle r="210" fill="none" stroke="#1d4ed8" stroke-opacity="0.35" stroke-width="1"/>
+    <circle r="150" fill="none" stroke="#2563eb" stroke-opacity="0.3" stroke-width="1"/>
+    <circle r="90" fill="none" stroke="#3b82f6" stroke-opacity="0.25" stroke-width="1"/>
+  </g>
+</svg>
