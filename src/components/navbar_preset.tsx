@@ -2,27 +2,29 @@ import { useState } from "react"
 
 const navbarItems = [
 	{
-		label: "Explorar",
+		label: "Início",
 		bgColor: "#172554",
 		links: [
-			{ label: "Início", href: "#inicio" },
-			{ label: "Como funciona", href: "#como-funciona" },
+			{ label: "Resumo", href: "/dashboard#resumo" },
+			{ label: "Vendas", href: "/dashboard#vendas" },
 		],
 	},
 	{
-		label: "Soluções",
+		label: "Gestão",
 		bgColor: "#1e3a8a",
 		links: [
-			{ label: "Recursos", href: "#como-funciona" },
-			{ label: "Planos", href: "#planos" },
+			{ label: "Estoque", href: "/dashboard#estoque" },
+			{ label: "Financeiro", href: "/dashboard#financeiro" },
+			{ label: "Clientes", href: "/dashboard#clientes" },
 		],
 	},
 	{
-		label: "Comece agora",
+		label: "Produtos e equipe",
 		bgColor: "#065f46",
 		links: [
-			{ label: "Escolher um plano", href: "#planos" },
-			{ label: "Falar com a EasySell", href: "#comecar" },
+			{ label: "Funcionários", href: "/equipe" },
+			{ label: "Easy Market", href: "/dashboard#easy-market" },
+			{ label: "Easy Crew", href: "/dashboard#easy-crew" },
 		],
 	},
 ]

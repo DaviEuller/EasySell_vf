@@ -110,7 +110,7 @@ export function Home() {
             </nav>
             <div className="flex items-center gap-2">
               <a
-                href="#entrar"
+                href="/login"
                 className="hidden px-3 py-2 text-sm text-white/70 hover:text-white sm:block"
               >
                 Entrar
