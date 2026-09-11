@@ -10,7 +10,7 @@ import {
   RingChart,
   Ring,
   RingCenter,
-} from "./charts";
+} from "./charts/";
 
 // dados mock — troque pelos valores vindos da sua API
 const weekSales = [
@@ -57,15 +57,13 @@ function CardShell({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={`rounded-xl border border-white/10 bg-[#0B1120]/85 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-6 ${span ? "sm:col-span-2" : ""}`}
-    >
-      <div className="mb-2 text-xs font-medium tracking-[0.12em] text-white/45 uppercase">{title}</div>
-      {value && (
-        <div className="mb-4 font-heading text-3xl font-semibold text-white">{value}</div>
-      )}
-      {children}
-      {hint && <div className="mt-3 text-xs text-[#5DCAA5]">{hint}</div>}
+    <div className={`rounded-xl border border-blue-300/25 bg-white/[0.06] p-5 shadow-2xl shadow-blue-950/30 backdrop-blur-2xl sm:p-6 ${span ? "sm:col-span-2" : ""}`}>
+        <div className="mb-2 text-xs font-medium tracking-[0.12em] text-white/45 uppercase">{title}</div>
+        {value && (
+          <div className="mb-4 font-heading text-3xl font-semibold text-white">{value}</div>
+        )}
+        {children}
+        {hint && <div className="mt-3 text-xs text-[#5DCAA5]">{hint}</div>}
     </div>
   );
 }

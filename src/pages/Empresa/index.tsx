@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import {
-  ArrowLeft,
   CalendarDays,
   Building2,
   Check,
@@ -12,9 +11,19 @@ import {
   Send,
   UserRound,
 } from "lucide-react"
+import NavbarPreset from "@/components/navbar_preset"
+import { AppDock } from "@/components/Dock"
 
 type Mode = "choose" | "create" | "join" | "tasks"
-type Task = { id: number; title: string; detail: string; done: boolean }
+type Task = {
+  id: number
+  title: string
+  detail: string
+  done: boolean
+  fileName?: string
+  fileTitle?: string
+  fileDescription?: string
+}
 type EmployeeTab = "tasks" | "report" | "time" | "calendar" | "files"
 type EmployeeSchedule = {
   start: string
@@ -30,6 +39,7 @@ type CompanyData = {
   cnpj: string
   responsibleCpf?: string
 }
+type SentFile = { name: string; title: string; description: string }
 
 const inputClass =
   "mt-2 h-11 w-full rounded-lg border border-white/10 bg-white/[0.05] px-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-400/60"
@@ -103,13 +113,26 @@ export function Empresa() {
   const [now, setNow] = useState(() => Date.now())
   const [problem, setProblem] = useState("")
   const [report, setReport] = useState("")
-  const [sentFiles, setSentFiles] = useState<string[]>([])
+  const [sentFiles, setSentFiles] = useState<SentFile[]>([])
   const [calendarRecords, setCalendarRecords] = useState<
     Record<number, CalendarRecord>
   >({})
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
   const [dayJustification, setDayJustification] = useState("")
+  const [uploadPanelOpen, setUploadPanelOpen] = useState(false)
+  const [uploadPanelVisible, setUploadPanelVisible] = useState(false)
+  const [pendingFileName, setPendingFileName] = useState<string | null>(null)
+  const [pendingFileTitle, setPendingFileTitle] = useState("")
+  const [pendingFileDescription, setPendingFileDescription] = useState("")
+  const [expandedTaskId, setExpandedTaskId] = useState<number | null>(null)
+  const [taskDraftFileName, setTaskDraftFileName] = useState<string | null>(
+    null
+  )
+  const [taskDraftTitle, setTaskDraftTitle] = useState("")
+  const [taskDraftDescription, setTaskDraftDescription] = useState("")
   const completed = tasks.filter((task) => task.done).length
+  const completionPercent =
+    tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0
   const clockElapsed =
     clockInAt && clockedIn ? Math.floor((now - clockInAt) / 1000) : 0
   const activeLunchElapsed =
@@ -123,6 +146,36 @@ export function Empresa() {
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(timer)
   }, [clockedIn, lunchStarted])
+
+  useEffect(() => {
+    if (!uploadPanelOpen) return
+    const frame = window.requestAnimationFrame(() => setUploadPanelVisible(true))
+    return () => window.cancelAnimationFrame(frame)
+  }, [uploadPanelOpen])
+
+  const openUploadPanel = () => {
+    setPendingFileName(null)
+    setPendingFileTitle("")
+    setPendingFileDescription("")
+    setUploadPanelOpen(true)
+  }
+  const closeUploadPanel = () => {
+    setUploadPanelVisible(false)
+    window.setTimeout(() => setUploadPanelOpen(false), 220)
+  }
+  const confirmUpload = () => {
+    if (!pendingFileName) return
+    setSentFiles((current) => [
+      ...current,
+      {
+        name: pendingFileName,
+        title: pendingFileTitle.trim() || pendingFileName,
+        description: pendingFileDescription.trim(),
+      },
+    ])
+    setNotice("Arquivo enviado com sucesso.")
+    closeUploadPanel()
+  }
 
   const formatDuration = (seconds: number) =>
     `${String(Math.floor(seconds / 3600)).padStart(2, "0")}:${String(Math.floor((seconds % 3600) / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`
@@ -188,6 +241,36 @@ export function Empresa() {
         task.id === id ? { ...task, done: !task.done } : task
       )
     )
+  const toggleTaskExpand = (task: Task) => {
+    if (expandedTaskId === task.id) {
+      setExpandedTaskId(null)
+      return
+    }
+    setExpandedTaskId(task.id)
+    setTaskDraftFileName(task.fileName ?? null)
+    setTaskDraftTitle(task.fileTitle ?? "")
+    setTaskDraftDescription(task.fileDescription ?? "")
+  }
+  const saveTaskAttachment = (id: number) => {
+    if (!taskDraftFileName) {
+      setNotice("Selecione um arquivo para anexar à tarefa.")
+      return
+    }
+    setTasks((current) =>
+      current.map((task) =>
+        task.id === id
+          ? {
+              ...task,
+              fileName: taskDraftFileName,
+              fileTitle: taskDraftTitle.trim() || taskDraftFileName,
+              fileDescription: taskDraftDescription.trim(),
+            }
+          : task
+      )
+    )
+    setNotice("Arquivo anexado à tarefa com sucesso.")
+    setExpandedTaskId(null)
+  }
   const selectedDateIsWeekday =
     selectedDay !== null &&
     new Date(2026, 8, selectedDay).getDay() > 0 &&
@@ -252,20 +335,11 @@ export function Empresa() {
   ]
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#070B14] px-4 pb-16 text-white sm:px-8">
+    <main className="min-h-screen overflow-hidden bg-[#070B14] px-4 pt-20 pb-16 text-white sm:px-8">
+      <NavbarPreset />
+      <AppDock />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
       <div className="relative z-10 mx-auto max-w-6xl">
-        <header className="flex items-center justify-between border-b border-white/10 py-6">
-          <a
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-white/55 hover:text-white"
-          >
-            <ArrowLeft size={16} /> Voltar ao painel
-          </a>
-          <span className="font-heading text-lg font-bold">
-            EasySell<span className="text-blue-400">.</span>
-          </span>
-        </header>
         {mode !== "tasks" ? (
           <div className="mx-auto grid max-w-5xl gap-10 py-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
             <section>
@@ -280,7 +354,7 @@ export function Empresa() {
                 equipe já existente.
               </p>
             </section>
-            <section className="rounded-xl border border-white/10 bg-[#0B1120]/85 p-5 shadow-2xl shadow-black/20 sm:p-8">
+            <section className="app-panel rounded-xl p-5 sm:p-8">
               {mode === "choose" && (
                 <div className="grid gap-3 sm:grid-cols-2">
                   <button
@@ -425,10 +499,7 @@ export function Empresa() {
                 </p>
               </div>
               <div className="rounded-lg border border-[#5DCAA5]/25 bg-[#5DCAA5]/10 px-4 py-3 text-sm text-[#5DCAA5]">
-                <strong>
-                  {completed}/{tasks.length}
-                </strong>{" "}
-                concluídas
+                <strong>{completionPercent}%</strong> concluído
               </div>
             </section>
             <nav
@@ -487,70 +558,156 @@ export function Empresa() {
                 </div>
               </div>
             </section>
-            <section className="mt-8 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-              <div className="rounded-xl border border-white/10 bg-[#0B1120]/85 p-5 sm:p-6">
-                <div className="flex items-center gap-3">
-                  <ClipboardCheck className="text-blue-300" size={22} />
-                  <h2 className="font-heading text-2xl font-bold">
-                    Lista diária
-                  </h2>
-                </div>
-                <div className="mt-6 space-y-3">
-                  {tasks.map((task) => (
-                    <button
-                      key={task.id}
-                      onClick={() => toggleTask(task.id)}
-                      className="flex w-full items-start gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-4 text-left hover:border-blue-400/40"
-                    >
-                      <span
-                        className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border ${task.done ? "border-[#5DCAA5] bg-[#5DCAA5] text-[#070B14]" : "border-white/25 text-transparent"}`}
-                      >
-                        <Check size={13} />
-                      </span>
-                      <span>
-                        <strong
-                          className={
-                            task.done
-                              ? "text-white/45 line-through"
-                              : "text-white"
-                          }
-                        >
-                          {task.title}
-                        </strong>
-                        <span className="mt-1 block text-xs leading-5 text-white/40">
-                          {task.detail}
-                        </span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <aside className="rounded-xl border border-blue-400/20 bg-blue-500/10 p-5 sm:p-6">
-                <p className="text-xs font-semibold tracking-[0.16em] text-blue-200 uppercase">
-                  Seu espaço
-                </p>
-                <h2 className="mt-3 font-heading text-2xl font-bold">
-                  Trabalhe com clareza.
+
+            {/* Único card: lista diária + progresso do dia + upload */}
+            <section className="app-panel mt-8 rounded-xl p-5 sm:p-6">
+              <div className="flex items-center gap-3">
+                <ClipboardCheck className="text-blue-300" size={22} />
+                <h2 className="font-heading text-2xl font-bold">
+                  Lista diária
                 </h2>
-                <p className="mt-4 text-sm leading-6 text-white/55">
-                  As tarefas são atualizadas pela sua equipe todos os dias.
-                </p>
-                <div className="mt-8 h-2 rounded-full bg-white/10">
+              </div>
+
+              {/* Barra de progresso com número, logo abaixo do título */}
+              <div className="mt-4 flex items-center gap-3">
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
                   <div
-                    className="h-2 rounded-full bg-[#5DCAA5]"
-                    style={{ width: `${(completed / tasks.length) * 100}%` }}
+                    className="h-full rounded-full bg-gradient-to-r from-blue-400 to-[#5DCAA5] transition-[width] duration-700 ease-out"
+                    style={{ width: `${completionPercent}%` }}
                   />
                 </div>
-                <p className="mt-3 text-xs text-white/45">
-                  {Math.round((completed / tasks.length) * 100)}% do dia
-                  concluído
-                </p>
-              </aside>
+                <span className="shrink-0 text-sm font-semibold text-[#5DCAA5]">
+                  {completionPercent}%
+                </span>
+              </div>
+
+              <div className="mt-6 space-y-2 text-sm">
+                <div className="flex border-b border-white/10 pb-2 text-left text-xs text-white/40">
+                  <span className="flex-1 font-medium">Tarefa</span>
+                  <span className="font-medium">Status</span>
+                </div>
+                {tasks.map((task) => {
+                  const isExpanded = expandedTaskId === task.id
+                  return (
+                    <div
+                      key={task.id}
+                      className="rounded-lg border border-white/5 last:border-0"
+                    >
+                      <div
+                        onClick={() => toggleTaskExpand(task)}
+                        className="flex cursor-pointer items-center gap-3 py-3 pr-1 pl-1 hover:bg-white/[0.02]"
+                      >
+                        <div className="flex-1">
+                          <span
+                            className={
+                              task.done
+                                ? "text-white/40 line-through"
+                                : "text-white"
+                            }
+                          >
+                            {task.title}
+                          </span>
+                          {task.fileTitle && (
+                            <span className="mt-0.5 flex items-center gap-1 text-xs text-[#5DCAA5]">
+                              <FileUp size={11} /> {task.fileTitle}
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            toggleTask(task.id)
+                          }}
+                          className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+                            task.done ? "text-[#5DCAA5]" : "text-white/35"
+                          }`}
+                        >
+                          <span
+                            className={`size-1.5 rounded-full ${task.done ? "bg-[#5DCAA5]" : "bg-white/25"}`}
+                          />
+                          {task.done ? "Concluída" : "Pendente"}
+                        </button>
+                      </div>
+                      {isExpanded && (
+                        <div className="space-y-4 border-t border-white/10 bg-white/[0.02] p-4">
+                          <label
+                            className={`flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed text-center text-sm transition ${taskDraftFileName ? "border-[#5DCAA5]/50 bg-[#5DCAA5]/10 text-[#5DCAA5]" : "border-white/20 bg-white/[0.03] text-white/50 hover:border-blue-400/50"}`}
+                          >
+                            {taskDraftFileName ? (
+                              <>
+                                <Check className="mb-2" size={20} />
+                                {taskDraftFileName}
+                              </>
+                            ) : (
+                              <>
+                                <FileUp
+                                  className="mb-2 text-blue-300"
+                                  size={20}
+                                />
+                                Selecionar arquivo para esta tarefa
+                              </>
+                            )}
+                            <input
+                              type="file"
+                              className="hidden"
+                              onChange={(event) => {
+                                const name = event.target.files?.[0]?.name
+                                if (name) setTaskDraftFileName(name)
+                              }}
+                            />
+                          </label>
+                          <label className="block text-sm">
+                            Título do arquivo
+                            <input
+                              className={inputClass}
+                              value={taskDraftTitle}
+                              onChange={(event) =>
+                                setTaskDraftTitle(event.target.value)
+                              }
+                              placeholder="Ex.: Comprovante de entrega"
+                            />
+                          </label>
+                          <label className="block text-sm">
+                            Descrição
+                            <textarea
+                              value={taskDraftDescription}
+                              onChange={(event) =>
+                                setTaskDraftDescription(event.target.value)
+                              }
+                              placeholder="Adicione detalhes sobre este arquivo..."
+                              className="mt-2 min-h-20 w-full rounded-lg border border-white/10 bg-white/[0.05] p-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-400/60"
+                            />
+                          </label>
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setExpandedTaskId(null)}
+                              className="rounded-lg px-3 py-2 text-xs font-semibold text-white/50 hover:text-white"
+                            >
+                              Cancelar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => saveTaskAttachment(task.id)}
+                              disabled={!taskDraftFileName}
+                              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              <Send size={13} /> Salvar anexo
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </section>
+
             {employeeTab === "time" && (
               <section className="mt-4 space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-xl border border-white/10 bg-[#0B1120]/85 p-5 sm:p-6">
+                  <div className="app-panel rounded-xl p-5 sm:p-6">
                     <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
                       Registro de ponto
                     </p>
@@ -576,7 +733,7 @@ export function Empresa() {
                           : "Bater ponto"}
                     </button>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-[#0B1120]/85 p-5 sm:p-6">
+                  <div className="app-panel rounded-xl p-5 sm:p-6">
                     <p className="text-xs font-semibold tracking-[0.16em] text-[#5DCAA5] uppercase">
                       Descanso e almoço
                     </p>
@@ -617,7 +774,7 @@ export function Empresa() {
               </section>
             )}
             {employeeTab === "calendar" && (
-              <section className="mt-4 rounded-xl border border-white/10 bg-[#0B1120]/85 p-5 sm:p-6">
+              <section className="app-panel mt-4 rounded-xl p-5 sm:p-6">
                 <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
                   Presença
                 </p>
@@ -695,7 +852,7 @@ export function Empresa() {
                     setNotice("Relatório enviado para a gestão.")
                     setReport("")
                   }}
-                  className="rounded-xl border border-white/10 bg-[#0B1120]/85 p-5 sm:p-6"
+                  className="app-panel rounded-xl p-5 sm:p-6"
                 >
                   <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
                     Relatório
@@ -720,7 +877,7 @@ export function Empresa() {
                     setNotice("Problema enviado para a gestão.")
                     setProblem("")
                   }}
-                  className="rounded-xl border border-red-400/15 bg-[#0B1120]/85 p-5 sm:p-6"
+                  className="app-panel rounded-xl border-red-400/15 p-5 sm:p-6"
                 >
                   <p className="text-xs font-semibold tracking-[0.16em] text-red-300 uppercase">
                     Suporte interno
@@ -742,29 +899,40 @@ export function Empresa() {
               </section>
             )}
             {employeeTab === "files" && (
-              <section className="mt-4 rounded-xl border border-white/10 bg-[#0B1120]/85 p-5 sm:p-6">
+              <section className="app-panel mt-4 rounded-xl p-5 sm:p-6">
                 <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
                   Arquivos das tarefas
                 </p>
                 <h2 className="mt-2 font-heading text-2xl font-bold">
                   Envie comprovantes e entregas.
                 </h2>
-                <label className="mt-6 flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-white/20 bg-white/[0.03] text-center text-sm text-white/50 hover:border-blue-400/50">
+                <button
+                  type="button"
+                  onClick={openUploadPanel}
+                  className="mt-6 flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-white/20 bg-white/[0.03] text-center text-sm text-white/50 hover:border-blue-400/50"
+                >
                   <FileUp className="mb-2 text-blue-300" size={24} /> Selecionar
                   arquivo
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={(event) => {
-                      const name = event.target.files?.[0]?.name
-                      if (name) setSentFiles((current) => [...current, name])
-                    }}
-                  />
-                </label>
+                </button>
                 {sentFiles.length > 0 && (
-                  <div className="mt-4 space-y-2 text-sm text-[#5DCAA5]">
-                    {sentFiles.map((file) => (
-                      <p key={file}>✓ {file}</p>
+                  <div className="mt-4 space-y-3 text-sm">
+                    {sentFiles.map((file, index) => (
+                      <div
+                        key={`${file.name}-${index}`}
+                        className="rounded-lg border border-[#5DCAA5]/20 bg-[#5DCAA5]/5 p-3"
+                      >
+                        <p className="flex items-center gap-2 font-semibold text-[#5DCAA5]">
+                          <Check size={14} /> {file.title}
+                        </p>
+                        <p className="mt-1 text-xs text-white/40">
+                          {file.name}
+                        </p>
+                        {file.description && (
+                          <p className="mt-2 text-xs text-white/55">
+                            {file.description}
+                          </p>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}
@@ -778,6 +946,100 @@ export function Empresa() {
           </div>
         )}
       </div>
+      {uploadPanelOpen && (
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-200 ${uploadPanelVisible ? "opacity-100" : "opacity-0"}`}
+        >
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={closeUploadPanel}
+          />
+          <div
+            className={`app-panel relative w-full max-w-md rounded-xl border border-blue-400/25 p-6 shadow-2xl transition-all duration-300 ease-out sm:p-7 ${uploadPanelVisible ? "translate-y-0 scale-100 opacity-100" : "translate-y-4 scale-95 opacity-0"}`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/15 text-blue-300">
+                <FileUp size={20} />
+              </span>
+              <div>
+                <h2 className="font-heading text-xl font-bold text-white">
+                  Enviar arquivo
+                </h2>
+                <p className="text-xs text-white/45">
+                  Anexe um comprovante ou entrega relacionada às suas tarefas.
+                </p>
+              </div>
+            </div>
+            <label
+              className={`mt-6 flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed text-center text-sm transition ${pendingFileName ? "border-[#5DCAA5]/50 bg-[#5DCAA5]/10 text-[#5DCAA5]" : "border-white/20 bg-white/[0.03] text-white/50 hover:border-blue-400/50 hover:bg-white/[0.05]"}`}
+            >
+              {pendingFileName ? (
+                <>
+                  <Check className="mb-2" size={22} />
+                  {pendingFileName}
+                </>
+              ) : (
+                <>
+                  <FileUp className="mb-2 text-blue-300" size={22} />
+                  Arraste ou selecione um arquivo
+                </>
+              )}
+              <input
+                type="file"
+                className="hidden"
+                onChange={(event) => {
+                  const name = event.target.files?.[0]?.name
+                  if (name) setPendingFileName(name)
+                }}
+              />
+            </label>
+
+            {/* Painel expandido: título e descrição do arquivo, liberado após selecionar o arquivo */}
+            {pendingFileName && (
+              <div className="mt-4 space-y-4 border-t border-white/10 pt-4">
+                <label className="block text-sm">
+                  Título do arquivo
+                  <input
+                    className={inputClass}
+                    value={pendingFileTitle}
+                    onChange={(event) => setPendingFileTitle(event.target.value)}
+                    placeholder="Ex.: Comprovante de entrega"
+                  />
+                </label>
+                <label className="block text-sm">
+                  Descrição
+                  <textarea
+                    value={pendingFileDescription}
+                    onChange={(event) =>
+                      setPendingFileDescription(event.target.value)
+                    }
+                    placeholder="Adicione detalhes sobre este arquivo..."
+                    className="mt-2 min-h-24 w-full rounded-lg border border-white/10 bg-white/[0.05] p-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-400/60"
+                  />
+                </label>
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeUploadPanel}
+                className="rounded-lg px-4 py-2 text-sm font-semibold text-white/50 hover:text-white"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmUpload}
+                disabled={!pendingFileName}
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Send size={15} /> Enviar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

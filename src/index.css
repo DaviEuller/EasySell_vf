@@ -187,3 +187,27 @@
     @apply font-sans;
     }
 }
+
+  @layer components {
+    .app-panel {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgb(147 197 253 / 0.16) !important;
+      background: linear-gradient(135deg, rgb(59 130 246 / 0.06), rgb(255 255 255 / 0.04) 45%, rgb(37 99 235 / 0.05)) !important;
+      box-shadow: 0 24px 60px rgb(2 6 23 / 0.3), inset 0 1px 0 rgb(191 219 254 / 0.08) !important;
+      backdrop-filter: blur(18px);
+    }
+
+    .app-panel::before {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(135deg, rgb(147 197 253 / 0.07), transparent 42%, rgb(37 99 235 / 0.05));
+      content: "";
+    }
+
+    .app-panel > * {
+      position: relative;
+      z-index: 1;
+    }
+  }

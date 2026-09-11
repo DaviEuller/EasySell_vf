@@ -1,34 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import {
-  BarChart3,
-  Home,
-  Package,
-  Settings,
-  Users,
-  Wallet,
-} from "lucide-react";
-import Dock from "@/components/Dock";
+import { AppDock } from "@/components/Dock";
 import NavbarPreset from "@/components/navbar_preset";
 import WelcomeScreen from "@/components/Welcomescreen";
 import DashboardCards from "@/components/DashboardCards";
 
 // troque pelo nome real do usuário logado
 const USER_NAME = "Davi";
-
-function goToSection(section: string) {
-  window.location.hash = section;
-}
-
-const dockItems = [
-  { icon: <Home size={18} />, label: "Resumo", onClick: () => goToSection("resumo") },
-  { icon: <BarChart3 size={18} />, label: "Vendas", onClick: () => goToSection("vendas") },
-  { icon: <Package size={18} />, label: "Estoque", onClick: () => goToSection("estoque") },
-  { icon: <Wallet size={18} />, label: "Financeiro", onClick: () => goToSection("financeiro") },
-  { icon: <Users size={18} />, label: "Clientes", onClick: () => goToSection("clientes") },
-  { icon: <Settings size={18} />, label: "Equipe", onClick: () => { window.location.href = "/equipe" } },
-];
 
 export function AdminPage() {
   const [showWelcome, setShowWelcome] = useState(true);
@@ -68,12 +47,12 @@ export function AdminPage() {
             ["Pedidos em aberto", "28", "+4 desde ontem"],
             ["Ticket médio", "R$ 184,20", "+8,1%"],
           ].map(([label, value, change]) => (
-            <div key={label} className="border-l border-blue-400/60 pl-4">
-              <p className="text-xs text-white/45">{label}</p>
-              <div className="mt-2 flex items-baseline gap-3">
-                <strong className="font-heading text-2xl font-semibold text-white">{value}</strong>
-                <span className="text-xs font-medium text-[#5DCAA5]">{change}</span>
-              </div>
+            <div key={label} className="rounded-xl border border-blue-300/20 bg-gradient-to-br from-blue-400/10 via-white/[0.04] to-blue-600/[0.08] p-4 shadow-lg shadow-blue-950/25 backdrop-blur-xl">
+                <p className="text-xs text-white/45">{label}</p>
+                <div className="mt-2 flex items-baseline gap-3">
+                  <strong className="font-heading text-2xl font-semibold text-white">{value}</strong>
+                  <span className="text-xs font-medium text-[#5DCAA5]">{change}</span>
+                </div>
             </div>
           ))}
         </section>
@@ -88,9 +67,7 @@ export function AdminPage() {
         <DashboardCards />
       </main>
 
-      <div className="fixed right-0 bottom-4 left-0 z-20 flex justify-center">
-        <Dock items={dockItems} magnification={60} distance={100} panelHeight={64} />
-      </div>
+      <AppDock />
     </div>
   );
 }

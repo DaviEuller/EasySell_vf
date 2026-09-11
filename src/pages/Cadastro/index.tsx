@@ -1,6 +1,8 @@
 import { useState } from "react"
 
 import Stepper, { Step } from "@/components/Stepper"
+import NavbarPreset from "@/components/navbar_preset"
+import { AppDock } from "@/components/Dock"
 
 type FormData = {
   name: string
@@ -42,8 +44,10 @@ export function Cadastro() {
 
   if (submitted) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#070B14] px-4 text-white">
-        <section className="w-full max-w-lg border border-blue-400/25 bg-[#0E1426] p-8 text-center shadow-2xl shadow-blue-950/30 sm:p-12">
+      <main className="flex min-h-screen items-center justify-center bg-[#070B14] px-4 pt-20 text-white">
+        <NavbarPreset />
+        <AppDock />
+        <section className="app-panel w-full max-w-lg p-8 text-center sm:p-12">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/15 text-3xl text-blue-300">
             ✓
           </div>
@@ -69,12 +73,11 @@ export function Cadastro() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#070B14] text-white">
+    <main className="min-h-screen overflow-hidden bg-[#070B14] pt-20 text-white">
+      <NavbarPreset />
+      <AppDock />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.18),transparent_32%),radial-gradient(circle_at_80%_80%,rgba(14,165,233,0.1),transparent_28%)]" />
-      <header className="relative z-10 flex items-center justify-between px-5 py-6 sm:px-10">
-        <a href="/" className="font-heading text-lg font-bold tracking-tight">
-          EasySell<span className="text-blue-400">.</span>
-        </a>
+      <header className="relative z-10 flex items-center justify-end px-5 py-6 sm:px-10">
         <a
           href="/"
           className="text-sm text-white/55 transition hover:text-white"
@@ -109,7 +112,7 @@ export function Cadastro() {
             ))}
           </div>
         </section>
-        <section className="py-2 sm:py-4">
+        <section className="app-panel rounded-3xl py-2 sm:py-4">
           <Stepper
             initialStep={1}
             onStepChange={setCurrentStep}

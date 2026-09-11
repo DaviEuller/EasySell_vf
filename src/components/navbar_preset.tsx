@@ -1,17 +1,15 @@
-import { useState } from "react"
-
-const navbarItems = [
+	const navbarItems = [
 	{
-		label: "Início",
-		bgColor: "#172554",
+		label: "INÍCIO",
+		href: "/dashboard",
 		links: [
 			{ label: "Resumo", href: "/dashboard#resumo" },
 			{ label: "Vendas", href: "/dashboard#vendas" },
 		],
 	},
 	{
-		label: "Gestão",
-		bgColor: "#1e3a8a",
+		label: "GESTÃO",
+		href: "/financias",
 		links: [
 			{ label: "Estoque", href: "/dashboard#estoque" },
 			{ label: "Financeiro", href: "/dashboard#financeiro" },
@@ -19,8 +17,8 @@ const navbarItems = [
 		],
 	},
 	{
-		label: "Produtos e equipe",
-		bgColor: "#065f46",
+		label: "PRODUTOS E EQUIPE",
+		href: "/equipe",
 		links: [
 			{ label: "Funcionários", href: "/equipe" },
 			{ label: "Easy Market", href: "/dashboard#easy-market" },
@@ -30,59 +28,39 @@ const navbarItems = [
 ]
 
 export function NavbarPreset() {
-	const [isOpen, setIsOpen] = useState(false)
-
-	const closeMenu = () => setIsOpen(false)
+	const currentLocation = window.location.pathname + window.location.hash
 
 	return (
-		<header className="fixed top-0 right-0 left-0 z-50 px-4 pt-5 sm:px-6">
-			<div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-white/15 bg-black/70 shadow-2xl shadow-black/30 backdrop-blur-xl">
-				<div className="flex items-center justify-between px-4 py-3 sm:px-5">
-					<a href="#inicio" onClick={closeMenu} className="flex items-center gap-3 text-white">
+		<header className="fixed top-0 right-0 left-0 z-70">
+			<div className="w-full border-0 bg-transparent shadow-2xl shadow-black/30 backdrop-blur-xl">
+				<div className="flex flex-wrap items-center justify-start gap-x-8 gap-y-3 px-4 py-5 sm:px-6">
+					<a href="#inicio" className="flex items-center gap-3 text-white">
 						<span className="text-lg font-bold tracking-tight">EasySell</span>
 					</a>
 
-					<button
-						type="button"
-						aria-expanded={isOpen}
-						aria-controls="easysell-navigation"
-						onClick={() => setIsOpen((open) => !open)}
-						className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/15"
-					>
-						<span>{isOpen ? "Fechar" : "Menu"}</span>
-						<span className="flex w-5 flex-col gap-1" aria-hidden="true">
-							<span className="h-px w-full bg-current" />
-							<span className="h-px w-full bg-current" />
-						</span>
-					</button>
-				</div>
-
-				<div
-					id="easysell-navigation"
-					className={`grid transition-[grid-template-rows,opacity,padding] duration-300 ease-out ${isOpen ? "grid-rows-[1fr] px-3 pb-3 opacity-100 sm:px-4 sm:pb-4" : "grid-rows-[0fr] opacity-0"}`}
-				>
-					<div className="min-h-0 overflow-hidden">
-						<div className="grid gap-2 sm:grid-cols-3">
-							{navbarItems.map((item) => (
-								<div key={item.label} className="rounded-xl p-4 text-white" style={{ backgroundColor: item.bgColor }}>
-									<p className="text-sm font-semibold text-white/60">EasySell</p>
-									<h2 className="mt-1 text-lg font-semibold">{item.label}</h2>
-									<nav className="mt-5 flex flex-col gap-2" aria-label={item.label}>
+							<nav className="flex flex-wrap items-center gap-x-7 gap-y-2 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-white/80" aria-label="Navegação principal">
+						{navbarItems.map((item) => (
+							<div key={item.label} className="group relative">
+								<a
+									href={item.href}
+									aria-current={currentLocation === item.href ? "page" : undefined}
+									className="inline-block rounded px-1 text-white transition-colors duration-200 hover:text-white"
+								>
+									{item.label}
+								</a>
+								<div className="invisible absolute left-0 top-full z-50 w-52 translate-y-2 rounded-none border border-white/15 bg-slate-950/95 p-4 text-left opacity-0 shadow-2xl shadow-black/40 backdrop-blur-xl transition duration-200 group-hover:visible group-hover:translate-y-1 group-hover:opacity-100">
+									<p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-blue-300">{item.label}</p>
+									<nav className="mt-3 flex flex-col gap-2" aria-label={item.label}>
 										{item.links.map((link) => (
-											<a
-												key={link.label}
-												href={link.href}
-												onClick={closeMenu}
-												className="w-fit text-sm text-white/80 transition-colors hover:text-white hover:underline"
-											>
+											<a key={link.label} href={link.href} className="rounded-none px-2 py-1.5 text-sm normal-case tracking-normal text-white/75 transition-colors hover:bg-white/10 hover:text-white">
 												{link.label}
 											</a>
 										))}
 									</nav>
 								</div>
-							))}
-						</div>
-					</div>
+							</div>
+						))}
+					</nav>
 				</div>
 			</div>
 		</header>

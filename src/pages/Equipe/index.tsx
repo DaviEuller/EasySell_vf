@@ -1,6 +1,5 @@
 import { useState } from "react"
 import {
-  ArrowLeft,
   Download,
   Plus,
   Search,
@@ -11,6 +10,8 @@ import {
   Check,
   Clock3,
 } from "lucide-react"
+import NavbarPreset from "@/components/navbar_preset"
+import { AppDock } from "@/components/Dock"
 
 type Employee = {
   id: number
@@ -245,21 +246,11 @@ export function Equipe() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#070B14] px-4 pb-16 text-white sm:px-8">
+    <main className="min-h-screen overflow-hidden bg-[#070B14] px-4 pt-20 pb-16 text-white sm:px-8">
+      <NavbarPreset />
+      <AppDock />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
       <div className="relative z-10 mx-auto max-w-7xl">
-        <header className="flex items-center justify-between border-b border-white/10 py-6">
-          <a
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-white/55 transition hover:text-white"
-          >
-            <ArrowLeft size={16} /> Voltar ao painel
-          </a>
-          <span className="font-heading text-lg font-bold">
-            EasySell<span className="text-blue-400">.</span>
-          </span>
-        </header>
-
         <section className="flex flex-col justify-between gap-6 py-10 sm:flex-row sm:items-end">
           <div>
             <p className="text-xs font-semibold tracking-[0.24em] text-blue-300 uppercase">
@@ -317,7 +308,7 @@ export function Equipe() {
         </section>
 
         <section className="mt-8 grid gap-4 lg:grid-cols-[1fr_0.8fr]">
-          <div className="rounded-xl border border-white/10 bg-[#0B1120]/85 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-6">
+          <div className="app-panel rounded-xl p-5 sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
@@ -349,7 +340,7 @@ export function Equipe() {
               ))}
             </div>
           </div>
-          <div className="rounded-xl border border-white/10 bg-[#0B1120]/85 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-6">
+          <div className="app-panel rounded-xl p-5 sm:p-6">
             <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
               EasyCrew
             </p>
@@ -369,7 +360,7 @@ export function Equipe() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-xl border border-white/10 bg-[#0B1120]/85 shadow-2xl shadow-black/20 backdrop-blur-xl">
+        <section className="app-panel mt-8 rounded-xl">
           <div className="flex flex-col gap-4 border-b border-white/10 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div>
               <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
