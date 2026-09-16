@@ -1,30 +1,35 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   CalendarDays,
   Building2,
   Check,
+  ChevronDown,
   ClipboardCheck,
+  Clock,
   Clock3,
   FileUp,
   Flag,
+  LayoutDashboard,
+  Paperclip,
+  PartyPopper,
   Search,
   Send,
+  ShieldCheck,
   UserRound,
 } from "lucide-react"
-import NavbarPreset from "@/components/navbar_preset"
-import { AppDock } from "@/components/Dock"
 
-type Mode = "choose" | "create" | "join" | "tasks"
+type Mode = "choose" | "create" | "join" | "created" | "tasks"
+type TaskStatus = "pendente" | "concluido" | "verificado"
 type Task = {
   id: number
   title: string
-  detail: string
-  done: boolean
-  fileName?: string
-  fileTitle?: string
-  fileDescription?: string
+  deadline: string
+  steps: string[]
+  status: TaskStatus
+  verifiedBy?: string
+  attachment: string | null
 }
-type EmployeeTab = "tasks" | "report" | "time" | "calendar" | "files"
+type EmployeeTab = "tasks" | "report" | "time" | "calendar"
 type EmployeeSchedule = {
   start: string
   end: string
@@ -39,34 +44,63 @@ type CompanyData = {
   cnpj: string
   responsibleCpf?: string
 }
-type SentFile = { name: string; title: string; description: string }
 
 const inputClass =
   "mt-2 h-11 w-full rounded-lg border border-white/10 bg-white/[0.05] px-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-400/60"
+
+// Animação padrão aplicada a todos os botões da tela
+const btnAnim =
+  "transition-all duration-200 ease-out will-change-transform hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:hover:translate-y-0 disabled:active:scale-100"
+
 const initialTasks: Task[] = [
   {
     id: 1,
     title: "Conferir pedidos do dia",
-    detail: "Verifique os pedidos recebidos antes das 10h.",
-    done: false,
+    deadline: "Até 10:00",
+    steps: [
+      "Acesse o painel de pedidos na CRM.",
+      "Verifique o horário de recebimento dos pedidos.",
+      "Confira os pedidos recebidos até as 10:00.",
+      "Envie o arquivo de resumo.",
+    ],
+    status: "verificado",
+    verifiedBy: "João",
+    attachment: "resumo-pedidos.pdf",
   },
   {
     id: 2,
     title: "Atualizar estoque",
-    detail: "Registre entradas e saídas dos produtos vendidos.",
-    done: false,
+    deadline: "Até 12:00",
+    steps: [
+      "Registre as entradas do dia.",
+      "Registre as saídas dos produtos vendidos.",
+      "Confira as divergências com o sistema.",
+    ],
+    status: "pendente",
+    attachment: null,
   },
   {
     id: 3,
     title: "Responder clientes",
-    detail: "Finalize os atendimentos pendentes no CRM.",
-    done: true,
+    deadline: "Até 16:00",
+    steps: [
+      "Abra os atendimentos pendentes no CRM.",
+      "Responda todas as mensagens em aberto.",
+      "Marque os atendimentos concluídos.",
+    ],
+    status: "concluido",
+    attachment: "prints-crm.png",
   },
   {
     id: 4,
     title: "Enviar fechamento",
-    detail: "Compartilhe o resumo das atividades com a equipe.",
-    done: false,
+    deadline: "Até 18:00",
+    steps: [
+      "Reúna o resumo das atividades do dia.",
+      "Compartilhe o fechamento com a equipe.",
+    ],
+    status: "pendente",
+    attachment: null,
   },
 ]
 
@@ -75,6 +109,70 @@ const employeeSchedule: EmployeeSchedule = {
   end: "18:00",
   lunch: "01:00",
   total: "9h00",
+}
+
+// Junta classes condicionais (mesmo helper usado no dashboard)
+function cx(...parts: Array<string | false | null | undefined>) {
+  return parts.filter(Boolean).join(" ")
+}
+
+// Hook para detectar quando o elemento entra no viewport (mesmo do dashboard)
+function useInView<T extends HTMLElement>(threshold = 0.15) {
+  const ref = useRef<T | null>(null)
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          observer.disconnect()
+        }
+      },
+      { threshold }
+    )
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [threshold])
+
+  return [ref, inView] as const
+}
+
+// Componente de animação (mesmo do dashboard), agora polimórfico
+// para poder renderizar como <form>, <section>, etc. quando necessário.
+function FadeIn({
+  delay = 0,
+  className,
+  children,
+  as: Tag = "div",
+  ...rest
+}: {
+  delay?: number
+  className?: string
+  children: React.ReactNode
+  as?: React.ElementType
+  [key: string]: unknown
+}) {
+  const [ref, inView] = useInView<HTMLElement>()
+
+  return (
+    <Tag
+      ref={ref}
+      style={{ transitionDelay: inView ? `${delay}ms` : "0ms" }}
+      className={cx(
+        "transition-all duration-700 ease-out",
+        inView ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
+        className
+      )}
+      {...rest}
+    >
+      {children}
+    </Tag>
+  )
 }
 
 function isValidCpf(value: string) {
@@ -94,15 +192,41 @@ function isValidCpf(value: string) {
   return digit === Number(digits[10])
 }
 
+const statusStyles: Record<
+  TaskStatus,
+  { label: string; className: string }
+> = {
+  pendente: {
+    label: "Pendente",
+    className: "border border-white/15 bg-white/[0.06] text-white/55",
+  },
+  concluido: {
+    label: "Concluído",
+    className:
+      "border border-[#5DCAA5]/30 bg-[#5DCAA5]/15 text-[#5DCAA5]",
+  },
+  verificado: {
+    label: "Verificado",
+    className: "border border-blue-400/30 bg-blue-400/15 text-blue-200",
+  },
+}
+
 export function Empresa() {
   const [mode, setMode] = useState<Mode>("choose")
   const [cnpj, setCnpj] = useState("")
   const [cpf, setCpf] = useState("")
   const [company, setCompany] = useState("")
   const [foundCompany, setFoundCompany] = useState<CompanyData | null>(null)
+  const [createdCompany, setCreatedCompany] = useState<CompanyData | null>(
+    null
+  )
+  const [createdCpf, setCreatedCpf] = useState("")
   const [notice, setNotice] = useState("")
   const [loadingCompany, setLoadingCompany] = useState(false)
   const [tasks, setTasks] = useState(initialTasks)
+  const [expandedTaskId, setExpandedTaskId] = useState<number | null>(
+    initialTasks[0]?.id ?? null
+  )
   const [employeeTab, setEmployeeTab] = useState<EmployeeTab>("tasks")
   const [clockedIn, setClockedIn] = useState(false)
   const [clockInAt, setClockInAt] = useState<number | null>(null)
@@ -113,26 +237,14 @@ export function Empresa() {
   const [now, setNow] = useState(() => Date.now())
   const [problem, setProblem] = useState("")
   const [report, setReport] = useState("")
-  const [sentFiles, setSentFiles] = useState<SentFile[]>([])
   const [calendarRecords, setCalendarRecords] = useState<
     Record<number, CalendarRecord>
   >({})
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
   const [dayJustification, setDayJustification] = useState("")
-  const [uploadPanelOpen, setUploadPanelOpen] = useState(false)
-  const [uploadPanelVisible, setUploadPanelVisible] = useState(false)
-  const [pendingFileName, setPendingFileName] = useState<string | null>(null)
-  const [pendingFileTitle, setPendingFileTitle] = useState("")
-  const [pendingFileDescription, setPendingFileDescription] = useState("")
-  const [expandedTaskId, setExpandedTaskId] = useState<number | null>(null)
-  const [taskDraftFileName, setTaskDraftFileName] = useState<string | null>(
-    null
-  )
-  const [taskDraftTitle, setTaskDraftTitle] = useState("")
-  const [taskDraftDescription, setTaskDraftDescription] = useState("")
-  const completed = tasks.filter((task) => task.done).length
-  const completionPercent =
-    tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0
+  const completed = tasks.filter(
+    (task) => task.status === "concluido" || task.status === "verificado"
+  ).length
   const clockElapsed =
     clockInAt && clockedIn ? Math.floor((now - clockInAt) / 1000) : 0
   const activeLunchElapsed =
@@ -146,36 +258,6 @@ export function Empresa() {
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(timer)
   }, [clockedIn, lunchStarted])
-
-  useEffect(() => {
-    if (!uploadPanelOpen) return
-    const frame = window.requestAnimationFrame(() => setUploadPanelVisible(true))
-    return () => window.cancelAnimationFrame(frame)
-  }, [uploadPanelOpen])
-
-  const openUploadPanel = () => {
-    setPendingFileName(null)
-    setPendingFileTitle("")
-    setPendingFileDescription("")
-    setUploadPanelOpen(true)
-  }
-  const closeUploadPanel = () => {
-    setUploadPanelVisible(false)
-    window.setTimeout(() => setUploadPanelOpen(false), 220)
-  }
-  const confirmUpload = () => {
-    if (!pendingFileName) return
-    setSentFiles((current) => [
-      ...current,
-      {
-        name: pendingFileName,
-        title: pendingFileTitle.trim() || pendingFileName,
-        description: pendingFileDescription.trim(),
-      },
-    ])
-    setNotice("Arquivo enviado com sucesso.")
-    closeUploadPanel()
-  }
 
   const formatDuration = (seconds: number) =>
     `${String(Math.floor(seconds / 3600)).padStart(2, "0")}:${String(Math.floor((seconds % 3600) / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`
@@ -195,17 +277,9 @@ export function Empresa() {
     setFoundCompany(null)
     setNotice("")
     try {
-      const response = await fetch(
-        `https://brasilapi.com.br/api/cnpj/v1/${digits}`
-      )
+      const response = await fetch(`https://publica.cnpj.ws/cnpj/${digits}`)
       if (!response.ok) throw new Error("CNPJ não encontrado")
       const data = (await response.json()) as CompanyData
-      if (data.situacao_cadastral && data.situacao_cadastral !== "ATIVA") {
-        setNotice(
-          `Empresa inválida: situação cadastral ${data.situacao_cadastral.toLowerCase()}.`
-        )
-        return
-      }
       setFoundCompany(data)
       setNotice("Empresa encontrada. Confirme o CPF do responsável.")
     } catch {
@@ -226,8 +300,10 @@ export function Empresa() {
       return setNotice(
         "Empresa inválida: o CPF não corresponde ao responsável cadastrado."
       )
-    setNotice("Empresa criada e responsável confirmado.")
-    setMode("tasks")
+    setCreatedCompany(foundCompany)
+    setCreatedCpf(cpf)
+    setNotice("")
+    setMode("created")
   }
   const requestJoin = () => {
     if (company.trim().length < 2)
@@ -235,42 +311,31 @@ export function Empresa() {
     setNotice(`Solicitação enviada para ${company}.`)
     setMode("tasks")
   }
-  const toggleTask = (id: number) =>
+  const toggleTaskExpanded = (id: number) =>
+    setExpandedTaskId((current) => (current === id ? null : id))
+  const attachTaskFile = (id: number, file?: File) => {
+    if (!file) return
     setTasks((current) =>
       current.map((task) =>
-        task.id === id ? { ...task, done: !task.done } : task
+        task.id === id ? { ...task, attachment: file.name } : task
       )
     )
-  const toggleTaskExpand = (task: Task) => {
-    if (expandedTaskId === task.id) {
-      setExpandedTaskId(null)
-      return
-    }
-    setExpandedTaskId(task.id)
-    setTaskDraftFileName(task.fileName ?? null)
-    setTaskDraftTitle(task.fileTitle ?? "")
-    setTaskDraftDescription(task.fileDescription ?? "")
+    setNotice("Arquivo anexado à tarefa.")
   }
-  const saveTaskAttachment = (id: number) => {
-    if (!taskDraftFileName) {
-      setNotice("Selecione um arquivo para anexar à tarefa.")
-      return
-    }
+  const toggleTaskStatus = (id: number) =>
     setTasks((current) =>
-      current.map((task) =>
-        task.id === id
-          ? {
-              ...task,
-              fileName: taskDraftFileName,
-              fileTitle: taskDraftTitle.trim() || taskDraftFileName,
-              fileDescription: taskDraftDescription.trim(),
-            }
-          : task
-      )
+      current.map((task) => {
+        if (task.id !== id || task.status === "verificado") return task
+        if (task.status === "pendente" && !task.attachment) {
+          setNotice("Anexe um arquivo antes de concluir a tarefa.")
+          return task
+        }
+        return {
+          ...task,
+          status: task.status === "pendente" ? "concluido" : "pendente",
+        }
+      })
     )
-    setNotice("Arquivo anexado à tarefa com sucesso.")
-    setExpandedTaskId(null)
-  }
   const selectedDateIsWeekday =
     selectedDay !== null &&
     new Date(2026, 8, selectedDay).getDay() > 0 &&
@@ -331,35 +396,39 @@ export function Empresa() {
     { id: "time", label: "Ponto e descanso", icon: Clock3 },
     { id: "calendar", label: "Calendário", icon: CalendarDays },
     { id: "report", label: "Relatórios e problemas", icon: Flag },
-    { id: "files", label: "Arquivos", icon: FileUp },
   ]
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#070B14] px-4 pt-20 pb-16 text-white sm:px-8">
-      <NavbarPreset />
-      <AppDock />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
       <div className="relative z-10 mx-auto max-w-6xl">
         {mode !== "tasks" ? (
           <div className="mx-auto grid max-w-5xl gap-10 py-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-            <section>
+            <FadeIn>
               <p className="text-xs font-semibold tracking-[0.24em] text-blue-300 uppercase">
                 Sua organização
               </p>
               <h1 className="mt-4 font-heading text-4xl font-bold sm:text-6xl">
-                Escolha como começar.
+                {mode === "created" ? "Tudo pronto." : "Escolha como começar."}
               </h1>
               <p className="mt-5 max-w-md text-sm leading-6 text-white/50">
-                Crie uma empresa para administrar sua operação ou entre em uma
-                equipe já existente.
+                {mode === "created"
+                  ? "Sua empresa foi cadastrada com sucesso. Confira os dados abaixo antes de seguir para o painel."
+                  : "Crie uma empresa para administrar sua operação ou entre em uma equipe já existente."}
               </p>
-            </section>
-            <section className="app-panel rounded-xl p-5 sm:p-8">
+            </FadeIn>
+            <FadeIn
+              delay={100}
+              className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-8"
+            >
               {mode === "choose" && (
                 <div className="grid gap-3 sm:grid-cols-2">
                   <button
                     onClick={() => setMode("create")}
-                    className="rounded-lg border border-blue-400/25 bg-blue-500/10 p-5 text-left hover:bg-blue-500/15"
+                    className={cx(
+                      btnAnim,
+                      "rounded-lg border border-blue-400/25 bg-blue-500/10 p-5 text-left hover:bg-blue-500/15"
+                    )}
                   >
                     <Building2 className="text-blue-300" size={24} />
                     <h2 className="mt-6 font-heading text-xl font-bold">
@@ -371,7 +440,10 @@ export function Empresa() {
                   </button>
                   <button
                     onClick={() => setMode("join")}
-                    className="rounded-lg border border-white/15 bg-white/[0.03] p-5 text-left hover:bg-white/[0.07]"
+                    className={cx(
+                      btnAnim,
+                      "rounded-lg border border-white/15 bg-white/[0.03] p-5 text-left hover:bg-white/[0.07]"
+                    )}
                   >
                     <UserRound className="text-[#5DCAA5]" size={24} />
                     <h2 className="mt-6 font-heading text-xl font-bold">
@@ -388,7 +460,7 @@ export function Empresa() {
                 <div>
                   <button
                     onClick={() => setMode("choose")}
-                    className="mb-6 text-sm text-white/45 hover:text-white"
+                    className={cx(btnAnim, "mb-6 text-sm text-white/45 hover:text-white")}
                   >
                     ← Voltar
                   </button>
@@ -410,13 +482,16 @@ export function Empresa() {
                   <button
                     onClick={findCompany}
                     disabled={loadingCompany}
-                    className="mt-4 inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500"
+                    className={cx(
+                      btnAnim,
+                      "mt-4 inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+                    )}
                   >
                     <Search size={16} />{" "}
                     {loadingCompany ? "Consultando..." : "Buscar empresa"}
                   </button>
                   {foundCompany && (
-                    <div className="mt-6 rounded-lg border border-[#5DCAA5]/25 bg-[#5DCAA5]/10 p-4">
+                    <FadeIn className="mt-6 rounded-lg border border-[#5DCAA5]/25 bg-[#5DCAA5]/10 p-4">
                       <p className="text-xs text-[#5DCAA5]">
                         Empresa encontrada
                       </p>
@@ -442,11 +517,14 @@ export function Empresa() {
                       </label>
                       <button
                         onClick={createCompany}
-                        className="mt-4 inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500"
+                        className={cx(
+                          btnAnim,
+                          "mt-4 inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500"
+                        )}
                       >
                         <Check size={16} /> Confirmar e criar
                       </button>
-                    </div>
+                    </FadeIn>
                   )}
                 </div>
               )}
@@ -454,7 +532,7 @@ export function Empresa() {
                 <div>
                   <button
                     onClick={() => setMode("choose")}
-                    className="mb-6 text-sm text-white/45 hover:text-white"
+                    className={cx(btnAnim, "mb-6 text-sm text-white/45 hover:text-white")}
                   >
                     ← Voltar
                   </button>
@@ -475,18 +553,68 @@ export function Empresa() {
                   </label>
                   <button
                     onClick={requestJoin}
-                    className="mt-6 inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500"
+                    className={cx(
+                      btnAnim,
+                      "mt-6 inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500"
+                    )}
                   >
                     <UserRound size={16} /> Enviar solicitação
                   </button>
                 </div>
               )}
+              {mode === "created" && createdCompany && (
+                <div>
+                  <div className="flex size-12 items-center justify-center rounded-full border border-[#5DCAA5]/30 bg-[#5DCAA5]/10 text-[#5DCAA5]">
+                    <PartyPopper size={22} />
+                  </div>
+                  <p className="mt-5 text-xs font-semibold tracking-[0.18em] text-[#5DCAA5] uppercase">
+                    Empresa criada
+                  </p>
+                  <h2 className="mt-3 font-heading text-3xl font-bold">
+                    {createdCompany.razao_social}
+                  </h2>
+                  {createdCompany.nome_fantasia && (
+                    <p className="mt-1 text-sm text-white/55">
+                      {createdCompany.nome_fantasia}
+                    </p>
+                  )}
+                  <div className="mt-6 space-y-3 rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/40">CNPJ</span>
+                      <span className="font-semibold">
+                        {createdCompany.cnpj}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/40">Situação</span>
+                      <span className="font-semibold text-[#5DCAA5]">
+                        {createdCompany.situacao_cadastral || "ATIVA"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/40">CPF do responsável</span>
+                      <span className="font-semibold">{createdCpf}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      window.location.href = "/dashboard"
+                    }}
+                    className={cx(
+                      btnAnim,
+                      "mt-6 inline-flex h-11 items-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-semibold hover:bg-blue-500"
+                    )}
+                  >
+                    <LayoutDashboard size={16} /> Ir para o painel
+                  </button>
+                </div>
+              )}
               {notice && <p className="mt-5 text-sm text-blue-200">{notice}</p>}
-            </section>
+            </FadeIn>
           </div>
         ) : (
           <div className="mx-auto max-w-5xl py-12">
-            <section className="flex flex-col justify-between gap-6 border-b border-white/10 pb-8 sm:flex-row sm:items-end">
+            <FadeIn className="flex flex-col justify-between gap-6 border-b border-white/10 pb-8 sm:flex-row sm:items-end">
               <div>
                 <p className="text-xs font-semibold tracking-[0.24em] text-blue-300 uppercase">
                   Área do funcionário
@@ -498,10 +626,13 @@ export function Empresa() {
                   Organize seu dia e acompanhe o que precisa ser concluído.
                 </p>
               </div>
-              <div className="rounded-lg border border-[#5DCAA5]/25 bg-[#5DCAA5]/10 px-4 py-3 text-sm text-[#5DCAA5]">
-                <strong>{completionPercent}%</strong> concluído
+              <div className="shrink-0 rounded-lg border border-[#5DCAA5]/25 bg-[#5DCAA5]/10 px-4 py-3 text-sm text-[#5DCAA5]">
+                <strong>
+                  {completed}/{tasks.length}
+                </strong>{" "}
+                concluídas
               </div>
-            </section>
+            </FadeIn>
             <nav
               className="mt-8 flex gap-2 overflow-x-auto border-b border-white/10 pb-px"
               aria-label="Ferramentas do funcionário"
@@ -516,198 +647,181 @@ export function Empresa() {
                 </button>
               ))}
             </nav>
-            <section className="mt-6 rounded-xl border border-blue-400/20 bg-blue-500/10 p-5 sm:p-6">
-              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                  <p className="text-xs font-semibold tracking-[0.16em] text-blue-200 uppercase">
-                    Minha jornada
-                  </p>
-                  <h2 className="mt-2 font-heading text-2xl font-bold">
-                    Horário definido pela empresa
-                  </h2>
-                  <p className="mt-2 text-sm text-white/50">
-                    Este é o horário usado como referência para seu ponto.
-                  </p>
-                </div>
-                <Clock3 className="hidden text-blue-300 sm:block" size={26} />
-              </div>
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-                  <p className="text-xs text-white/45">Entrada</p>
-                  <strong className="mt-1 block text-lg">
-                    {employeeSchedule.start}
-                  </strong>
-                </div>
-                <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-                  <p className="text-xs text-white/45">Saída</p>
-                  <strong className="mt-1 block text-lg">
-                    {employeeSchedule.end}
-                  </strong>
-                </div>
-                <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
-                  <p className="text-xs text-white/45">Almoço</p>
-                  <strong className="mt-1 block text-lg">
-                    {employeeSchedule.lunch}
-                  </strong>
-                </div>
-                <div className="rounded-lg border border-[#5DCAA5]/20 bg-[#5DCAA5]/10 p-3">
-                  <p className="text-xs text-white/45">Carga líquida</p>
-                  <strong className="mt-1 block text-lg text-[#5DCAA5]">
-                    {employeeSchedule.total}
-                  </strong>
-                </div>
-              </div>
-            </section>
 
-            {/* Único card: lista diária + progresso do dia + upload */}
-            <section className="app-panel mt-8 rounded-xl p-5 sm:p-6">
-              <div className="flex items-center gap-3">
-                <ClipboardCheck className="text-blue-300" size={22} />
-                <h2 className="font-heading text-2xl font-bold">
-                  Lista diária
-                </h2>
-              </div>
-
-              {/* Barra de progresso com número, logo abaixo do título */}
-              <div className="mt-4 flex items-center gap-3">
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-blue-400 to-[#5DCAA5] transition-[width] duration-700 ease-out"
-                    style={{ width: `${completionPercent}%` }}
-                  />
-                </div>
-                <span className="shrink-0 text-sm font-semibold text-[#5DCAA5]">
-                  {completionPercent}%
-                </span>
-              </div>
-
-              <div className="mt-6 space-y-2 text-sm">
-                <div className="flex border-b border-white/10 pb-2 text-left text-xs text-white/40">
-                  <span className="flex-1 font-medium">Tarefa</span>
-                  <span className="font-medium">Status</span>
-                </div>
-                {tasks.map((task) => {
-                  const isExpanded = expandedTaskId === task.id
-                  return (
-                    <div
-                      key={task.id}
-                      className="rounded-lg border border-white/5 last:border-0"
-                    >
-                      <div
-                        onClick={() => toggleTaskExpand(task)}
-                        className="flex cursor-pointer items-center gap-3 py-3 pr-1 pl-1 hover:bg-white/[0.02]"
-                      >
-                        <div className="flex-1">
-                          <span
-                            className={
-                              task.done
-                                ? "text-white/40 line-through"
-                                : "text-white"
-                            }
-                          >
-                            {task.title}
-                          </span>
-                          {task.fileTitle && (
-                            <span className="mt-0.5 flex items-center gap-1 text-xs text-[#5DCAA5]">
-                              <FileUp size={11} /> {task.fileTitle}
-                            </span>
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation()
-                            toggleTask(task.id)
-                          }}
-                          className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-                            task.done ? "text-[#5DCAA5]" : "text-white/35"
-                          }`}
-                        >
-                          <span
-                            className={`size-1.5 rounded-full ${task.done ? "bg-[#5DCAA5]" : "bg-white/25"}`}
-                          />
-                          {task.done ? "Concluída" : "Pendente"}
-                        </button>
-                      </div>
-                      {isExpanded && (
-                        <div className="space-y-4 border-t border-white/10 bg-white/[0.02] p-4">
-                          <label
-                            className={`flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed text-center text-sm transition ${taskDraftFileName ? "border-[#5DCAA5]/50 bg-[#5DCAA5]/10 text-[#5DCAA5]" : "border-white/20 bg-white/[0.03] text-white/50 hover:border-blue-400/50"}`}
-                          >
-                            {taskDraftFileName ? (
-                              <>
-                                <Check className="mb-2" size={20} />
-                                {taskDraftFileName}
-                              </>
-                            ) : (
-                              <>
-                                <FileUp
-                                  className="mb-2 text-blue-300"
-                                  size={20}
-                                />
-                                Selecionar arquivo para esta tarefa
-                              </>
-                            )}
-                            <input
-                              type="file"
-                              className="hidden"
-                              onChange={(event) => {
-                                const name = event.target.files?.[0]?.name
-                                if (name) setTaskDraftFileName(name)
-                              }}
-                            />
-                          </label>
-                          <label className="block text-sm">
-                            Título do arquivo
-                            <input
-                              className={inputClass}
-                              value={taskDraftTitle}
-                              onChange={(event) =>
-                                setTaskDraftTitle(event.target.value)
-                              }
-                              placeholder="Ex.: Comprovante de entrega"
-                            />
-                          </label>
-                          <label className="block text-sm">
-                            Descrição
-                            <textarea
-                              value={taskDraftDescription}
-                              onChange={(event) =>
-                                setTaskDraftDescription(event.target.value)
-                              }
-                              placeholder="Adicione detalhes sobre este arquivo..."
-                              className="mt-2 min-h-20 w-full rounded-lg border border-white/10 bg-white/[0.05] p-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-400/60"
-                            />
-                          </label>
-                          <div className="flex justify-end gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setExpandedTaskId(null)}
-                              className="rounded-lg px-3 py-2 text-xs font-semibold text-white/50 hover:text-white"
-                            >
-                              Cancelar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => saveTaskAttachment(task.id)}
-                              disabled={!taskDraftFileName}
-                              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                              <Send size={13} /> Salvar anexo
-                            </button>
-                          </div>
-                        </div>
-                      )}
+            {employeeTab === "tasks" && (
+              <section className="mt-8 space-y-4">
+                {/* Minha jornada */}
+                <FadeIn className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
+                        Minha jornada
+                      </p>
+                      <h2 className="mt-2 font-heading text-xl font-bold sm:text-2xl">
+                        Horário definido pela empresa
+                      </h2>
+                      <p className="mt-2 text-sm text-white/45">
+                        Este é o horário usado como referência para o seu
+                        ponto.
+                      </p>
                     </div>
-                  )
-                })}
-              </div>
-            </section>
+                    <Clock className="hidden shrink-0 text-white/30 sm:block" size={22} />
+                  </div>
+                  <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {[
+                      ["Entrada", employeeSchedule.start, ""],
+                      ["Saída", employeeSchedule.end, ""],
+                      ["Almoço", employeeSchedule.lunch, ""],
+                      ["Carga diária", employeeSchedule.total, "text-[#5DCAA5]"],
+                    ].map(([label, value, extraClass], index) => (
+                      <FadeIn
+                        key={label}
+                        delay={index * 80}
+                        className="rounded-lg border border-white/10 bg-white/[0.03] p-4"
+                      >
+                        <p className="text-xs text-white/40">{label}</p>
+                        <p className={`mt-1 text-lg font-semibold ${extraClass}`}>
+                          {value}
+                        </p>
+                      </FadeIn>
+                    ))}
+                  </div>
+                </FadeIn>
 
+                {/* Tabela de tarefas */}
+                <FadeIn
+                  delay={80}
+                  className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25"
+                >
+                  {/* Cabeçalho — apenas telas grandes */}
+                  <div className="hidden grid-cols-[1.1fr_1.6fr_1.1fr_1fr] gap-4 border-b border-white/10 px-6 py-4 text-xs font-semibold tracking-[0.1em] text-white/40 uppercase lg:grid">
+                    <span>O que fazer</span>
+                    <span>Descrição</span>
+                    <span>Anexo</span>
+                    <span>Status</span>
+                  </div>
+
+                  <div className="divide-y divide-white/10">
+                    {tasks.map((task, taskIndex) => {
+                      const expanded = expandedTaskId === task.id
+                      const status = statusStyles[task.status]
+                      return (
+                        <FadeIn
+                          key={task.id}
+                          delay={taskIndex * 90}
+                          className="px-4 py-4 sm:px-6"
+                        >
+                          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_1.6fr_1.1fr_1fr] lg:items-start">
+                            {/* O que fazer */}
+                            <button
+                              type="button"
+                              onClick={() => toggleTaskExpanded(task.id)}
+                              className="flex items-start gap-2 text-left"
+                            >
+                              <ChevronDown
+                                size={16}
+                                className={`mt-1 shrink-0 text-white/40 transition-transform ${expanded ? "rotate-0" : "-rotate-90"}`}
+                              />
+                              <span>
+                                <span className="block font-semibold text-white">
+                                  {task.title}
+                                </span>
+                                <span className="mt-1 block text-xs font-semibold text-white/40">
+                                  {task.deadline}
+                                </span>
+                              </span>
+                            </button>
+
+                            {/* Descrição / passos */}
+                            {expanded ? (
+                              <ol className="space-y-2 text-sm leading-6 text-white/55">
+                                {task.steps.map((step, index) => (
+                                  <li key={step} className="flex gap-2">
+                                    <span className="shrink-0 text-white/35">
+                                      {index + 1}.
+                                    </span>
+                                    <span>{step}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                            ) : (
+                              <span className="hidden text-sm text-white/30 lg:block">
+                                —
+                              </span>
+                            )}
+
+                            {/* Anexo */}
+                            <div className="flex flex-col gap-2">
+                              {expanded && (
+                                <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-blue-400/30 bg-blue-500/10 px-3 py-2 text-xs font-semibold text-blue-200 hover:bg-blue-500/20">
+                                  <Paperclip size={13} />
+                                  {task.attachment ? "Anexar novo" : "Anexar arquivo"}
+                                  <input
+                                    type="file"
+                                    className="hidden"
+                                    onChange={(event) =>
+                                      attachTaskFile(
+                                        task.id,
+                                        event.target.files?.[0]
+                                      )
+                                    }
+                                  />
+                                </label>
+                              )}
+                              <div className="flex items-center gap-2 rounded-lg border border-dashed border-white/15 bg-white/[0.02] px-3 py-2 text-xs text-white/40">
+                                <FileUp size={14} className="shrink-0" />
+                                <span className="truncate">
+                                  {task.attachment ?? "Nenhum arquivo"}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Status */}
+                            <div className="flex flex-col items-start gap-2 lg:items-end">
+                              <span
+                                className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${status.className}`}
+                              >
+                                {task.status === "verificado" && (
+                                  <ShieldCheck size={13} />
+                                )}
+                                {status.label}
+                              </span>
+                              {task.status === "verificado" &&
+                                task.verifiedBy && (
+                                  <span className="text-[11px] text-white/35">
+                                    Verificado por {task.verifiedBy}
+                                  </span>
+                                )}
+                              {task.status !== "verificado" &&
+                                task.attachment && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleTaskStatus(task.id)}
+                                    className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                                      task.status === "concluido"
+                                        ? "border border-white/15 text-white/50 hover:bg-white/5"
+                                        : "bg-[#5DCAA5] text-[#070B14] hover:bg-[#4fb996]"
+                                    }`}
+                                  >
+                                    <Check size={13} />
+                                    {task.status === "concluido"
+                                      ? "Reabrir"
+                                      : "Concluído"}
+                                  </button>
+                                )}
+                            </div>
+                          </div>
+                        </FadeIn>
+                      )
+                    })}
+                  </div>
+                </FadeIn>
+              </section>
+            )}
             {employeeTab === "time" && (
               <section className="mt-4 space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="app-panel rounded-xl p-5 sm:p-6">
+                  <FadeIn className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
                     <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
                       Registro de ponto
                     </p>
@@ -732,8 +846,11 @@ export function Empresa() {
                           ? "Bater ponto novamente"
                           : "Bater ponto"}
                     </button>
-                  </div>
-                  <div className="app-panel rounded-xl p-5 sm:p-6">
+                  </FadeIn>
+                  <FadeIn
+                    delay={100}
+                    className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6"
+                  >
                     <p className="text-xs font-semibold tracking-[0.16em] text-[#5DCAA5] uppercase">
                       Descanso e almoço
                     </p>
@@ -769,12 +886,12 @@ export function Empresa() {
                         )}
                       </p>
                     )}
-                  </div>
+                  </FadeIn>
                 </div>
               </section>
             )}
             {employeeTab === "calendar" && (
-              <section className="app-panel mt-4 rounded-xl p-5 sm:p-6">
+              <FadeIn className="relative mt-4 overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
                 <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
                   Presença
                 </p>
@@ -805,7 +922,7 @@ export function Empresa() {
                   ))}
                 </div>
                 {selectedDay && selectedDateIsWeekday && (
-                  <div className="mt-6 rounded-lg border border-blue-400/20 bg-blue-500/5 p-4">
+                  <FadeIn className="mt-6 rounded-lg border border-blue-400/20 bg-blue-500/5 p-4">
                     <p className="text-sm font-semibold text-white">
                       Dia {selectedDay} de setembro
                     </p>
@@ -836,23 +953,24 @@ export function Empresa() {
                         Registrar falta não justificada
                       </button>
                     </div>
-                  </div>
+                  </FadeIn>
                 )}
                 <p className="mt-5 text-xs text-white/45">
                   Clique em um dia útil para solicitar folga ou registrar uma
                   falta.
                 </p>
-              </section>
+              </FadeIn>
             )}
             {employeeTab === "report" && (
               <section className="mt-4 grid gap-4 sm:grid-cols-2">
-                <form
-                  onSubmit={(event) => {
+                <FadeIn
+                  as="form"
+                  onSubmit={(event: React.FormEvent) => {
                     event.preventDefault()
                     setNotice("Relatório enviado para a gestão.")
                     setReport("")
                   }}
-                  className="app-panel rounded-xl p-5 sm:p-6"
+                  className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6"
                 >
                   <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
                     Relatório
@@ -870,14 +988,16 @@ export function Empresa() {
                   <button className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500">
                     <Send size={15} /> Enviar relatório
                   </button>
-                </form>
-                <form
-                  onSubmit={(event) => {
+                </FadeIn>
+                <FadeIn
+                  as="form"
+                  delay={100}
+                  onSubmit={(event: React.FormEvent) => {
                     event.preventDefault()
                     setNotice("Problema enviado para a gestão.")
                     setProblem("")
                   }}
-                  className="app-panel rounded-xl border-red-400/15 p-5 sm:p-6"
+                  className="relative overflow-hidden rounded-xl border border-red-400/20 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-red-300/25 sm:p-6"
                 >
                   <p className="text-xs font-semibold tracking-[0.16em] text-red-300 uppercase">
                     Suporte interno
@@ -895,49 +1015,10 @@ export function Empresa() {
                   <button className="mt-4 inline-flex items-center gap-2 rounded-lg border border-red-400/30 px-4 py-2 text-sm font-semibold text-red-200 hover:bg-red-400/10">
                     <Flag size={15} /> Enviar problema
                   </button>
-                </form>
+                </FadeIn>
               </section>
             )}
-            {employeeTab === "files" && (
-              <section className="app-panel mt-4 rounded-xl p-5 sm:p-6">
-                <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
-                  Arquivos das tarefas
-                </p>
-                <h2 className="mt-2 font-heading text-2xl font-bold">
-                  Envie comprovantes e entregas.
-                </h2>
-                <button
-                  type="button"
-                  onClick={openUploadPanel}
-                  className="mt-6 flex min-h-28 w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-white/20 bg-white/[0.03] text-center text-sm text-white/50 hover:border-blue-400/50"
-                >
-                  <FileUp className="mb-2 text-blue-300" size={24} /> Selecionar
-                  arquivo
-                </button>
-                {sentFiles.length > 0 && (
-                  <div className="mt-4 space-y-3 text-sm">
-                    {sentFiles.map((file, index) => (
-                      <div
-                        key={`${file.name}-${index}`}
-                        className="rounded-lg border border-[#5DCAA5]/20 bg-[#5DCAA5]/5 p-3"
-                      >
-                        <p className="flex items-center gap-2 font-semibold text-[#5DCAA5]">
-                          <Check size={14} /> {file.title}
-                        </p>
-                        <p className="mt-1 text-xs text-white/40">
-                          {file.name}
-                        </p>
-                        {file.description && (
-                          <p className="mt-2 text-xs text-white/55">
-                            {file.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
-            )}
+
             {notice && (
               <p className="mt-4 rounded-lg border border-blue-400/15 bg-blue-400/5 px-4 py-3 text-sm text-blue-200">
                 {notice}
@@ -946,100 +1027,6 @@ export function Empresa() {
           </div>
         )}
       </div>
-      {uploadPanelOpen && (
-        <div
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-200 ${uploadPanelVisible ? "opacity-100" : "opacity-0"}`}
-        >
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={closeUploadPanel}
-          />
-          <div
-            className={`app-panel relative w-full max-w-md rounded-xl border border-blue-400/25 p-6 shadow-2xl transition-all duration-300 ease-out sm:p-7 ${uploadPanelVisible ? "translate-y-0 scale-100 opacity-100" : "translate-y-4 scale-95 opacity-0"}`}
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/15 text-blue-300">
-                <FileUp size={20} />
-              </span>
-              <div>
-                <h2 className="font-heading text-xl font-bold text-white">
-                  Enviar arquivo
-                </h2>
-                <p className="text-xs text-white/45">
-                  Anexe um comprovante ou entrega relacionada às suas tarefas.
-                </p>
-              </div>
-            </div>
-            <label
-              className={`mt-6 flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed text-center text-sm transition ${pendingFileName ? "border-[#5DCAA5]/50 bg-[#5DCAA5]/10 text-[#5DCAA5]" : "border-white/20 bg-white/[0.03] text-white/50 hover:border-blue-400/50 hover:bg-white/[0.05]"}`}
-            >
-              {pendingFileName ? (
-                <>
-                  <Check className="mb-2" size={22} />
-                  {pendingFileName}
-                </>
-              ) : (
-                <>
-                  <FileUp className="mb-2 text-blue-300" size={22} />
-                  Arraste ou selecione um arquivo
-                </>
-              )}
-              <input
-                type="file"
-                className="hidden"
-                onChange={(event) => {
-                  const name = event.target.files?.[0]?.name
-                  if (name) setPendingFileName(name)
-                }}
-              />
-            </label>
-
-            {/* Painel expandido: título e descrição do arquivo, liberado após selecionar o arquivo */}
-            {pendingFileName && (
-              <div className="mt-4 space-y-4 border-t border-white/10 pt-4">
-                <label className="block text-sm">
-                  Título do arquivo
-                  <input
-                    className={inputClass}
-                    value={pendingFileTitle}
-                    onChange={(event) => setPendingFileTitle(event.target.value)}
-                    placeholder="Ex.: Comprovante de entrega"
-                  />
-                </label>
-                <label className="block text-sm">
-                  Descrição
-                  <textarea
-                    value={pendingFileDescription}
-                    onChange={(event) =>
-                      setPendingFileDescription(event.target.value)
-                    }
-                    placeholder="Adicione detalhes sobre este arquivo..."
-                    className="mt-2 min-h-24 w-full rounded-lg border border-white/10 bg-white/[0.05] p-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-400/60"
-                  />
-                </label>
-              </div>
-            )}
-
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={closeUploadPanel}
-                className="rounded-lg px-4 py-2 text-sm font-semibold text-white/50 hover:text-white"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={confirmUpload}
-                disabled={!pendingFileName}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <Send size={15} /> Enviar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   )
 }
