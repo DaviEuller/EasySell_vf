@@ -203,9 +203,7 @@ export default function Dock({
 }
 
 export function AppDock() {
-  const goToSection = (section: string) => {
-    window.location.hash = section;
-  };
+
 
   const items: DockItemData[] = [
     { icon: <Home size={18} />, label: 'Resumo', onClick: () => {window.location.href = '/resumo';} },

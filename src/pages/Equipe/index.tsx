@@ -88,7 +88,6 @@ const chartData = [
 
 function maskCpf(cpf: string) {
   return `${cpf.slice(0, 3)}.***.***-${cpf.slice(-2)}`
-  const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
 }
 
 function exportEmployees(employees: Employee[]) {

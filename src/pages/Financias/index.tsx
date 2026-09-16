@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowUpRight, CircleAlert, Package, Receipt, WalletCards } from "lucide-react"
+import {  ArrowUpRight, CircleAlert, Package, Receipt, WalletCards } from "lucide-react"
 import NavbarPreset from "@/components/navbar_preset"
 import { AppDock } from "@/components/Dock"
 import {
