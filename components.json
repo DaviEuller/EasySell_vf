@@ -23,6 +23,7 @@
   "menuAccent": "subtle",
   "registries": {
     "@react-bits": "https://reactbits.dev/r/{name}.json",
-    "@bklit": "https://ui.bklit.com/r/{name}.json"
+    "@bklit": "https://ui.bklit.com/r/{name}.json",
+    "@smoothui": "https://smoothui.dev/r/{name}.json"
   }
 }

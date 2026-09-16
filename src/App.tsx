@@ -9,6 +9,7 @@ import AdminPage from "@/pages/dashboard"
 import Financias from "@/pages/Financias"
 import Clientes from "@/pages/clientes"
 import Produtos from "@/pages/Produto"
+import Sellia from "./pages/sellia"
 
 export function App() {
   if (window.location.pathname === "/cadastro") return <Cadastro />
@@ -21,6 +22,7 @@ export function App() {
   if (window.location.pathname === "/estoque") return <Estoque />
   if (window.location.pathname === "/clientes") return <Clientes />
   if (window.location.pathname === "/produtos") return <Produtos />
+  if (window.location.pathname === "/sellia") return <Sellia />
 
   return <Home />
 }
