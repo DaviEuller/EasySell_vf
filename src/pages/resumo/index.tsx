@@ -60,7 +60,7 @@ export function Resumo() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#070B14] px-4 pt-20 pb-16 text-white sm:px-8">
+    <main className="relative min-h-screen overflow-hidden bg-[#0B1220] px-4 pt-20 pb-16 text-white sm:px-8">
       <NavbarPreset />
       <AppDock />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
@@ -128,7 +128,7 @@ export function Resumo() {
               key={card.id}
               href={card.href}
               onMouseMove={handleSpotlight}
-              className="spotlight-card animate-fade-up app-panel group relative flex flex-col justify-between overflow-hidden rounded-xl p-4 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/50 hover:shadow-[0_10px_40px_-10px_rgba(59,130,246,0.35)]"
+              className="spotlight-card animate-fade-up app-panel group relative flex flex-col justify-between overflow-hidden rounded-[7px] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/50 hover:shadow-[0_8px_24px_-12px_rgba(59,130,246,0.35)]"
               style={{ animationDelay: `${0.12 + index * 0.07}s` }}
             >
               {/* conteúdo acima do reflexo */}

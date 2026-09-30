@@ -21,7 +21,7 @@ const initialForm: FormData = {
   segment: "",
 }
 const inputClassName =
-  "mt-2 w-full rounded-xl border border-white/12 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-blue-400 focus:bg-white/[0.09]"
+  "mt-2 w-full rounded-md border border-white/12 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-blue-400 focus:bg-white/[0.09]"
 
 export function Cadastro() {
   const [form, setForm] = useState<FormData>(initialForm)
@@ -43,7 +43,7 @@ export function Cadastro() {
 
   if (submitted) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#070B14] px-4 pt-20 text-white">
+      <main className="flex min-h-screen items-center justify-center bg-[#0B1220] px-4 pt-20 text-white">
         <NavbarPreset />
         <section className="app-panel w-full max-w-lg p-8 text-center sm:p-12">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/15 text-3xl text-blue-300">
@@ -71,7 +71,7 @@ export function Cadastro() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#070B14] pt-20 text-white">
+    <main className="min-h-screen overflow-x-hidden bg-[#0B1220] pt-20 text-white">
       <NavbarPreset />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.18),transparent_32%),radial-gradient(circle_at_80%_80%,rgba(14,165,233,0.1),transparent_28%)]" />
       <header className="relative z-10 flex items-center justify-end px-5 py-6 sm:px-10">
@@ -120,7 +120,7 @@ export function Cadastro() {
             nextButtonProps={{
               disabled: !stepIsValid,
               className:
-                "!h-11 !min-w-32 !rounded-xl border border-blue-400/30 bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition-all hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-blue-900/50 focus-visible:ring-2 focus-visible:ring-blue-300/70 active:translate-y-0 disabled:translate-y-0 disabled:border-white/10 disabled:bg-white/10 disabled:text-white/40 disabled:shadow-none",
+                "!h-11 !min-w-32 !rounded-md border border-blue-400/30 bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition-all hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-blue-900/50 focus-visible:ring-2 focus-visible:ring-blue-300/70 active:translate-y-0 disabled:translate-y-0 disabled:border-white/10 disabled:bg-white/10 disabled:text-white/40 disabled:shadow-none",
             }}
             stepCircleContainerClassName="border-0 shadow-none"
             stepContainerClassName="px-6 sm:px-10"

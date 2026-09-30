@@ -1,7 +1,8 @@
-
 import { useEffect, useMemo, useState } from "react"
 import {
   CircleDollarSign,
+  LayoutGrid,
+  List,
   Package,
   PackagePlus,
   Pencil,
@@ -9,7 +10,7 @@ import {
   Trash2,
 } from "lucide-react"
 import NavbarPreset from "@/components/navbar_preset"
-import { AppDock } from "@/components/Dock"
+import JellyRadio from "@/components/jellyradio"
 
 type Product = {
   id: number
@@ -34,16 +35,64 @@ type ProductForm = {
   stock: string
 }
 
+type StockFilter = "Todos" | "Em estoque" | "Estoque baixo" | "Sem estoque"
+type ViewMode = "list" | "grid"
+
 const productsKey = "easysell-products"
 const salesKey = "easysell-product-sales"
 
+const panel = "rounded-md border border-white/10 bg-[#111B2E]"
+
+const stockFilters: StockFilter[] = [
+  "Todos",
+  "Em estoque",
+  "Estoque baixo",
+  "Sem estoque",
+]
+
 const initialProducts: Product[] = [
-  { id: 1, name: "Kit organização", category: "Organização", price: 99.9, stock: 84 },
-  { id: 2, name: "Cadeira Office", category: "Mobiliário", price: 899, stock: 41 },
-  { id: 3, name: "Luminária LED", category: "Iluminação", price: 59.9, stock: 6 },
-  { id: 4, name: "Fone Bluetooth", category: "Eletrônicos", price: 149.9, stock: 0 },
-  { id: 5, name: "Garrafa térmica", category: "Acessórios", price: 79.9, stock: 128 },
-  { id: 6, name: "Teclado mecânico", category: "Eletrônicos", price: 349, stock: 22 },
+  {
+    id: 1,
+    name: "Kit organização",
+    category: "Organização",
+    price: 99.9,
+    stock: 84,
+  },
+  {
+    id: 2,
+    name: "Cadeira Office",
+    category: "Mobiliário",
+    price: 899,
+    stock: 41,
+  },
+  {
+    id: 3,
+    name: "Luminária LED",
+    category: "Iluminação",
+    price: 59.9,
+    stock: 6,
+  },
+  {
+    id: 4,
+    name: "Fone Bluetooth",
+    category: "Eletrônicos",
+    price: 149.9,
+    stock: 0,
+  },
+  {
+    id: 5,
+    name: "Garrafa térmica",
+    category: "Acessórios",
+    price: 79.9,
+    stock: 128,
+  },
+  {
+    id: 6,
+    name: "Teclado mecânico",
+    category: "Eletrônicos",
+    price: 349,
+    stock: 22,
+  },
 ]
 
 const initialSales: Sale[] = [
@@ -75,10 +124,39 @@ function money(value: number) {
   })
 }
 
+function stockInfo(stock: number) {
+  if (stock === 0) {
+    return {
+      label: "Sem estoque",
+      className: "border-red-400/25 bg-red-400/10 text-red-300",
+    }
+  }
+
+  if (stock <= 10) {
+    return {
+      label: `${stock} un.`,
+      className: "border-amber-400/25 bg-amber-400/10 text-amber-300",
+    }
+  }
+
+  return {
+    label: `${stock} un.`,
+    className: "border-[#5DCAA5]/25 bg-[#5DCAA5]/10 text-[#5DCAA5]",
+  }
+}
+
+function matchesStockFilter(stock: number, filter: StockFilter) {
+  if (filter === "Em estoque") return stock > 10
+  if (filter === "Estoque baixo") return stock > 0 && stock <= 10
+  if (filter === "Sem estoque") return stock === 0
+  return true
+}
+
 export default function Produtos() {
   const [products, setProducts] = useState<Product[]>(() =>
     loadStorage(productsKey, initialProducts)
   )
+
   const [sales, setSales] = useState<Sale[]>(() =>
     loadStorage(salesKey, initialSales)
   )
@@ -93,6 +171,8 @@ export default function Produtos() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [search, setSearch] = useState("")
   const [notice, setNotice] = useState("")
+  const [stockFilter, setStockFilter] = useState<StockFilter>("Todos")
+  const [viewMode, setViewMode] = useState<ViewMode>("list")
 
   useEffect(() => {
     window.localStorage.setItem(productsKey, JSON.stringify(products))
@@ -136,7 +216,12 @@ export default function Produtos() {
   }, [sales])
 
   const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0)
-  const totalUnitsSold = sales.reduce((sum, sale) => sum + sale.quantity, 0)
+
+  const totalUnitsSold = sales.reduce(
+    (sum, sale) => sum + sale.quantity,
+    0
+  )
+
   const totalStockValue = products.reduce(
     (sum, product) => sum + product.price * product.stock,
     0
@@ -156,23 +241,28 @@ export default function Produtos() {
           ...product,
           ...stats,
           lastSaleLabel: stats.lastSale
-            ? new Date(`${stats.lastSale}T12:00:00`).toLocaleDateString("pt-BR")
+            ? new Date(
+                `${stats.lastSale}T12:00:00`
+              ).toLocaleDateString("pt-BR")
             : "Sem vendas",
         }
       })
       .sort((a, b) => b.revenue - a.revenue)
   }, [products, statsByProduct])
 
-  const maxRevenue = Math.max(...productReports.map((product) => product.revenue), 1)
-
-  const filteredProducts = products.filter((product) =>
-    `${product.name} ${product.category}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
+  const filteredProducts = products.filter(
+    (product) =>
+      matchesStockFilter(product.stock, stockFilter) &&
+      `${product.name} ${product.category}`
+        .toLowerCase()
+        .includes(search.toLowerCase())
   )
 
   const updateForm = (field: keyof ProductForm, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }))
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }))
   }
 
   const resetForm = () => {
@@ -182,6 +272,7 @@ export default function Produtos() {
       price: "",
       stock: "",
     })
+
     setEditingId(null)
   }
 
@@ -191,7 +282,12 @@ export default function Produtos() {
     const price = Number(form.price.replace(",", "."))
     const stock = Number.parseInt(form.stock, 10)
 
-    if (!form.name.trim() || !form.category.trim() || price < 0 || stock < 0) {
+    if (
+      !form.name.trim() ||
+      !form.category.trim() ||
+      price < 0 ||
+      stock < 0
+    ) {
       setNotice("Preencha todos os campos corretamente.")
       return
     }
@@ -225,6 +321,7 @@ export default function Produtos() {
 
   const startEdit = (product: Product) => {
     setEditingId(product.id)
+
     setForm({
       name: product.name,
       category: product.category,
@@ -259,11 +356,8 @@ export default function Produtos() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#070B14] px-4 pt-20 pb-28 text-white sm:px-8">
+    <main className="relative min-h-screen overflow-hidden bg-[#0B1220] px-4 pt-20 pb-28 text-white sm:px-8">
       <NavbarPreset />
-      <AppDock />
-
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
 
       <style>{`
         @keyframes fade-up {
@@ -289,22 +383,26 @@ export default function Produtos() {
           style={{ animationDelay: "0.05s" }}
         >
           <div>
-            <p className="text-xs font-semibold tracking-[0.24em] text-blue-300 uppercase">
+            <p className="text-xs font-medium tracking-[0.24em] text-blue-300 uppercase">
               Catálogo de produtos
             </p>
-            <h1 className="mt-3 font-heading text-4xl font-bold sm:text-5xl">
+
+            <h1 className="mt-3 text-4xl font-medium tracking-tight text-white sm:text-5xl">
               Crie, edite e acompanhe seus produtos.
             </h1>
+
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/50">
               Gerencie o catálogo, altere preços e consulte o desempenho de
               vendas de cada produto.
             </p>
           </div>
 
-          <span className="inline-flex items-center gap-2 rounded-lg border border-blue-300/25 bg-blue-400/10 px-4 py-3 text-sm text-blue-200">
+          <span className="inline-flex items-center gap-2 rounded-sm border border-blue-300/25 bg-blue-400/10 px-4 py-3 text-sm font-normal text-blue-200">
             <Package size={16} />
             {products.length}{" "}
-            {products.length === 1 ? "produto ativo" : "produtos ativos"}
+            {products.length === 1
+              ? "produto ativo"
+              : "produtos ativos"}
           </span>
         </header>
 
@@ -330,9 +428,12 @@ export default function Produtos() {
               value: money(totalStockValue),
             },
           ].map((item) => (
-            <div key={item.label} className="app-panel rounded-xl p-4">
-              <p className="text-xs text-white/45">{item.label}</p>
-              <strong className="mt-2 block font-heading text-2xl font-semibold">
+            <div key={item.label} className={`${panel} p-4`}>
+              <p className="text-xs font-normal text-white/45">
+                {item.label}
+              </p>
+
+              <strong className="mt-2 block text-2xl font-medium tracking-tight text-white">
                 {item.value}
               </strong>
             </div>
@@ -340,20 +441,23 @@ export default function Produtos() {
         </section>
 
         <section
-          className="animate-fade-up app-panel rounded-xl p-5 sm:p-6"
+          className={`animate-fade-up ${panel} p-5 sm:p-6`}
           style={{ animationDelay: "0.15s" }}
         >
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
+              <p className="text-xs font-medium tracking-[0.16em] text-blue-300 uppercase">
                 {editingId ? "Editar produto" : "Novo produto"}
               </p>
-              <h2 className="mt-2 font-heading text-2xl font-bold">
-                {editingId ? "Atualize as informações" : "Cadastre um produto"}
+
+              <h2 className="mt-2 text-2xl font-medium tracking-tight text-white">
+                {editingId
+                  ? "Atualize as informações"
+                  : "Cadastre um produto"}
               </h2>
             </div>
 
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-blue-400/15 text-blue-300">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-sm bg-blue-400/15 text-blue-300">
               {editingId ? (
                 <Pencil size={19} />
               ) : (
@@ -368,38 +472,46 @@ export default function Produtos() {
           >
             <input
               value={form.name}
-              onChange={(event) => updateForm("name", event.target.value)}
+              onChange={(event) =>
+                updateForm("name", event.target.value)
+              }
               placeholder="Nome do produto"
-              className="h-11 rounded-lg border border-white/15 bg-white/[0.05] px-3 text-sm outline-none transition placeholder:text-white/30 focus:border-blue-400/60 lg:col-span-2"
+              className="h-11 rounded-sm border border-white/10 bg-[#0B1220] px-3 text-sm font-normal outline-none transition placeholder:text-white/30 focus:border-blue-400/60 lg:col-span-2"
             />
 
             <input
               value={form.category}
-              onChange={(event) => updateForm("category", event.target.value)}
+              onChange={(event) =>
+                updateForm("category", event.target.value)
+              }
               placeholder="Categoria"
-              className="h-11 rounded-lg border border-white/15 bg-white/[0.05] px-3 text-sm outline-none transition placeholder:text-white/30 focus:border-blue-400/60"
+              className="h-11 rounded-sm border border-white/10 bg-[#0B1220] px-3 text-sm font-normal outline-none transition placeholder:text-white/30 focus:border-blue-400/60"
             />
 
             <input
               value={form.price}
-              onChange={(event) => updateForm("price", event.target.value)}
+              onChange={(event) =>
+                updateForm("price", event.target.value)
+              }
               placeholder="Valor em R$"
               inputMode="decimal"
-              className="h-11 rounded-lg border border-white/15 bg-white/[0.05] px-3 text-sm outline-none transition placeholder:text-white/30 focus:border-blue-400/60"
+              className="h-11 rounded-sm border border-white/10 bg-[#0B1220] px-3 text-sm font-normal outline-none transition placeholder:text-white/30 focus:border-blue-400/60"
             />
 
             <input
               value={form.stock}
-              onChange={(event) => updateForm("stock", event.target.value)}
+              onChange={(event) =>
+                updateForm("stock", event.target.value)
+              }
               placeholder="Estoque"
               inputMode="numeric"
-              className="h-11 rounded-lg border border-white/15 bg-white/[0.05] px-3 text-sm outline-none transition placeholder:text-white/30 focus:border-blue-400/60"
+              className="h-11 rounded-sm border border-white/10 bg-[#0B1220] px-3 text-sm font-normal outline-none transition placeholder:text-white/30 focus:border-blue-400/60"
             />
 
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-blue-500 text-sm font-semibold text-white transition hover:bg-blue-400"
+                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-sm bg-blue-500 text-sm font-medium text-white transition hover:bg-blue-400"
               >
                 <PackagePlus size={16} />
                 {editingId ? "Salvar" : "Criar"}
@@ -409,7 +521,7 @@ export default function Produtos() {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="h-11 rounded-lg border border-white/15 px-4 text-sm text-white/70 transition hover:bg-white/10"
+                  className="h-11 rounded-sm border border-white/15 px-4 text-sm font-normal text-white/70 transition hover:bg-white/10"
                 >
                   Cancelar
                 </button>
@@ -418,112 +530,29 @@ export default function Produtos() {
           </form>
 
           {notice && (
-            <p className="mt-4 rounded-lg border border-blue-300/20 bg-blue-400/10 px-4 py-3 text-sm text-blue-200">
+            <p className="mt-4 rounded-sm border border-blue-300/20 bg-blue-400/10 px-4 py-3 text-sm font-normal text-blue-200">
               {notice}
             </p>
           )}
         </section>
 
         <section
-          id="relatorio-produtos"
-          className="animate-fade-up scroll-mt-28 py-7"
-          style={{ animationDelay: "0.2s" }}
-        >
-          <div className="mb-4">
-            <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
-              Relatório
-            </p>
-            <h2 className="mt-2 font-heading text-2xl font-bold">
-              Vendas por produto
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {productReports.map((product, index) => {
-              const width = Math.max(
-                5,
-                Math.round((product.revenue / maxRevenue) * 100)
-              )
-
-              return (
-                <article
-                  key={product.id}
-                  className="app-panel animate-fade-up rounded-xl p-5"
-                  style={{ animationDelay: `${0.22 + index * 0.03}s` }}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-semibold text-white">
-                        {product.name}
-                      </p>
-                      <p className="mt-1 text-xs text-white/40">
-                        {product.category}
-                      </p>
-                    </div>
-
-                    <span className="rounded-lg border border-blue-300/20 bg-blue-400/10 px-3 py-1.5 text-xs text-blue-200">
-                      {money(product.price)}
-                    </span>
-                  </div>
-
-                  <div className="mt-5 grid grid-cols-3 gap-3 text-center">
-                    <div>
-                      <p className="text-xs text-white/40">Vendidos</p>
-                      <strong className="mt-1 block text-lg">
-                        {product.quantity}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-white/40">Pedidos</p>
-                      <strong className="mt-1 block text-lg">
-                        {product.salesCount}
-                      </strong>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-white/40">Receita</p>
-                      <strong className="mt-1 block text-lg text-[#5DCAA5]">
-                        {money(product.revenue)}
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div className="mt-5">
-                    <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                      <div
-                        className="h-full rounded-full bg-blue-400"
-                        style={{ width: `${width}%` }}
-                      />
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between text-xs text-white/40">
-                      <span>Última venda: {product.lastSaleLabel}</span>
-                      <span>{width}% do melhor resultado</span>
-                    </div>
-                  </div>
-                </article>
-              )
-            })}
-          </div>
-        </section>
-
-        <section
-          className="animate-fade-up app-panel overflow-hidden rounded-xl"
+          className={`animate-fade-up ${panel} mt-8 overflow-hidden`}
           style={{ animationDelay: "0.25s" }}
         >
           <div className="border-b border-white/10 p-5">
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
               <div>
-                <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
+                <p className="text-xs font-medium tracking-[0.16em] text-blue-300 uppercase">
                   Catálogo
                 </p>
-                <h2 className="mt-2 font-heading text-2xl font-bold">
+
+                <h2 className="mt-2 text-2xl font-medium tracking-tight text-white">
                   Todos os produtos
                 </h2>
               </div>
 
-              <label className="flex h-10 w-full items-center gap-2 rounded-lg border border-white/15 bg-white/[0.05] px-3 text-sm text-white/60 focus-within:border-blue-400/60 sm:w-72">
+              <label className="flex h-10 w-full items-center gap-2 rounded-sm border border-white/10 bg-[#0B1220] px-3 text-sm font-normal text-white/60 focus-within:border-blue-400/60 sm:w-72">
                 <Search size={15} className="shrink-0 text-white/35" />
 
                 <input
@@ -534,108 +563,302 @@ export default function Produtos() {
                 />
               </label>
             </div>
+
+            <div className="mt-5 flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+              <JellyRadio
+                items={stockFilters}
+                defaultValue="Todos"
+                onChange={(value: string) =>
+                  setStockFilter(value as StockFilter)
+                }
+                chipColor="#0B1220"
+                activeColor="#3B82F6"
+                textColor="#A8B3C7"
+                activeTextColor="#FFFFFF"
+                size="md"
+                gap={8}
+                radius={18}
+                swell={0.2}
+                barge={6}
+                shrink={0.05}
+                jelly={1}
+                bounce={0.25}
+                stagger={22}
+                stiffness={580}
+              />
+
+              <JellyRadio
+                items={[
+                  {
+                    value: "list",
+                    label: "Lista",
+                    icon: <List size={14} />,
+                  },
+                  {
+                    value: "grid",
+                    label: "Cards",
+                    icon: <LayoutGrid size={14} />,
+                  },
+                ]}
+                defaultValue="list"
+                onChange={(value: string) =>
+                  setViewMode(value as ViewMode)
+                }
+                chipColor="#0B1220"
+                activeColor="#3B82F6"
+                textColor="#A8B3C7"
+                activeTextColor="#FFFFFF"
+                size="md"
+                gap={8}
+                radius={18}
+                disabled={false}
+              />
+            </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-white/10 text-xs tracking-[0.12em] text-white/40 uppercase">
-                  <th className="px-5 py-4 font-medium">Produto</th>
-                  <th className="px-5 py-4 font-medium">Categoria</th>
-                  <th className="px-5 py-4 font-medium">Valor</th>
-                  <th className="px-5 py-4 font-medium">Estoque</th>
-                  <th className="px-5 py-4 font-medium">Vendidos</th>
-                  <th className="px-5 py-4 font-medium">Receita</th>
-                  <th className="px-5 py-4 text-right font-medium">Ações</th>
-                </tr>
-              </thead>
+          {viewMode === "list" ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-white/10 text-xs font-normal tracking-[0.12em] text-white/40 uppercase">
+                    <th className="px-5 py-4 font-normal">Produto</th>
+                    <th className="px-5 py-4 font-normal">Categoria</th>
+                    <th className="px-5 py-4 font-normal">Valor</th>
+                    <th className="px-5 py-4 font-normal">Estoque</th>
+                    <th className="px-5 py-4 font-normal">Vendidos</th>
+                    <th className="px-5 py-4 font-normal">Receita</th>
+                    <th className="px-5 py-4 text-right font-normal">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
 
-              <tbody>
-                {filteredProducts.map((product) => {
-                  const stats = statsByProduct.get(product.id) ?? {
-                    quantity: 0,
-                    revenue: 0,
-                    salesCount: 0,
-                    lastSale: null,
-                  }
+                <tbody>
+                  {filteredProducts.map((product) => {
+                    const stats = statsByProduct.get(product.id) ?? {
+                      quantity: 0,
+                      revenue: 0,
+                      salesCount: 0,
+                      lastSale: null,
+                    }
 
-                  return (
-                    <tr
-                      key={product.id}
-                      className="border-b border-white/5 text-sm transition last:border-0 hover:bg-white/[0.03]"
-                    >
-                      <td className="px-5 py-4 font-medium text-white">
-                        {product.name}
-                      </td>
+                    const stock = stockInfo(product.stock)
 
-                      <td className="px-5 py-4 text-white/60">
-                        {product.category}
-                      </td>
+                    return (
+                      <tr
+                        key={product.id}
+                        className="border-b border-white/5 text-sm transition last:border-0 hover:bg-white/[0.03]"
+                      >
+                        <td className="px-5 py-4 font-normal text-white">
+                          {product.name}
+                        </td>
 
-                      <td className="px-5 py-4 text-white">
+                        <td className="px-5 py-4 font-normal text-white/60">
+                          {product.category}
+                        </td>
+
+                        <td className="px-5 py-4 font-normal text-white">
+                          {money(product.price)}
+                        </td>
+
+                        <td className="px-5 py-4">
+                          <span
+                            className={`rounded-sm border px-2.5 py-1 text-xs font-normal ${stock.className}`}
+                          >
+                            {stock.label}
+                          </span>
+                        </td>
+
+                        <td className="px-5 py-4 font-normal text-white/60">
+                          {stats.quantity}
+                        </td>
+
+                        <td className="px-5 py-4 font-normal text-[#5DCAA5]">
+                          {money(stats.revenue)}
+                        </td>
+
+                        <td className="px-5 py-4">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => startEdit(product)}
+                              className="inline-flex items-center gap-2 rounded-sm border border-blue-300/20 px-3 py-2 text-xs font-normal text-blue-200 transition hover:bg-blue-400/10"
+                            >
+                              <Pencil size={14} />
+                              Editar
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => removeProduct(product)}
+                              className="inline-flex items-center gap-2 rounded-sm border border-red-400/20 px-3 py-2 text-xs font-normal text-red-300 transition hover:bg-red-400/10"
+                            >
+                              <Trash2 size={14} />
+                              Remover
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredProducts.map((product) => {
+                const stats = statsByProduct.get(product.id) ?? {
+                  quantity: 0,
+                  revenue: 0,
+                  salesCount: 0,
+                  lastSale: null,
+                }
+
+                const stock = stockInfo(product.stock)
+
+                return (
+                  <article
+                    key={product.id}
+                    className="rounded-[7px] border border-white/10 bg-[#0B1220] p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium text-white">
+                          {product.name}
+                        </p>
+
+                        <p className="mt-1 text-xs font-normal text-white/40">
+                          {product.category}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`shrink-0 rounded-sm border px-2.5 py-1 text-xs font-normal ${stock.className}`}
+                      >
+                        {stock.label}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 flex items-end justify-between">
+                      <strong className="text-xl font-medium tracking-tight text-white">
                         {money(product.price)}
-                      </td>
+                      </strong>
 
-                      <td className="px-5 py-4">
-                        <span
-                          className={`rounded-lg border px-2.5 py-1 text-xs ${
-                            product.stock === 0
-                              ? "border-red-400/25 bg-red-400/10 text-red-300"
-                              : product.stock <= 10
-                                ? "border-amber-400/25 bg-amber-400/10 text-amber-300"
-                                : "border-[#5DCAA5]/25 bg-[#5DCAA5]/10 text-[#5DCAA5]"
-                          }`}
-                        >
-                          {product.stock === 0
-                            ? "Sem estoque"
-                            : `${product.stock} un.`}
-                        </span>
-                      </td>
+                      <span className="text-xs font-normal text-white/40">
+                        {stats.quantity} vendidos
+                      </span>
+                    </div>
 
-                      <td className="px-5 py-4 text-white/60">
-                        {stats.quantity}
-                      </td>
+                    <div className="mt-4 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(product)}
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-blue-300/20 px-3 py-2 text-xs font-normal text-blue-200 transition hover:bg-blue-400/10"
+                      >
+                        <Pencil size={14} />
+                        Editar
+                      </button>
 
-                      <td className="px-5 py-4 text-[#5DCAA5]">
-                        {money(stats.revenue)}
-                      </td>
+                      <button
+                        type="button"
+                        onClick={() => removeProduct(product)}
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-400/20 px-3 py-2 text-xs font-normal text-red-300 transition hover:bg-red-400/10"
+                      >
+                        <Trash2 size={14} />
+                        Remover
+                      </button>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          )}
 
-                      <td className="px-5 py-4">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => startEdit(product)}
-                            className="inline-flex items-center gap-2 rounded-lg border border-blue-300/20 px-3 py-2 text-xs text-blue-200 transition hover:bg-blue-400/10"
-                          >
-                            <Pencil size={14} />
-                            Editar
-                          </button>
+          {filteredProducts.length === 0 && (
+            <div className="p-10 text-center text-sm font-normal text-white/45">
+              Nenhum produto encontrado.
+            </div>
+          )}
+        </section>
 
-                          <button
-                            type="button"
-                            onClick={() => removeProduct(product)}
-                            className="inline-flex items-center gap-2 rounded-lg border border-red-400/20 px-3 py-2 text-xs text-red-300 transition hover:bg-red-400/10"
-                          >
-                            <Trash2 size={14} />
-                            Remover
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+        <section
+          id="relatorio-produtos"
+          className="animate-fade-up scroll-mt-28 py-7"
+          style={{ animationDelay: "0.2s" }}
+        >
+          <div className="mb-4">
+            <p className="text-xs font-medium tracking-[0.16em] text-blue-300 uppercase">
+              Relatório
+            </p>
 
-            {filteredProducts.length === 0 && (
-              <div className="p-10 text-center text-sm text-white/45">
-                Nenhum produto encontrado.
-              </div>
-            )}
+            <h2 className="mt-2 text-2xl font-medium tracking-tight text-white">
+              Vendas por produto
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {productReports.map((product) => {
+              const stock = stockInfo(product.stock)
+
+              return (
+                <article
+                  key={product.id}
+                  className="rounded-[7px] border border-white/10 bg-[#090B14] p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-white">
+                        {product.name}
+                      </p>
+
+                      <p className="mt-1 text-xs font-normal text-white/40">
+                        {product.category}
+                      </p>
+                    </div>
+
+                    <span
+                      className={`shrink-0 rounded-sm border px-2.5 py-1 text-xs font-normal ${stock.className}`}
+                    >
+                      {stock.label}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex items-end justify-between">
+                    <strong className="text-xl font-medium tracking-tight text-white">
+                      {money(product.price)}
+                    </strong>
+
+                    <span className="text-xs font-normal text-white/40">
+                      {product.quantity} vendidos
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => startEdit(product)}
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-blue-300/20 px-3 py-2 text-xs font-normal text-blue-200 transition hover:bg-blue-400/10"
+                    >
+                      <Pencil size={14} />
+                      Editar
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => removeProduct(product)}
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-400/20 px-3 py-2 text-xs font-normal text-red-300 transition hover:bg-red-400/10"
+                    >
+                      <Trash2 size={14} />
+                      Remover
+                    </button>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         </section>
 
-        <div className="mt-6 flex items-center gap-2 text-xs text-white/35">
+        <div className="mt-6 flex items-center gap-2 text-xs font-normal text-white/35">
           <CircleDollarSign size={14} />
           Os valores usam o formato brasileiro e ficam salvos neste navegador.
         </div>

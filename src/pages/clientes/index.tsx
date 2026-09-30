@@ -108,7 +108,7 @@ export function Clientes() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#070B14] px-4 pt-20 pb-16 text-white sm:px-8">
+    <main className="relative min-h-screen overflow-hidden bg-[#0B1220] px-4 pt-20 pb-16 text-white sm:px-8">
       <NavbarPreset />
       <AppDock />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
@@ -171,7 +171,7 @@ export function Clientes() {
             <div
               key={kpi.label}
               onMouseMove={handleSpotlight}
-              className="spotlight-card animate-fade-up app-panel relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/40"
+              className="spotlight-card animate-fade-up app-panel relative overflow-hidden rounded-md p-4 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/40"
               style={{ animationDelay: `${0.1 + index * 0.06}s` }}
             >
               <div className="relative z-10">
@@ -187,7 +187,7 @@ export function Clientes() {
         {/* Tabela de clientes */}
         <section
           onMouseMove={handleSpotlight}
-          className="spotlight-card animate-fade-up app-panel relative overflow-visible rounded-xl p-5 sm:p-6"
+          className="spotlight-card animate-fade-up app-panel relative overflow-visible rounded-md p-5 sm:p-6"
           style={{ animationDelay: "0.2s" }}
         >
           <div className="relative z-10">
@@ -259,7 +259,7 @@ export function Clientes() {
                           </button>
 
                           {openMenuId === customer.id && (
-                            <div className="animate-menu-expand absolute top-full right-0 z-20 mt-2 w-72 rounded-xl border border-white/10 bg-[#0B1020] p-3 text-left shadow-2xl shadow-black/40">
+                            <div className="animate-menu-expand absolute top-full right-0 z-20 mt-2 w-72 rounded-md border border-white/10 bg-[#0B1020] p-3 text-left shadow-2xl shadow-black/40">
                               <div className="flex items-center justify-between">
                                 <p className="text-xs font-semibold tracking-[0.12em] text-white/40 uppercase">
                                   Mensagem rápida

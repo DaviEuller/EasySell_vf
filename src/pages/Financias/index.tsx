@@ -41,7 +41,7 @@ function money(value: number) {
 
 export function Financias() {
 	return (
-		<main className="min-h-screen overflow-hidden bg-[#070B14] px-4 pt-24 pb-32 text-white sm:px-8">
+		<main className="min-h-screen overflow-hidden bg-[#0B1220] px-4 pt-24 pb-32 text-white sm:px-8">
 			<NavbarPreset />
 			<AppDock />
 			<div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
@@ -69,7 +69,7 @@ export function Financias() {
 						["Impostos", "R$ 2.480", "12,4%"],
 						["Folha salarial", "R$ 5.920", "24,8%"],
 					].map(([label, value, change]) => (
-						<div key={label} className="app-panel rounded-xl p-4">
+						<div key={label} className="app-panel rounded-md p-4">
 							<p className="text-xs text-white/45">{label}</p>
 							<strong className="mt-2 block font-heading text-2xl font-semibold">{value}</strong>
 							<span className="mt-2 block text-xs font-medium text-[#5DCAA5]">{change} no período</span>
@@ -78,7 +78,7 @@ export function Financias() {
 				</section>
 
 				<section className="grid gap-3 lg:grid-cols-[1.35fr_0.65fr]">
-					<div className="app-panel rounded-xl p-5 sm:p-6">
+					<div className="app-panel rounded-md p-5 sm:p-6">
 						<div className="flex items-start justify-between gap-4">
 							<div>
 								<p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">Vendas</p>
@@ -97,7 +97,7 @@ export function Financias() {
 						</AreaChart>
 					</div>
 
-					<div className="app-panel rounded-xl p-5 sm:p-6">
+					<div className="app-panel rounded-md p-5 sm:p-6">
 						<p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">Distribuição</p>
 						<h2 className="mt-2 font-heading text-2xl font-bold">Destino da receita</h2>
 						<RingChart
@@ -122,7 +122,7 @@ export function Financias() {
 				</section>
 
 				<section className="mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
-					<div className="app-panel rounded-xl p-5 sm:p-6">
+					<div className="app-panel rounded-md p-5 sm:p-6">
 						<div className="flex items-center justify-between">
 							<div>
 								<p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">Produtos</p>
@@ -145,7 +145,7 @@ export function Financias() {
 						</div>
 					</div>
 
-					<div className="app-panel rounded-xl p-5 sm:p-6">
+					<div className="app-panel rounded-md p-5 sm:p-6">
 						<p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">Descontos</p>
 						<h2 className="mt-2 font-heading text-2xl font-bold">Saídas planejadas</h2>
 						<div className="mt-6 grid gap-3">
@@ -166,7 +166,7 @@ export function Financias() {
 				</section>
 
 				<section className="mt-3 grid gap-3 sm:grid-cols-2">
-					<div className="app-panel rounded-xl p-5 sm:p-6">
+					<div className="app-panel rounded-md p-5 sm:p-6">
 						<div className="flex items-start gap-3">
 							<CircleAlert className="mt-0.5 text-amber-300" size={21} />
 							<div>
@@ -177,7 +177,7 @@ export function Financias() {
 						<p className="mt-4 text-sm leading-6 text-white/55">4 produtos estão sem estoque e podem bloquear novas vendas.</p>
 						<a href="/dashboard#estoque" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-200 hover:text-white">Ver estoque <ArrowUpRight size={15} /></a>
 					</div>
-					<div className="app-panel rounded-xl p-5 sm:p-6">
+					<div className="app-panel rounded-md p-5 sm:p-6">
 						<div className="flex items-start gap-3">
 							<WalletCards className="mt-0.5 text-[#5DCAA5]" size={21} />
 							<div>
@@ -193,7 +193,7 @@ export function Financias() {
 					</div>
 				</section>
 
-				<section className="app-panel mt-3 rounded-xl p-5 sm:p-6">
+				<section className="app-panel mt-3 rounded-md p-5 sm:p-6">
 					<div className="flex items-center gap-3">
 						<WalletCards className="text-blue-300" size={22} />
 						<div>

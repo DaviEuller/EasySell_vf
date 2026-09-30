@@ -74,7 +74,7 @@ export function Estoque() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#070B14] px-4 pt-20 pb-16 text-white sm:px-8">
+    <main className="relative min-h-screen overflow-hidden bg-[#0B1220] px-4 pt-20 pb-16 text-white sm:px-8">
       <NavbarPreset />
       <AppDock />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
@@ -139,7 +139,7 @@ export function Estoque() {
             <div
               key={kpi.label}
               onMouseMove={handleSpotlight}
-              className="spotlight-card animate-fade-up app-panel relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/40"
+              className="spotlight-card animate-fade-up app-panel relative overflow-hidden rounded-md p-4 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/40"
               style={{ animationDelay: `${0.1 + index * 0.06}s` }}
             >
               <div className="relative z-10">
@@ -160,7 +160,7 @@ export function Estoque() {
             className="animate-fade-up mb-3 grid gap-3 sm:grid-cols-2"
             style={{ animationDelay: "0.2s" }}
           >
-            <div className="app-panel rounded-xl border-amber-400/15 p-4 sm:p-5">
+            <div className="app-panel rounded-md border-amber-400/15 p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <TriangleAlert className="text-amber-300" size={18} />
                 <p className="text-xs font-semibold tracking-[0.16em] text-amber-300 uppercase">
@@ -178,7 +178,7 @@ export function Estoque() {
                 ))}
               </div>
             </div>
-            <div className="app-panel rounded-xl border-red-400/15 p-4 sm:p-5">
+            <div className="app-panel rounded-md border-red-400/15 p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <CircleAlert className="text-red-300" size={18} />
                 <p className="text-xs font-semibold tracking-[0.16em] text-red-300 uppercase">
@@ -202,7 +202,7 @@ export function Estoque() {
         {/* Tabela de produtos */}
         <section
           onMouseMove={handleSpotlight}
-          className="spotlight-card animate-fade-up app-panel relative overflow-hidden rounded-xl p-5 sm:p-6"
+          className="spotlight-card animate-fade-up app-panel relative overflow-hidden rounded-md p-5 sm:p-6"
           style={{ animationDelay: "0.25s" }}
         >
           <div className="relative z-10">
@@ -288,7 +288,7 @@ export function Estoque() {
         {/* Reposição */}
         <section
           onMouseMove={handleSpotlight}
-          className="spotlight-card animate-fade-up app-panel relative mt-3 overflow-hidden rounded-xl p-5 sm:p-6"
+          className="spotlight-card animate-fade-up app-panel relative mt-3 overflow-hidden rounded-md p-5 sm:p-6"
           style={{ animationDelay: "0.3s" }}
         >
           <div className="relative z-10">

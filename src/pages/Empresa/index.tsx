@@ -399,7 +399,7 @@ export function Empresa() {
   ]
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#070B14] px-4 pt-20 pb-16 text-white sm:px-8">
+    <main className="min-h-screen overflow-hidden bg-[#0B1220] px-4 pt-20 pb-16 text-white sm:px-8">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
       <div className="relative z-10 mx-auto max-w-6xl">
         {mode !== "tasks" ? (
@@ -419,7 +419,7 @@ export function Empresa() {
             </FadeIn>
             <FadeIn
               delay={100}
-              className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-8"
+              className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-8"
             >
               {mode === "choose" && (
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -651,7 +651,7 @@ export function Empresa() {
             {employeeTab === "tasks" && (
               <section className="mt-8 space-y-4">
                 {/* Minha jornada */}
-                <FadeIn className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
+                <FadeIn className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
@@ -691,7 +691,7 @@ export function Empresa() {
                 {/* Tabela de tarefas */}
                 <FadeIn
                   delay={80}
-                  className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25"
+                  className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25"
                 >
                   {/* Cabeçalho — apenas telas grandes */}
                   <div className="hidden grid-cols-[1.1fr_1.6fr_1.1fr_1fr] gap-4 border-b border-white/10 px-6 py-4 text-xs font-semibold tracking-[0.1em] text-white/40 uppercase lg:grid">
@@ -800,7 +800,7 @@ export function Empresa() {
                                     className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${
                                       task.status === "concluido"
                                         ? "border border-white/15 text-white/50 hover:bg-white/5"
-                                        : "bg-[#5DCAA5] text-[#070B14] hover:bg-[#4fb996]"
+                                        : "bg-[#5DCAA5] text-[#0B1220] hover:bg-[#4fb996]"
                                     }`}
                                   >
                                     <Check size={13} />
@@ -821,7 +821,7 @@ export function Empresa() {
             {employeeTab === "time" && (
               <section className="mt-4 space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <FadeIn className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
+                  <FadeIn className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
                     <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
                       Registro de ponto
                     </p>
@@ -849,7 +849,7 @@ export function Empresa() {
                   </FadeIn>
                   <FadeIn
                     delay={100}
-                    className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6"
+                    className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6"
                   >
                     <p className="text-xs font-semibold tracking-[0.16em] text-[#5DCAA5] uppercase">
                       Descanso e almoço
@@ -891,7 +891,7 @@ export function Empresa() {
               </section>
             )}
             {employeeTab === "calendar" && (
-              <FadeIn className="relative mt-4 overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
+              <FadeIn className="relative mt-4 overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
                 <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
                   Presença
                 </p>
@@ -935,7 +935,7 @@ export function Empresa() {
                         setDayJustification(event.target.value)
                       }
                       placeholder="Justificativa da folga (opcional para falta)"
-                      className="mt-3 min-h-20 w-full rounded-md border border-white/10 bg-[#070B14] p-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-400/60"
+                      className="mt-3 min-h-20 w-full rounded-md border border-white/10 bg-[#0B1220] p-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-400/60"
                     />
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
@@ -970,7 +970,7 @@ export function Empresa() {
                     setNotice("Relatório enviado para a gestão.")
                     setReport("")
                   }}
-                  className="relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6"
+                  className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6"
                 >
                   <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
                     Relatório
@@ -997,7 +997,7 @@ export function Empresa() {
                     setNotice("Problema enviado para a gestão.")
                     setProblem("")
                   }}
-                  className="relative overflow-hidden rounded-xl border border-red-400/20 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-red-300/25 sm:p-6"
+                  className="relative overflow-hidden rounded-md border border-red-400/20 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-red-300/25 sm:p-6"
                 >
                   <p className="text-xs font-semibold tracking-[0.16em] text-red-300 uppercase">
                     Suporte interno

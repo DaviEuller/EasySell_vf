@@ -4,7 +4,7 @@ import NavbarPreset from "@/components/navbar_preset"
 import { AppDock } from "@/components/Dock"
 
 const inputClassName =
-	"mt-2 w-full rounded-xl border border-white/12 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-blue-400 focus:bg-white/[0.09]"
+	"mt-2 w-full rounded-md border border-white/12 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-blue-400 focus:bg-white/[0.09]"
 
 export function Login() {
 	const [email, setEmail] = useState("")
@@ -26,10 +26,10 @@ export function Login() {
 
 	if (loggedIn) {
 		return (
-			<main className="flex min-h-screen items-center justify-center bg-[#070B14] px-4 pt-20 text-white">
+			<main className="flex min-h-screen items-center justify-center bg-[#0B1220] px-4 pt-20 text-white">
 				<NavbarPreset />
 				<AppDock />
-				<section className="app-panel w-full max-w-lg rounded-3xl p-8 text-center sm:p-12">
+				<section className="app-panel w-full max-w-lg rounded-md p-8 text-center sm:p-12">
 					<div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/15 text-3xl text-blue-300">
 						✓
 					</div>
@@ -42,7 +42,7 @@ export function Login() {
 					</p>
 					<a
 						href="/"
-						className="mt-8 inline-flex rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
+						className="mt-8 inline-flex rounded-md bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
 					>
 						Ir para a home
 					</a>
@@ -52,7 +52,7 @@ export function Login() {
 	}
 
 	return (
-		<main className="min-h-screen overflow-hidden bg-[#070B14] pt-20 text-white">
+		<main className="min-h-screen overflow-hidden bg-[#0B1220] pt-20 text-white">
 			<NavbarPreset />
 			<AppDock />
 			<div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.18),transparent_32%),radial-gradient(circle_at_80%_80%,rgba(14,165,233,0.1),transparent_28%)]" />
@@ -75,7 +75,7 @@ export function Login() {
 					</p>
 				</section>
 
-				<section className="app-panel rounded-3xl px-6 py-8 sm:px-10 sm:py-10">
+				<section className="app-panel rounded-md px-6 py-8 sm:px-10 sm:py-10">
 					<p className="text-xs font-semibold tracking-[0.2em] text-blue-300 uppercase">
 						Acessar conta
 					</p>
@@ -111,7 +111,7 @@ export function Login() {
 						<button
 							type="submit"
 							onClick={() => (window.location.href = '/resumo')}
-							className="mt-7 flex h-11 w-full items-center justify-center rounded-xl border border-blue-400/30 bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition-all hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-blue-900/50 focus-visible:ring-2 focus-visible:ring-blue-300/70 active:translate-y-0"
+							className="mt-7 flex h-11 w-full items-center justify-center rounded-md border border-blue-400/30 bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition-all hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-blue-900/50 focus-visible:ring-2 focus-visible:ring-blue-300/70 active:translate-y-0"
 						>
 							Entrar
 						</button>

@@ -245,7 +245,7 @@ export function Equipe() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#070B14] px-4 pt-20 pb-16 text-white sm:px-8">
+    <main className="min-h-screen overflow-hidden bg-[#0B1220] px-4 pt-20 pb-16 text-white sm:px-8">
       <NavbarPreset />
       <AppDock />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
@@ -265,13 +265,13 @@ export function Equipe() {
           <div className="flex gap-2">
             <button
               onClick={() => exportEmployees(employees)}
-              className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-semibold text-white/75 transition hover:bg-white/10 hover:text-white"
+              className="inline-flex h-11 items-center gap-2 rounded-md border border-white/15 bg-white/[0.04] px-4 text-sm font-semibold text-white/75 transition hover:bg-white/10 hover:text-white"
             >
               <Download size={16} /> Exportar
             </button>
             <button
               onClick={addEmployee}
-              className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-500"
+              className="inline-flex h-11 items-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-500"
             >
               <Plus size={17} /> Adicionar
             </button>
@@ -307,7 +307,7 @@ export function Equipe() {
         </section>
 
         <section className="mt-8 grid gap-4 lg:grid-cols-[1fr_0.8fr]">
-          <div className="app-panel rounded-xl p-5 sm:p-6">
+          <div className="app-panel rounded-md p-5 sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
@@ -339,7 +339,7 @@ export function Equipe() {
               ))}
             </div>
           </div>
-          <div className="app-panel rounded-xl p-5 sm:p-6">
+          <div className="app-panel rounded-md p-5 sm:p-6">
             <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
               EasyCrew
             </p>
@@ -359,7 +359,7 @@ export function Equipe() {
           </div>
         </section>
 
-        <section className="app-panel mt-8 rounded-xl">
+        <section className="app-panel mt-8 rounded-md">
           <div className="flex flex-col gap-4 border-b border-white/10 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div>
               <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
@@ -474,7 +474,7 @@ export function Equipe() {
                                             ? "Função"
                                             : "CPF"}
                                       <input
-                                        className="mt-1 h-9 w-full rounded-md border border-white/10 bg-[#070B14] px-2 text-sm text-white outline-none focus:border-blue-400/60"
+                                        className="mt-1 h-9 w-full rounded-md border border-white/10 bg-[#0B1220] px-2 text-sm text-white outline-none focus:border-blue-400/60"
                                         type={
                                           field === "age" ? "number" : "text"
                                         }
@@ -532,7 +532,7 @@ export function Equipe() {
                                               },
                                             }))
                                           }
-                                          className="mt-1 h-9 w-full rounded-md border border-white/10 bg-[#070B14] px-2 text-sm text-white outline-none focus:border-blue-400/60"
+                                          className="mt-1 h-9 w-full rounded-md border border-white/10 bg-[#0B1220] px-2 text-sm text-white outline-none focus:border-blue-400/60"
                                         />
                                       </label>
                                     )
@@ -591,7 +591,7 @@ export function Equipe() {
                                       addTask(employee.id)
                                   }}
                                   placeholder="Adicionar tarefa"
-                                  className="h-9 min-w-0 flex-1 rounded-md border border-white/10 bg-[#070B14] px-3 text-xs text-white outline-none placeholder:text-white/35 focus:border-blue-400/60"
+                                  className="h-9 min-w-0 flex-1 rounded-md border border-white/10 bg-[#0B1220] px-3 text-xs text-white outline-none placeholder:text-white/35 focus:border-blue-400/60"
                                 />
                                 <button
                                   onClick={() => addTask(employee.id)}
