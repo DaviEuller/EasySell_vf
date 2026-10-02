@@ -12,7 +12,7 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode
   initialStep?: number
   onStepChange?: (step: number) => void
-  onFinalStepCompleted?: () => void
+  onFinalStepCompleted?: () => void | boolean | Promise<void | boolean>
   stepCircleContainerClassName?: string
   stepContainerClassName?: string
   contentClassName?: string
@@ -21,6 +21,7 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   nextButtonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>
   backButtonText?: string
   nextButtonText?: string
+  completeButtonText?: string
   disableStepIndicators?: boolean
   renderStepIndicator?: (props: {
     step: number
@@ -42,6 +43,7 @@ export default function Stepper({
   nextButtonProps = {},
   backButtonText = "Back",
   nextButtonText = "Continue",
+  completeButtonText = "Complete",
   disableStepIndicators = false,
   renderStepIndicator,
   ...rest
@@ -55,11 +57,7 @@ export default function Stepper({
 
   const updateStep = (newStep: number) => {
     setCurrentStep(newStep)
-    if (newStep > totalSteps) {
-      onFinalStepCompleted()
-    } else {
-      onStepChange(newStep)
-    }
+    onStepChange(newStep)
   }
 
   const handleBack = () => {
@@ -76,9 +74,12 @@ export default function Stepper({
     }
   }
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     setDirection(1)
-    updateStep(totalSteps + 1)
+    const completed = await onFinalStepCompleted()
+    if (completed !== false) {
+      setCurrentStep(totalSteps + 1)
+    }
   }
 
   return (
@@ -157,7 +158,7 @@ export default function Stepper({
                 className="flex items-center justify-center rounded-full bg-green-500 px-3.5 py-1.5 font-medium tracking-tight text-white transition duration-350 hover:bg-green-600 active:bg-green-700"
                 {...nextButtonProps}
               >
-                {isLastStep ? "Complete" : nextButtonText}
+                {isLastStep ? completeButtonText : nextButtonText}
               </button>
             </div>
           </div>

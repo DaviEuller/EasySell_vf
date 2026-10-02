@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 import Stepper, { Step } from "@/components/Stepper"
 import NavbarPreset from "@/components/navbar_preset"
@@ -8,8 +8,6 @@ type FormData = {
   email: string
   password: string
   password1: string
-  business: string
-  segment: string
 }
 
 const initialForm: FormData = {
@@ -17,29 +15,92 @@ const initialForm: FormData = {
   email: "",
   password: "",
   password1: "",  
-  business: "",
-  segment: "",
 }
 const inputClassName =
   "mt-2 w-full rounded-md border border-border bg-foreground/[0.06] px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-foreground/30 focus:border-blue-400 focus:bg-foreground/[0.09]"
+
+async function getRegistrationError(response: Response) {
+  const responseText = await response.text()
+  const fallback = `Nao foi possivel criar sua conta (erro ${response.status}).`
+
+  if (!responseText) return fallback
+
+  try {
+    const body: unknown = JSON.parse(responseText)
+    if (typeof body === "object" && body !== null) {
+      const errorBody = body as Record<string, unknown>
+      for (const key of ["message", "detail", "error"]) {
+        if (typeof errorBody[key] === "string") return errorBody[key]
+      }
+    }
+  } catch {
+    return responseText
+  }
+
+  return fallback
+}
 
 export function Cadastro() {
   const [form, setForm] = useState<FormData>(initialForm)
   const [currentStep, setCurrentStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submissionError, setSubmissionError] = useState("")
+  const submittingRef = useRef(false)
   const updateField = (field: keyof FormData, value: string) =>
     setForm((current) => ({ ...current, [field]: value }))
+  const submitRegistration = async () => {
+    if (submittingRef.current) return false
+
+    const apiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "")
+    if (!apiUrl) {
+      setSubmissionError(
+        "A API nao esta configurada. Defina VITE_API_URL para continuar.",
+      )
+      return false
+    }
+
+    submittingRef.current = true
+    setIsSubmitting(true)
+    setSubmissionError("")
+
+    try {
+      const response = await fetch(`${apiUrl}/user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          password: form.password,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(await getRegistrationError(response))
+      }
+
+      setSubmitted(true)
+      return true
+    } catch (error) {
+      setSubmissionError(
+        error instanceof Error
+          ? error.message
+          : "Ocorreu um erro ao criar sua conta. Tente novamente.",
+      )
+      return false
+    } finally {
+      submittingRef.current = false
+      setIsSubmitting(false)
+    }
+  }
   const passwordMismatch =
     form.password1.length > 0 && form.password !== form.password1
   const stepIsValid =
-    currentStep === 1
-      ? form.name.trim().length > 2 &&
-        form.email.includes("@") &&
-        form.password.length >= 6 &&
-        form.password === form.password1
-      : currentStep === 2
-        ? form.business.trim().length > 1 && form.segment.length > 0
-        : true
+    currentStep !== 1 ||
+    (form.name.trim().length > 2 &&
+      form.email.includes("@") &&
+      form.password.length >= 6 &&
+      form.password === form.password1)
 
   if (submitted) {
     return (
@@ -112,12 +173,15 @@ export function Cadastro() {
           <Stepper
             initialStep={1}
             onStepChange={setCurrentStep}
-            onFinalStepCompleted={() => setSubmitted(true)}
+            onFinalStepCompleted={submitRegistration}
             backButtonText="Voltar"
             nextButtonText="Continuar"
+            completeButtonText={
+              isSubmitting ? "Enviando..." : "Criar minha conta"
+            }
             disableStepIndicators
             nextButtonProps={{
-              disabled: !stepIsValid,
+              disabled: !stepIsValid || isSubmitting,
               className:
                 "!h-11 !min-w-32 !rounded-md border border-blue-400/30 bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition-all hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-blue-900/50 focus-visible:ring-2 focus-visible:ring-blue-300/70 active:translate-y-0 disabled:translate-y-0 disabled:border-border disabled:bg-foreground/10 disabled:text-foreground/40 disabled:shadow-none",
             }}
@@ -192,55 +256,7 @@ export function Cadastro() {
             </Step>
             <Step>
               <p className="text-xs font-semibold tracking-[0.2em] text-blue-600 dark:text-blue-300 uppercase">
-                02 / seu negocio
-              </p>
-              <h2 className="mt-3 font-heading text-3xl font-bold">
-                Conte sobre sua empresa.
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-foreground/50">
-                Assim a EasySell pode preparar uma experiencia mais relevante.
-              </p>
-              <label className="mt-7 block text-sm font-medium">
-                Nome da empresa
-                <input
-                  className={inputClassName}
-                  value={form.business}
-                  onChange={(event) =>
-                    updateField("business", event.target.value)
-                  }
-                  placeholder="Ex.: Loja da Maria"
-                />
-              </label>
-              <label className="mt-4 block text-sm font-medium">
-                Segmento
-                <select
-                  className={inputClassName}
-                  value={form.segment}
-                  onChange={(event) =>
-                    updateField("segment", event.target.value)
-                  }
-                >
-                  <option value="" className="bg-card">
-                    Selecione uma opcao
-                  </option>
-                  <option value="varejo" className="bg-card">
-                    Varejo
-                  </option>
-                  <option value="servicos" className="bg-card">
-                    Servicos
-                  </option>
-                  <option value="alimentacao" className="bg-card">
-                    Alimentacao
-                  </option>
-                  <option value="outro" className="bg-card">
-                    Outro
-                  </option>
-                </select>
-              </label>
-            </Step>
-            <Step>
-              <p className="text-xs font-semibold tracking-[0.2em] text-blue-600 dark:text-blue-300 uppercase">
-                03 / tudo certo
+                02 / tudo certo
               </p>
               <h2 className="mt-3 font-heading text-3xl font-bold">
                 Pronto para comecar?
@@ -257,14 +273,18 @@ export function Cadastro() {
                   <span className="text-foreground/45">E-mail</span>
                   <strong>{form.email}</strong>
                 </div>
-                <div className="flex justify-between gap-4">
-                  <span className="text-foreground/45">Empresa</span>
-                  <strong>{form.business}</strong>
-                </div>
               </div>
               <p className="mt-6 text-xs leading-5 text-foreground/40">
                 Ao continuar, voce concorda com os termos de uso da EasySell.
               </p>
+              {submissionError && (
+                <p
+                  role="alert"
+                  className="mt-4 rounded-md border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300"
+                >
+                  {submissionError}
+                </p>
+              )}
             </Step>
           </Stepper>
         </div>

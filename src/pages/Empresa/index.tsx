@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import {
   CalendarDays,
   Building2,
@@ -43,6 +44,42 @@ type CompanyData = {
   situacao_cadastral?: string
   cnpj: string
   responsibleCpf?: string
+}
+
+// Formato real retornado por publica.cnpj.ws
+type CnpjWsResponse = {
+  razao_social?: string
+  estabelecimento?: {
+    cnpj?: string
+    nome_fantasia?: string | null
+    situacao_cadastral?: string
+  }
+}
+
+async function getApiError(response: Response) {
+  const responseText = await response.text()
+  if (!responseText) {
+    return `Não foi possível criar a empresa (erro ${response.status}).`
+  }
+
+  try {
+    const body: unknown = JSON.parse(responseText)
+    if (typeof body === "object" && body !== null) {
+      const errorBody = body as Record<string, unknown>
+      if (typeof errorBody.message === "string") return errorBody.message
+      if (
+        Array.isArray(errorBody.message) &&
+        errorBody.message.every((item) => typeof item === "string")
+      ) {
+        return errorBody.message.join(" ")
+      }
+      if (typeof errorBody.error === "string") return errorBody.error
+    }
+  } catch {
+    return responseText
+  }
+
+  return `Não foi possível criar a empresa (erro ${response.status}).`
 }
 
 const inputClass =
@@ -192,6 +229,15 @@ function isValidCpf(value: string) {
   return digit === Number(digits[10])
 }
 
+// Formata 14 dígitos como 00.000.000/0000-00 (se não tiver 14, devolve como veio)
+function formatCnpj(value: string) {
+  const digits = value.replace(/\D/g, "")
+  return digits.replace(
+    /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+    "$1.$2.$3/$4-$5"
+  )
+}
+
 const statusStyles: Record<
   TaskStatus,
   { label: string; className: string }
@@ -212,9 +258,14 @@ const statusStyles: Record<
 }
 
 export function Empresa() {
-  const [mode, setMode] = useState<Mode>("choose")
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [mode, setMode] = useState<Mode>(() =>
+    searchParams.get("mode") === "create" ? "create" : "choose"
+  )
   const [cnpj, setCnpj] = useState("")
   const [cpf, setCpf] = useState("")
+  const [categoria, setCategoria] = useState("")
   const [company, setCompany] = useState("")
   const [foundCompany, setFoundCompany] = useState<CompanyData | null>(null)
   const [createdCompany, setCreatedCompany] = useState<CompanyData | null>(
@@ -223,6 +274,7 @@ export function Empresa() {
   const [createdCpf, setCreatedCpf] = useState("")
   const [notice, setNotice] = useState("")
   const [loadingCompany, setLoadingCompany] = useState(false)
+  const [creatingCompany, setCreatingCompany] = useState(false)
   const [tasks, setTasks] = useState(initialTasks)
   const [expandedTaskId, setExpandedTaskId] = useState<number | null>(
     initialTasks[0]?.id ?? null
@@ -279,8 +331,16 @@ export function Empresa() {
     try {
       const response = await fetch(`https://publica.cnpj.ws/cnpj/${digits}`)
       if (!response.ok) throw new Error("CNPJ não encontrado")
-      const data = (await response.json()) as CompanyData
-      setFoundCompany(data)
+      const data = (await response.json()) as CnpjWsResponse
+
+      if (!data.razao_social) throw new Error("Resposta inválida")
+
+      setFoundCompany({
+        razao_social: data.razao_social,
+        nome_fantasia: data.estabelecimento?.nome_fantasia ?? undefined,
+        situacao_cadastral: data.estabelecimento?.situacao_cadastral,
+        cnpj: data.estabelecimento?.cnpj ?? digits,
+      })
       setNotice("Empresa encontrada. Confirme o CPF do responsável.")
     } catch {
       setNotice(
@@ -290,7 +350,7 @@ export function Empresa() {
       setLoadingCompany(false)
     }
   }
-  const createCompany = () => {
+  const createCompany = async () => {
     if (!foundCompany || !isValidCpf(cpf))
       return setNotice("Empresa inválida: o CPF informado não é válido.")
     if (
@@ -300,10 +360,57 @@ export function Empresa() {
       return setNotice(
         "Empresa inválida: o CPF não corresponde ao responsável cadastrado."
       )
-    setCreatedCompany(foundCompany)
-    setCreatedCpf(cpf)
+    if (!categoria) return setNotice("Selecione a categoria da empresa.")
+
+    const responsavelId = localStorage.getItem("userId")
+    if (!responsavelId || !/^[a-f\d]{24}$/i.test(responsavelId)) {
+      return setNotice(
+        "Não foi possível identificar o responsável. Entre novamente na sua conta e tente de novo."
+      )
+    }
+
+    const apiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "")
+    if (!apiUrl) {
+      return setNotice(
+        "A API não está configurada. Defina VITE_API_URL para continuar."
+      )
+    }
+
+    // Fallback: se por algum motivo o cnpj não veio, usa o que o usuário digitou
+    const cnpjDigits = (foundCompany.cnpj ?? cnpj).replace(/\D/g, "")
+
+    setCreatingCompany(true)
     setNotice("")
-    setMode("created")
+    try {
+      const response = await fetch(`${apiUrl}/company`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: foundCompany.razao_social,
+          categoria,
+          cnpj: cnpjDigits,
+          cpfResponsavel: cpf.replace(/\D/g, ""),
+          responsavelId,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(await getApiError(response))
+      }
+
+      sessionStorage.setItem("easysell:has-company", "true")
+      setCreatedCompany(foundCompany)
+      setCreatedCpf(cpf)
+      setMode("created")
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Ocorreu um erro ao criar a empresa. Tente novamente."
+      )
+    } finally {
+      setCreatingCompany(false)
+    }
   }
   const requestJoin = () => {
     if (company.trim().length < 2)
@@ -512,16 +619,44 @@ export function Empresa() {
                           value={cpf}
                           onChange={(event) => setCpf(event.target.value)}
                           placeholder="000.000.000-00"
+                          inputMode="numeric"
                         />
                       </label>
+                      <label className="mt-4 block text-sm">
+                        Categoria da empresa
+                        <select
+                          className={inputClass}
+                          value={categoria}
+                          onChange={(event) => setCategoria(event.target.value)}
+                        >
+                          <option value="" className="bg-card">
+                            Selecione uma categoria
+                          </option>
+                          <option value="Varejo" className="bg-card">
+                            Varejo
+                          </option>
+                          <option value="Serviços" className="bg-card">
+                            Serviços
+                          </option>
+                          <option value="Alimentação" className="bg-card">
+                            Alimentação
+                          </option>
+                          <option value="Outro" className="bg-card">
+                            Outro
+                          </option>
+                        </select>
+                      </label>
                       <button
-                        onClick={createCompany}
+                        type="button"
+                        onClick={() => void createCompany()}
+                        disabled={creatingCompany}
                         className={cx(
                           btnAnim,
-                          "mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500"
+                          "mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                         )}
                       >
-                        <Check size={16} /> Confirmar e criar
+                        <Check size={16} />{" "}
+                        {creatingCompany ? "Criando empresa..." : "Confirmar e criar"}
                       </button>
                     </FadeIn>
                   )}
@@ -581,7 +716,7 @@ export function Empresa() {
                     <div className="flex items-center justify-between">
                       <span className="text-foreground/40">CNPJ</span>
                       <span className="font-semibold">
-                        {createdCompany.cnpj}
+                        {formatCnpj(createdCompany.cnpj)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -597,7 +732,7 @@ export function Empresa() {
                   </div>
                   <button
                     onClick={() => {
-                      window.location.href = "/dashboard"
+                      navigate("/resumo")
                     }}
                     className={cx(
                       btnAnim,

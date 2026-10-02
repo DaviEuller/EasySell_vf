@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { NavLink, Outlet, useLocation } from "react-router-dom"
+import { Navigate, NavLink, Outlet, useLocation } from "react-router-dom"
 import {
   Archive,
   Building2,
@@ -83,8 +83,21 @@ export function AppLayout() {
 
   const visible = isDesktop ? !hidden : mobileOpen
   const offset = isDesktop && !hidden ? SIDEBAR_WIDTH : 0
+  const hasCompany = sessionStorage.getItem("easysell:has-company") === "true"
+  const visibleSections = hasCompany
+    ? sections
+    : [
+        {
+          title: "Organização",
+          items: [{ to: "/empresa?mode=create", label: "Empresa", icon: Building2 }],
+        },
+      ]
   const pageTitle =
-    allItems.find((item) => pathname.startsWith(item.to))?.label ?? "EasySell"
+    allItems.find(
+      (item) =>
+        pathname.startsWith(item.to) &&
+        (hasCompany || item.to === "/empresa")
+    )?.label ?? "EasySell"
 
   const toggleSidebar = () => {
     if (isDesktop) {
@@ -120,6 +133,10 @@ export function AppLayout() {
     return () => window.removeEventListener("keydown", onKeyDown)
   })
 
+  if (!hasCompany && pathname !== "/empresa") {
+    return <Navigate to="/empresa?mode=create" replace />
+  }
+
   return (
     <div
       className="min-h-screen bg-background text-foreground"
@@ -144,7 +161,10 @@ export function AppLayout() {
         style={{ width: SIDEBAR_WIDTH }}
       >
         <div className="flex h-16 items-center justify-between border-b border-border px-5">
-          <NavLink to="/resumo" className="text-lg font-bold tracking-tight">
+          <NavLink
+            to={hasCompany ? "/resumo" : "/empresa?mode=create"}
+            className="text-lg font-bold tracking-tight"
+          >
             EasySell<span className="text-blue-500">.</span>
           </NavLink>
 
@@ -160,7 +180,7 @@ export function AppLayout() {
         </div>
 
         <nav className="no-scrollbar flex-1 space-y-6 overflow-y-auto px-3 py-5">
-          {sections.map((section) => (
+          {visibleSections.map((section) => (
             <div key={section.title}>
               <p className="px-3 text-[0.68rem] font-medium tracking-[0.16em] text-foreground/40 uppercase">
                 {section.title}
