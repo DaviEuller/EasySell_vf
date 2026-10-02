@@ -10,8 +10,6 @@ import {
   Check,
   Clock3,
 } from "lucide-react"
-import NavbarPreset from "@/components/navbar_preset"
-import { AppDock } from "@/components/Dock"
 
 type Employee = {
   id: number
@@ -245,27 +243,24 @@ export function Equipe() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#0B1220] px-4 pt-20 pb-16 text-white sm:px-8">
-      <NavbarPreset />
-      <AppDock />
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
+    <main className="min-h-screen overflow-hidden bg-background px-4 pt-20 pb-16 text-foreground sm:px-8">
       <div className="relative z-10 mx-auto max-w-7xl">
         <section className="flex flex-col justify-between gap-6 py-10 sm:flex-row sm:items-end">
           <div>
-            <p className="text-xs font-semibold tracking-[0.24em] text-blue-300 uppercase">
+            <p className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
               Gestão interna
             </p>
             <h1 className="mt-4 font-heading text-4xl font-bold sm:text-5xl">
               Sua equipe.
             </h1>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/50">
+            <p className="mt-4 max-w-xl text-sm leading-6 text-foreground/50">
               Acompanhe pessoas, atividades e produtividade em um só lugar.
             </p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => exportEmployees(employees)}
-              className="inline-flex h-11 items-center gap-2 rounded-md border border-white/15 bg-white/[0.04] px-4 text-sm font-semibold text-white/75 transition hover:bg-white/10 hover:text-white"
+              className="inline-flex h-11 items-center gap-2 rounded-md border border-foreground/15 bg-foreground/[0.04] px-4 text-sm font-semibold text-foreground/75 transition hover:bg-foreground/10 hover:text-foreground"
             >
               <Download size={16} /> Exportar
             </button>
@@ -278,9 +273,9 @@ export function Equipe() {
           </div>
         </section>
 
-        <section className="grid gap-3 border-y border-white/10 py-6 sm:grid-cols-3">
+        <section className="grid gap-3 border-y border-border py-6 sm:grid-cols-3">
           <div>
-            <p className="text-xs text-white/45">Funcionários ativos</p>
+            <p className="text-xs text-foreground/45">Funcionários ativos</p>
             <strong className="mt-2 block font-heading text-3xl">
               {
                 employees.filter((employee) => employee.status === "Ativo")
@@ -289,7 +284,7 @@ export function Equipe() {
             </strong>
           </div>
           <div>
-            <p className="text-xs text-white/45">Produtividade média</p>
+            <p className="text-xs text-foreground/45">Produtividade média</p>
             <strong className="mt-2 block font-heading text-3xl">
               {Math.round(
                 employees.reduce(
@@ -301,7 +296,7 @@ export function Equipe() {
             </strong>
           </div>
           <div>
-            <p className="text-xs text-white/45">Atividades esta semana</p>
+            <p className="text-xs text-foreground/45">Atividades esta semana</p>
             <strong className="mt-2 block font-heading text-3xl">128</strong>
           </div>
         </section>
@@ -310,23 +305,23 @@ export function Equipe() {
           <div className="app-panel rounded-md p-5 sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
+                <p className="text-xs font-semibold tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
                   Performance
                 </p>
                 <h2 className="mt-2 font-heading text-2xl font-bold">
                   Produtividade da equipe
                 </h2>
               </div>
-              <UserRoundCheck className="text-blue-300" size={21} />
+              <UserRoundCheck className="text-blue-600 dark:text-blue-300" size={21} />
             </div>
             <div className="mt-8 space-y-5">
               {chartData.map((item) => (
                 <div key={item.label}>
                   <div className="mb-2 flex justify-between text-sm">
-                    <span className="text-white/60">{item.label}</span>
+                    <span className="text-foreground/60">{item.label}</span>
                     <strong>{item.value}%</strong>
                   </div>
-                  <div className="h-2 rounded-full bg-white/10">
+                  <div className="h-2 rounded-full bg-foreground/10">
                     <div
                       className="h-2 rounded-full transition-all"
                       style={{
@@ -340,19 +335,19 @@ export function Equipe() {
             </div>
           </div>
           <div className="app-panel rounded-md p-5 sm:p-6">
-            <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
+            <p className="text-xs font-semibold tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
               EasyCrew
             </p>
             <h2 className="mt-2 font-heading text-2xl font-bold">
               Encontre seu próximo talento.
             </h2>
-            <p className="mt-4 text-sm leading-6 text-white/50">
+            <p className="mt-4 text-sm leading-6 text-foreground/50">
               Busque candidatos qualificados e conecte novas pessoas à sua
               equipe.
             </p>
             <button
               onClick={() => setActiveTab("easycrew")}
-              className="mt-6 inline-flex items-center gap-2 rounded-lg border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200 transition hover:bg-blue-500/20"
+              className="mt-6 inline-flex items-center gap-2 rounded-md border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-700 dark:text-blue-200 transition hover:bg-blue-500/20"
             >
               <UserPlus size={16} /> Encontrar no EasyCrew
             </button>
@@ -360,9 +355,9 @@ export function Equipe() {
         </section>
 
         <section className="app-panel mt-8 rounded-md">
-          <div className="flex flex-col gap-4 border-b border-white/10 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div>
-              <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
+              <p className="text-xs font-semibold tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
                 Pessoas
               </p>
               <h2 className="mt-2 font-heading text-2xl font-bold">
@@ -371,7 +366,7 @@ export function Equipe() {
             </div>
             <div className="relative">
               <Search
-                className="absolute top-1/2 left-3 -translate-y-1/2 text-white/35"
+                className="absolute top-1/2 left-3 -translate-y-1/2 text-foreground/35"
                 size={16}
               />
               <input
@@ -379,49 +374,49 @@ export function Equipe() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar funcionário"
-                className="h-10 w-full rounded-lg border border-white/10 bg-white/[0.04] pr-3 pl-9 text-sm outline-none placeholder:text-white/35 focus:border-blue-400/50 sm:w-64"
+                className="h-10 w-full rounded-md border border-border bg-foreground/[0.04] pr-3 pl-9 text-sm outline-none placeholder:text-foreground/35 focus:border-blue-400/50 sm:w-64"
               />
             </div>
           </div>
-          <div className="flex gap-5 overflow-x-auto border-b border-white/10 px-5 sm:px-6">
+          <div className="flex gap-5 overflow-x-auto border-b border-border px-5 sm:px-6">
             <button
               onClick={() => setActiveTab("todos")}
-              className={`border-b-2 py-4 text-sm font-semibold ${activeTab === "todos" ? "border-blue-400 text-white" : "border-transparent text-white/45"}`}
+              className={`border-b-2 py-4 text-sm font-semibold ${activeTab === "todos" ? "border-blue-400 text-foreground" : "border-transparent text-foreground/45"}`}
             >
               Todos
             </button>
             <button
               onClick={addEmployee}
-              className="border-b-2 border-transparent py-4 text-sm font-semibold text-white/45 hover:text-white"
+              className="border-b-2 border-transparent py-4 text-sm font-semibold text-foreground/45 hover:text-foreground"
             >
               <Plus size={15} className="mr-1 inline" /> Adicionar
             </button>
             <button
               onClick={() => setActiveTab("easycrew")}
-              className={`border-b-2 py-4 text-sm font-semibold ${activeTab === "easycrew" ? "border-blue-400 text-white" : "border-transparent text-white/45"}`}
+              className={`border-b-2 py-4 text-sm font-semibold ${activeTab === "easycrew" ? "border-blue-400 text-foreground" : "border-transparent text-foreground/45"}`}
             >
               Encontrar no EasyCrew
             </button>
           </div>
           {notice && (
-            <p className="border-b border-blue-400/15 bg-blue-400/5 px-5 py-3 text-sm text-blue-200 sm:px-6">
+            <p className="border-b border-blue-400/15 bg-blue-400/5 px-5 py-3 text-sm text-blue-700 dark:text-blue-200 sm:px-6">
               {notice}
             </p>
           )}
           {activeTab === "easycrew" ? (
             <div className="p-8 text-center">
-              <UserPlus className="mx-auto text-blue-300" size={28} />
+              <UserPlus className="mx-auto text-blue-600 dark:text-blue-300" size={28} />
               <h3 className="mt-4 font-heading text-xl font-bold">
                 Busca no EasyCrew
               </h3>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-white/50">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-foreground/50">
                 A integração está pronta para receber candidatos do EasyCrew. Em
                 breve você poderá convidar uma pessoa diretamente para sua
                 equipe.
               </p>
               <button
                 onClick={() => setActiveTab("todos")}
-                className="mt-5 text-sm font-semibold text-blue-300 hover:text-white"
+                className="mt-5 text-sm font-semibold text-blue-600 dark:text-blue-300 hover:text-foreground"
               >
                 Voltar para funcionários
               </button>
@@ -429,7 +424,7 @@ export function Equipe() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left text-sm">
-                <thead className="text-xs tracking-[0.12em] text-white/40 uppercase">
+                <thead className="text-xs tracking-[0.12em] text-foreground/40 uppercase">
                   <tr>
                     <th className="px-5 py-4 font-medium sm:px-6">Nome</th>
                     <th className="px-5 py-4 font-medium">Idade</th>
@@ -441,7 +436,7 @@ export function Equipe() {
                 </thead>
                 <tbody>
                   {filteredEmployees.map((employee) => (
-                    <tr className="border-t border-white/10" key={employee.id}>
+                    <tr className="border-t border-border" key={employee.id}>
                       <td className="px-5 py-4 sm:px-6">
                         <button
                           onClick={() =>
@@ -449,21 +444,21 @@ export function Equipe() {
                               expandedId === employee.id ? null : employee.id
                             )
                           }
-                          className="font-semibold text-white hover:text-blue-300"
+                          className="font-semibold text-foreground hover:text-blue-600 dark:hover:text-blue-300"
                         >
                           {employee.name}
                         </button>
                         {expandedId === employee.id && (
                           <div className="mt-3 max-w-xl space-y-4">
-                            <p className="text-xs leading-5 text-white/45">
+                            <p className="text-xs leading-5 text-foreground/45">
                               {employee.activity}
                             </p>
                             {editingId === employee.id && (
-                              <div className="grid gap-2 rounded-lg border border-blue-400/20 bg-blue-400/5 p-3 sm:grid-cols-2">
+                              <div className="grid gap-2 rounded-md border border-blue-400/20 bg-blue-400/5 p-3 sm:grid-cols-2">
                                 {(["name", "age", "role", "cpf"] as const).map(
                                   (field) => (
                                     <label
-                                      className="text-xs text-white/50"
+                                      className="text-xs text-foreground/50"
                                       key={field}
                                     >
                                       {field === "name"
@@ -474,7 +469,7 @@ export function Equipe() {
                                             ? "Função"
                                             : "CPF"}
                                       <input
-                                        className="mt-1 h-9 w-full rounded-md border border-white/10 bg-[#0B1220] px-2 text-sm text-white outline-none focus:border-blue-400/60"
+                                        className="mt-1 h-9 w-full rounded-md border border-border bg-inset px-2 text-sm text-foreground outline-none focus:border-blue-400/60"
                                         type={
                                           field === "age" ? "number" : "text"
                                         }
@@ -497,10 +492,10 @@ export function Equipe() {
                                 </button>
                               </div>
                             )}
-                            <div className="rounded-lg border border-blue-400/20 bg-blue-500/5 p-3">
+                            <div className="rounded-md border border-blue-400/20 bg-blue-500/5 p-3">
                               <div className="flex items-center gap-2">
-                                <Clock3 className="text-blue-300" size={16} />
-                                <p className="text-xs font-semibold tracking-[0.12em] text-blue-300 uppercase">
+                                <Clock3 className="text-blue-600 dark:text-blue-300" size={16} />
+                                <p className="text-xs font-semibold tracking-[0.12em] text-blue-600 dark:text-blue-300 uppercase">
                                   Horário deste funcionário
                                 </p>
                               </div>
@@ -512,7 +507,7 @@ export function Equipe() {
                                       employee.schedule
                                     return (
                                       <label
-                                        className="text-xs text-white/50"
+                                        className="text-xs text-foreground/50"
                                         key={field}
                                       >
                                         {field === "start"
@@ -532,7 +527,7 @@ export function Equipe() {
                                               },
                                             }))
                                           }
-                                          className="mt-1 h-9 w-full rounded-md border border-white/10 bg-[#0B1220] px-2 text-sm text-white outline-none focus:border-blue-400/60"
+                                          className="mt-1 h-9 w-full rounded-md border border-border bg-inset px-2 text-sm text-foreground outline-none focus:border-blue-400/60"
                                         />
                                       </label>
                                     )
@@ -540,12 +535,12 @@ export function Equipe() {
                                 )}
                               </div>
                               <div className="mt-4">
-                                <p className="text-xs text-white/50">Dias de trabalho</p>
+                                <p className="text-xs text-foreground/50">Dias de trabalho</p>
                                 <div className="mt-2 flex flex-wrap gap-2">
                                   {weekDays.map((day) => {
                                     const schedule = scheduleDrafts[employee.id] || employee.schedule
                                     const selected = schedule.workDays.includes(day)
-                                    return <button type="button" key={day} onClick={() => setScheduleDrafts((current) => ({ ...current, [employee.id]: { ...schedule, workDays: selected ? schedule.workDays.filter((item) => item !== day) : [...schedule.workDays, day] } }))} className={`rounded-md border px-3 py-1.5 text-xs font-semibold transition ${selected ? "border-blue-400/50 bg-blue-500/20 text-blue-200" : "border-white/10 text-white/35 hover:text-white"}`}>{day}</button>
+                                    return <button type="button" key={day} onClick={() => setScheduleDrafts((current) => ({ ...current, [employee.id]: { ...schedule, workDays: selected ? schedule.workDays.filter((item) => item !== day) : [...schedule.workDays, day] } }))} className={`rounded-md border px-3 py-1.5 text-xs font-semibold transition ${selected ? "border-blue-400/50 bg-blue-500/20 text-blue-700 dark:text-blue-200" : "border-border text-foreground/35 hover:text-foreground"}`}>{day}</button>
                                   })}
                                 </div>
                               </div>
@@ -556,20 +551,20 @@ export function Equipe() {
                                 <Check size={14} /> Salvar horário
                               </button>
                             </div>
-                            <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-                              <p className="text-xs font-semibold tracking-[0.12em] text-blue-300 uppercase">
+                            <div className="rounded-md border border-border bg-foreground/[0.02] p-3">
+                              <p className="text-xs font-semibold tracking-[0.12em] text-blue-600 dark:text-blue-300 uppercase">
                                 Tarefas
                               </p>
                               <div className="mt-3 space-y-2">
                                 {employee.tasks.map((task, index) => (
                                   <button
-                                    className={`flex w-full items-center gap-2 text-left text-xs ${task.startsWith("✓") ? "text-[#5DCAA5] line-through" : "text-white/65"}`}
+                                    className={`flex w-full items-center gap-2 text-left text-xs ${task.startsWith("✓") ? "text-emerald-600 dark:text-[#5DCAA5] line-through" : "text-foreground/65"}`}
                                     key={`${task}-${index}`}
                                     onClick={() =>
                                       toggleTask(employee.id, index)
                                     }
                                   >
-                                    <span className="flex size-4 shrink-0 items-center justify-center rounded border border-white/20">
+                                    <span className="flex size-4 shrink-0 items-center justify-center rounded border border-foreground/20">
                                       <Check size={11} />
                                     </span>
                                     {task}
@@ -591,11 +586,11 @@ export function Equipe() {
                                       addTask(employee.id)
                                   }}
                                   placeholder="Adicionar tarefa"
-                                  className="h-9 min-w-0 flex-1 rounded-md border border-white/10 bg-[#0B1220] px-3 text-xs text-white outline-none placeholder:text-white/35 focus:border-blue-400/60"
+                                  className="h-9 min-w-0 flex-1 rounded-md border border-border bg-inset px-3 text-xs text-foreground outline-none placeholder:text-foreground/35 focus:border-blue-400/60"
                                 />
                                 <button
                                   onClick={() => addTask(employee.id)}
-                                  className="inline-flex h-9 items-center gap-1 rounded-md border border-blue-400/30 px-3 text-xs font-semibold text-blue-200 hover:bg-blue-500/10"
+                                  className="inline-flex h-9 items-center gap-1 rounded-md border border-blue-400/30 px-3 text-xs font-semibold text-blue-700 dark:text-blue-200 hover:bg-blue-500/10"
                                 >
                                   <Plus size={14} /> Adicionar
                                 </button>
@@ -604,21 +599,21 @@ export function Equipe() {
                           </div>
                         )}
                       </td>
-                      <td className="px-5 py-4 text-white/60">
+                      <td className="px-5 py-4 text-foreground/60">
                         {employee.age || "-"}
                       </td>
-                      <td className="px-5 py-4 text-white/60">
+                      <td className="px-5 py-4 text-foreground/60">
                         {employee.role}
                       </td>
-                      <td className="px-5 py-4 font-mono text-xs text-white/50">
+                      <td className="px-5 py-4 font-mono text-xs text-foreground/50">
                         {maskCpf(employee.cpf)}
                       </td>
                       <td className="px-5 py-4">
                         <span
                           className={
                             employee.status === "Ativo"
-                              ? "text-[#5DCAA5]"
-                              : "text-red-300"
+                              ? "text-emerald-600 dark:text-[#5DCAA5]"
+                              : "text-red-600 dark:text-red-300"
                           }
                         >
                           {employee.status}
@@ -629,7 +624,7 @@ export function Equipe() {
                           <button
                             aria-label={`Editar ${employee.name}`}
                             onClick={() => startEditing(employee)}
-                            className="text-white/45 hover:text-white"
+                            className="text-foreground/45 hover:text-foreground"
                           >
                             <Pencil size={17} />
                           </button>
@@ -637,7 +632,7 @@ export function Equipe() {
                             <button
                               aria-label={`Demitir ${employee.name}`}
                               onClick={() => dismissEmployee(employee.id)}
-                              className="text-white/45 hover:text-red-300"
+                              className="text-foreground/45 hover:text-red-600 dark:hover:text-red-300"
                             >
                               <UserRoundMinus size={17} />
                             </button>

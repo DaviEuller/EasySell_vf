@@ -5,8 +5,6 @@ import {
   Send,
   X,
 } from "lucide-react"
-import NavbarPreset from "@/components/navbar_preset"
-import { AppDock } from "@/components/Dock"
 
 type Customer = {
   id: number
@@ -83,12 +81,6 @@ export function Clientes() {
   const totalRevenue = customers.reduce((sum, c) => sum + c.value, 0)
   const totalItems = customers.reduce((sum, c) => sum + c.quantity, 0)
 
-  const handleSpotlight = (event: React.MouseEvent<HTMLElement>) => {
-    const el = event.currentTarget
-    const rect = el.getBoundingClientRect()
-    el.style.setProperty("--mouse-x", `${event.clientX - rect.left}px`)
-    el.style.setProperty("--mouse-y", `${event.clientY - rect.top}px`)
-  }
 
   const toggleMenu = (id: number) => {
     setCustomMessage("")
@@ -108,10 +100,7 @@ export function Clientes() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0B1220] px-4 pt-20 pb-16 text-white sm:px-8">
-      <NavbarPreset />
-      <AppDock />
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
+    <main className="relative min-h-screen overflow-hidden bg-background px-4 pt-20 pb-16 text-foreground sm:px-8">
 
       <style>{`
         @keyframes fade-up {
@@ -119,22 +108,6 @@ export function Clientes() {
           to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-up { animation: fade-up 0.6s ease-out both; }
-        .spotlight-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          background: radial-gradient(
-            420px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-            rgba(96,165,250,0.10),
-            transparent 65%
-          );
-          opacity: 0;
-          transition: opacity 0.45s ease;
-          pointer-events: none;
-          z-index: 0;
-        }
-        .spotlight-card:hover::before { opacity: 1; }
         @keyframes menu-expand {
           from { opacity: 0; transform: translateY(-6px) scale(0.97); }
           to { opacity: 1; transform: translateY(0) scale(1); }
@@ -145,17 +118,17 @@ export function Clientes() {
       <div className="relative z-10 mx-auto max-w-6xl">
         {/* Header */}
         <header
-          className="animate-fade-up flex flex-col justify-between gap-5 border-b border-white/10 py-8 sm:flex-row sm:items-end"
+          className="animate-fade-up flex flex-col justify-between gap-5 border-b border-border py-8 sm:flex-row sm:items-end"
           style={{ animationDelay: "0.05s" }}
         >
           <div>
-            <p className="text-xs font-semibold tracking-[0.24em] text-blue-300 uppercase">
+            <p className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
               Relacionamento
             </p>
             <h1 className="mt-3 font-heading text-4xl font-bold sm:text-5xl">
               Seus clientes, em um só lugar.
             </h1>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-white/50">
+            <p className="mt-3 max-w-xl text-sm leading-6 text-foreground/50">
               Veja o que cada cliente comprou e fale com ele direto pelo WhatsApp.
             </p>
           </div>
@@ -170,13 +143,12 @@ export function Clientes() {
           ].map((kpi, index) => (
             <div
               key={kpi.label}
-              onMouseMove={handleSpotlight}
-              className="spotlight-card animate-fade-up app-panel relative overflow-hidden rounded-md p-4 transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/40"
+              className="animate-fade-up rounded-md border border-border bg-card p-4"
               style={{ animationDelay: `${0.1 + index * 0.06}s` }}
             >
-              <div className="relative z-10">
-                <p className="text-xs text-white/45">{kpi.label}</p>
-                <strong className="mt-2 block font-heading text-2xl font-semibold text-white">
+              <div>
+                <p className="text-xs text-foreground/45">{kpi.label}</p>
+                <strong className="mt-2 block text-xl font-medium tracking-tight text-foreground">
                   {kpi.value}
                 </strong>
               </div>
@@ -186,27 +158,26 @@ export function Clientes() {
 
         {/* Tabela de clientes */}
         <section
-          onMouseMove={handleSpotlight}
-          className="spotlight-card animate-fade-up app-panel relative overflow-visible rounded-md p-5 sm:p-6"
+          className="animate-fade-up rounded-md border border-border bg-card p-5 sm:p-6"
           style={{ animationDelay: "0.2s" }}
         >
           <div className="relative z-10">
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
               <div>
-                <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
+                <p className="text-xs font-semibold tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
                   Base de clientes
                 </p>
                 <h2 className="mt-2 font-heading text-2xl font-bold">
                   Todos os clientes
                 </h2>
               </div>
-              <label className="flex h-10 w-full items-center gap-2 rounded-lg border border-white/15 bg-white/[0.05] px-3 text-sm text-white/60 focus-within:border-blue-400/60 sm:w-64">
-                <Search size={15} className="shrink-0 text-white/35" />
+              <label className="flex h-10 w-full items-center gap-2 rounded-md border border-foreground/15 bg-foreground/[0.05] px-3 text-sm text-foreground/60 focus-within:border-blue-400/60 sm:w-64">
+                <Search size={15} className="shrink-0 text-foreground/35" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Buscar cliente..."
-                  className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/30"
+                  className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-foreground/30"
                 />
               </label>
             </div>
@@ -214,7 +185,7 @@ export function Clientes() {
             <div className="mt-6 overflow-x-auto">
               <table className="w-full min-w-[720px] text-sm">
                 <thead>
-                  <tr className="border-b border-white/10 text-left text-xs tracking-wide text-white/35 uppercase">
+                  <tr className="border-b border-border text-left text-xs tracking-wide text-foreground/35 uppercase">
                     <th className="pb-3 font-medium">Comprador</th>
                     <th className="pb-3 font-medium">Produto</th>
                     <th className="pb-3 font-medium">Valor pago</th>
@@ -227,28 +198,28 @@ export function Clientes() {
                   {filtered.map((customer) => (
                     <tr
                       key={customer.id}
-                      className="border-b border-white/5 transition last:border-0 hover:bg-white/[0.03]"
+                      className="border-b border-border transition last:border-0 hover:bg-foreground/[0.03]"
                     >
-                      <td className="py-3.5 pr-4 font-medium text-white">
+                      <td className="py-3.5 pr-4 font-medium text-foreground">
                         {customer.name}
                       </td>
-                      <td className="py-3.5 pr-4 text-white/70">
+                      <td className="py-3.5 pr-4 text-foreground/70">
                         {customer.product}
                       </td>
                       <td className="py-3.5 pr-4 font-medium">
                         {money(customer.value)}
                       </td>
-                      <td className="py-3.5 pr-4 text-white/70">
+                      <td className="py-3.5 pr-4 text-foreground/70">
                         {customer.quantity} un.
                       </td>
-                      <td className="py-3.5 pr-4 text-white/50">
+                      <td className="py-3.5 pr-4 text-foreground/50">
                         {formatPhone(customer.phone)}
                       </td>
                       <td className="py-3.5 text-right">
                         <div className="relative inline-block text-left">
                           <button
                             onClick={() => toggleMenu(customer.id)}
-                            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                            className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                               openMenuId === customer.id
                                 ? "bg-[#25D366]/20 text-[#25D366]"
                                 : "bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20"
@@ -259,14 +230,14 @@ export function Clientes() {
                           </button>
 
                           {openMenuId === customer.id && (
-                            <div className="animate-menu-expand absolute top-full right-0 z-20 mt-2 w-72 rounded-md border border-white/10 bg-[#0B1020] p-3 text-left shadow-2xl shadow-black/40">
+                            <div className="animate-menu-expand absolute top-full right-0 z-20 mt-2 w-72 rounded-md border border-border bg-card p-3 text-left shadow-2xl shadow-black/40">
                               <div className="flex items-center justify-between">
-                                <p className="text-xs font-semibold tracking-[0.12em] text-white/40 uppercase">
+                                <p className="text-xs font-semibold tracking-[0.12em] text-foreground/40 uppercase">
                                   Mensagem rápida
                                 </p>
                                 <button
                                   onClick={() => setOpenMenuId(null)}
-                                  className="text-white/30 transition hover:text-white/70"
+                                  className="text-foreground/30 transition hover:text-foreground/70"
                                 >
                                   <X size={14} />
                                 </button>
@@ -277,15 +248,15 @@ export function Clientes() {
                                   <button
                                     key={option.text}
                                     onClick={() => sendQuick(customer, option.text)}
-                                    className="rounded-lg px-2.5 py-2 text-left text-sm text-white/75 transition hover:bg-white/[0.06] hover:text-white"
+                                    className="rounded-md px-2.5 py-2 text-left text-sm text-foreground/75 transition hover:bg-foreground/[0.06] hover:text-foreground"
                                   >
                                     {option.label}
                                   </button>
                                 ))}
                               </div>
 
-                              <div className="mt-3 border-t border-white/10 pt-3">
-                                <p className="mb-1.5 text-xs font-semibold tracking-[0.12em] text-white/40 uppercase">
+                              <div className="mt-3 border-t border-border pt-3">
+                                <p className="mb-1.5 text-xs font-semibold tracking-[0.12em] text-foreground/40 uppercase">
                                   Mensagem personalizada
                                 </p>
                                 <div className="flex items-center gap-2">
@@ -293,7 +264,7 @@ export function Clientes() {
                                     value={customMessage}
                                     onChange={(e) => setCustomMessage(e.target.value)}
                                     placeholder="Escreva sua mensagem..."
-                                    className="h-9 w-full rounded-lg border border-white/15 bg-white/[0.05] px-2.5 text-xs text-white outline-none placeholder:text-white/30 focus:border-[#25D366]/60"
+                                    className="h-9 w-full rounded-md border border-foreground/15 bg-foreground/[0.05] px-2.5 text-xs text-foreground outline-none placeholder:text-foreground/30 focus:border-[#25D366]/60"
                                     onKeyDown={(e) => {
                                       if (e.key === "Enter") sendCustom(customer)
                                     }}
@@ -301,7 +272,7 @@ export function Clientes() {
                                   <button
                                     onClick={() => sendCustom(customer)}
                                     disabled={!customMessage.trim()}
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#25D366] text-[#0B1020] transition hover:bg-[#1fb958] disabled:cursor-not-allowed disabled:opacity-30"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#25D366] text-[#0B1020] transition hover:bg-[#1fb958] disabled:cursor-not-allowed disabled:opacity-30"
                                   >
                                     <Send size={14} />
                                   </button>
@@ -315,7 +286,7 @@ export function Clientes() {
                   ))}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-10 text-center text-sm text-white/35">
+                      <td colSpan={6} className="py-10 text-center text-sm text-foreground/35">
                         Nenhum cliente encontrado para "{search}".
                       </td>
                     </tr>

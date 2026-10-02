@@ -1,11 +1,13 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import CrtWarp from "@/components/CrtWarp/CrtWarp"
 import BorderGlow from "@/components/BorderGlow"
 import SpotlightCard from "@/components/Spotlight Card/SpotlightCard"
 import RotatingText from "@/components/RotatingText"
 import SplitText from "@/components/SplitText"
 import TiltedCard from "@/components/TiltedCard"
 import heroBg from "@/assets/hero-bg.svg"
+import { useDarkMode } from "@/lib/use-dark-mode"
 
 const coreFeatures = [
   ["01", "Estoque", "Controle tudo em tempo real, sem contar na mao."],
@@ -51,43 +53,69 @@ function scrollTo(id: string) {
 
 export function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const { darkMode } = useDarkMode()
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#F5F7FB] text-[#101828]">
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_15%_10%,rgba(59,130,246,0.12),transparent_30%),radial-gradient(circle_at_85%_25%,rgba(14,165,233,0.08),transparent_28%),linear-gradient(180deg,#f7f9fc_0%,#eef3f9_52%,#f7f9fc_100%)]" />
+    <div className="min-h-screen overflow-hidden bg-background text-foreground">
+      {darkMode && (
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-10">
+        <CrtWarp
+          color="#3b82f6"
+          backgroundColor="#0d1014"
+          speed={0.5}
+          curvature={0.25}
+          scanlineStrength={0.25}
+          scanlineFrequency={200}
+          waveAmplitude={0.3}
+          waveFrequency={2.5}
+          bloom={1}
+          bloomRadius={1}
+          noise={0.08}
+          vignette={0}
+          brightness={0.8}
+          pixelation={1}
+          rgbShift={0.015}
+          mouseReact
+          mouseStrength={0.5}
+          dpr={1}
+          fps={30}
+          paused={false}
+        />
+      </div>
+      )}
       <header className="fixed inset-x-0 top-0 z-50 px-4 pt-5 sm:px-6">
-        <div className="mx-auto max-w-6xl rounded-[8px] border border-slate-200/80 bg-white/90 shadow-[0_8px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+        <div className="mx-auto max-w-6xl rounded-md border border-foreground/15 bg-background/80 shadow-2xl shadow-black/30 backdrop-blur-xl">
           <div className="flex items-center justify-between px-4 py-3 sm:px-6">
             <a
               href="#inicio"
               className="font-heading text-lg font-bold tracking-tight"
             >
-              EasySell<span className="text-blue-600">.</span>
+              EasySell<span className="text-blue-400">.</span>
             </a>
-            <nav className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
+            <nav className="hidden items-center gap-6 text-sm text-foreground/60 md:flex">
               <a
                 href="#como-funciona"
-                className="transition-colors hover:text-slate-950"
+                className="transition-colors hover:text-foreground"
               >
                 Como funciona
               </a>
               <a
                 href="#solucoes"
-                className="transition-colors hover:text-slate-950"
+                className="transition-colors hover:text-foreground"
               >
                 Solucoes
               </a>
-              <a href="#planos" className="transition-colors hover:text-slate-950">
+              <a href="#planos" className="transition-colors hover:text-foreground">
                 Planos
               </a>
-              <a href="#faq" className="transition-colors hover:text-slate-950">
+              <a href="#faq" className="transition-colors hover:text-foreground">
                 FAQ
               </a>
             </nav>
             <div className="flex items-center gap-2">
               <a
                 href="/login"
-                className="hidden px-3 py-2 text-sm text-slate-700 hover:text-slate-950 sm:block"
+                className="hidden px-3 py-2 text-sm text-foreground/70 hover:text-foreground sm:block"
               >
                 Entrar
               </a>
@@ -107,21 +135,21 @@ export function Home() {
           className="mx-auto flex min-h-[760px] max-w-6xl items-center px-4 pt-40 pb-24 sm:px-8 lg:min-h-[820px]"
         >
           <div className="max-w-4xl animate-[fade-in_0.8s_ease-out]">
-            <span className="inline-flex rounded-[6px] border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold tracking-[0.2em] text-blue-600 uppercase">
+            <span className="inline-flex rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-xs font-semibold tracking-[0.2em] text-blue-600 dark:text-blue-300 uppercase">
               EASYSELL · TUDO PRA GERENCIAR SUA EMPRESA
             </span>
             <h1 className="mt-7 max-w-4xl font-heading text-5xl leading-[0.98] font-bold tracking-tight sm:text-7xl lg:text-8xl">
               Estoque, financeiro, clientes e equipe. Tudo fica{" "}
               <RotatingText
                 texts={["pratico.", "rapido.", "simples."]}
-                mainClassName="inline-flex overflow-hidden rounded-[6px] bg-blue-100 px-3 py-1 text-blue-600"
+                mainClassName="inline-flex overflow-hidden rounded-md bg-blue-500/15 px-3 py-1 text-blue-600 dark:text-blue-400"
                 rotationInterval={2200}
                 staggerDuration={0.03}
                 staggerFrom="last"
                 splitBy="characters"
               />
             </h1>
-            <p className="mt-7 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
+            <p className="mt-7 max-w-2xl text-base leading-7 text-foreground/60 sm:text-lg sm:leading-8">
               A EasySell reune controle de estoque, financeiro, CRM e gestao de
               funcionarios, com o Easy Market pra vender mais e o Easy Crew pra
               encontrar as pessoas certas.
@@ -138,20 +166,20 @@ export function Home() {
                 size="lg"
                 variant="outline"
                 onClick={() => scrollTo("como-funciona")}
-                className="border-slate-300 bg-transparent px-6 text-white hover:bg-slate-100 hover:text-slate-950"
+                className="border-foreground/20 bg-transparent px-6 text-foreground hover:bg-foreground/10 hover:text-foreground"
               >
                 Ver como funciona
               </Button>
             </div>
-            <p className="mt-7 text-sm text-slate-500">
+            <p className="mt-7 text-sm text-foreground/40">
               +X microempresas ja usam a EasySell
             </p>
           </div>
         </section>
-        <section className="border-y border-slate-200 bg-white/70 px-4 py-20 sm:px-8 sm:py-28">
+        <section className="border-y border-border bg-card px-4 py-20 sm:px-8 sm:py-28">
           <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="border-l border-blue-400 pl-5 sm:pl-8">
-              <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 uppercase">
+              <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
                 Um alerta para o seu negocio
               </span>
               <SplitText
@@ -161,29 +189,29 @@ export function Home() {
                 className="mt-5 max-w-3xl font-heading text-4xl leading-tight font-bold sm:text-6xl"
                 textAlign="left"
               />
-              <p className="mt-6 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+              <p className="mt-6 max-w-2xl text-base leading-7 text-foreground/60 sm:text-lg">
                 Cerca de 60% das micro e pequenas empresas brasileiras encerram
                 as atividades em ate cinco anos, muitas vezes por falta de
                 controle de estoque, fluxo de caixa desorganizado e processos
                 manuais.
               </p>
             </div>
-            <div className="border border-slate-200 bg-white/85 p-7 backdrop-blur-sm sm:p-9">
-              <span className="text-sm text-blue-700">
+            <div className="border border-border bg-background/70 p-7 backdrop-blur-sm sm:p-9">
+              <span className="text-sm text-blue-700 dark:text-blue-200">
                 Um dado para ficar de olho
               </span>
               <div className="mt-4 flex items-end gap-3">
                 <strong className="font-heading text-8xl leading-none">
-                  60<span className="text-blue-600">%</span>
+                  60<span className="text-blue-400">%</span>
                 </strong>
-                <span className="mb-2 max-w-32 text-sm leading-5 text-slate-600">
+                <span className="mb-2 max-w-32 text-sm leading-5 text-foreground/50">
                   das empresas nao chegam ao quinto ano
                 </span>
               </div>
-              <p className="mt-6 text-lg font-semibold text-blue-700">
+              <p className="mt-6 text-lg font-semibold text-blue-700 dark:text-blue-200">
                 A EasySell existe pra resolver isso.
               </p>
-              <span className="mt-3 block text-xs text-slate-500">
+              <span className="mt-3 block text-xs text-foreground/40">
                 Fonte: Sebrae
               </span>
             </div>
@@ -194,7 +222,7 @@ export function Home() {
           className="mx-auto max-w-6xl px-4 py-24 sm:px-8 sm:py-32"
         >
           <div className="max-w-2xl">
-            <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 uppercase">
+            <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
               Como funciona
             </span>
             <SplitText
@@ -225,10 +253,10 @@ export function Home() {
             ].map(([number, title, description]) => (
               <SpotlightCard
                 key={number}
-                className="border border-slate-200 bg-white/[0.045] p-7"
+                className="border border-border bg-foreground/[0.045] p-7"
                 spotlightColor="rgba(59, 130, 246, 0.18)"
               >
-                <span className="text-sm font-semibold text-blue-600">
+                <span className="text-sm font-semibold text-blue-600 dark:text-blue-300">
                   {number}
                 </span>
                 <SplitText
@@ -238,7 +266,7 @@ export function Home() {
                   className="mt-12 font-heading text-2xl font-semibold"
                   textAlign="left"
                 />
-                <p className="mt-3 leading-7 text-slate-600">{description}</p>
+                <p className="mt-3 leading-7 text-foreground/55">{description}</p>
               </SpotlightCard>
             ))}
           </div>
@@ -251,10 +279,10 @@ export function Home() {
         </section>
         <section
           id="solucoes"
-          className="border-y border-slate-200 bg-white/70 px-4 py-24 sm:px-8 sm:py-32"
+          className="border-y border-border bg-card px-4 py-24 sm:px-8 sm:py-32"
         >
           <div className="mx-auto max-w-6xl">
-            <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 uppercase">
+            <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
               O core da sua gestao
             </span>
             <SplitText
@@ -268,10 +296,10 @@ export function Home() {
               {coreFeatures.map(([number, title, description]) => (
                 <SpotlightCard
                   key={number}
-                  className="rounded-[7px] border border-slate-200 bg-white p-5 shadow-[0_4px_18px_rgba(15,23,42,0.04)]"
+                  className="border border-border bg-background p-6"
                   spotlightColor="rgba(59, 130, 246, 0.18)"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-[6px] border border-blue-200 bg-blue-50 text-sm text-blue-600">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-blue-400/30 bg-blue-500/10 text-sm text-blue-600 dark:text-blue-300">
                     {number}
                   </span>
                   <SplitText
@@ -281,15 +309,15 @@ export function Home() {
                     className="mt-8 font-heading text-xl font-semibold"
                     textAlign="left"
                   />
-                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                  <p className="mt-3 text-sm leading-6 text-foreground/55">
                     {description}
                   </p>
                 </SpotlightCard>
               ))}
             </div>
-            <p className="mt-6 text-sm text-slate-500">
+            <p className="mt-6 text-sm text-foreground/45">
               Ja tem equipe? Gerencie aqui. Precisa contratar? Conheca o{" "}
-              <a href="#easy-crew" className="text-amber-300 hover:underline">
+              <a href="#easy-crew" className="text-amber-600 dark:text-amber-300 hover:underline">
                 Easy Crew
               </a>
               .
@@ -301,10 +329,10 @@ export function Home() {
           className="mx-auto grid max-w-6xl gap-5 px-4 py-24 sm:px-8 lg:grid-cols-2"
         >
           <SpotlightCard
-            className="border border-violet-200 bg-violet-50 p-8 sm:p-12"
+            className="border border-violet-400/25 bg-violet-500/[0.08] p-8 sm:p-12"
             spotlightColor="rgba(139, 92, 246, 0.22)"
           >
-            <span className="text-xs font-semibold tracking-[0.24em] text-violet-300">
+            <span className="text-xs font-semibold tracking-[0.24em] text-violet-600 dark:text-violet-300">
               EASY MARKET
             </span>
             <SplitText
@@ -314,7 +342,7 @@ export function Home() {
               className="mt-5 font-heading text-3xl font-bold sm:text-4xl"
               textAlign="left"
             />
-            <p className="mt-5 leading-7 text-slate-600">
+            <p className="mt-5 leading-7 text-foreground/60">
               Anuncie seus produtos no marketplace integrado e alcance novos
               compradores sem sair da plataforma.
             </p>
@@ -323,10 +351,10 @@ export function Home() {
             </Button>
           </SpotlightCard>
           <SpotlightCard
-            className="rounded-[7px] border border-amber-200 bg-amber-50 p-7 sm:p-9"
+            className="border border-amber-400/25 bg-amber-500/[0.08] p-8 sm:p-12"
             spotlightColor="rgba(245, 158, 11, 0.2)"
           >
-            <span className="text-xs font-semibold tracking-[0.24em] text-amber-300">
+            <span className="text-xs font-semibold tracking-[0.24em] text-amber-600 dark:text-amber-300">
               EASY CREW
             </span>
             <SplitText
@@ -336,7 +364,7 @@ export function Home() {
               className="mt-5 font-heading text-3xl font-bold sm:text-4xl"
               textAlign="left"
             />
-            <p className="mt-5 leading-7 text-slate-600">
+            <p className="mt-5 leading-7 text-foreground/60">
               Publique vagas, receba candidaturas e contrate. Depois, gerencie
               sua equipe na aba Funcionarios.
             </p>
@@ -345,8 +373,8 @@ export function Home() {
             </Button>
           </SpotlightCard>
         </section>
-        <section className="border-y border-slate-200 bg-white/70 px-4 py-24 text-center sm:px-8">
-          <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 uppercase">
+        <section className="border-y border-border bg-card px-4 py-24 text-center sm:px-8">
+          <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
             Quem ja gerencia com a EasySell
           </span>
           <SplitText
@@ -372,18 +400,18 @@ export function Home() {
             ].map(([title, quote]) => (
               <BorderGlow
                 key={title}
-                className="min-h-[220px] rounded-[7px] bg-white p-7"
-                backgroundColor="#FFFFFF"
+                className="min-h-[220px] rounded-md bg-background p-7"
+                backgroundColor={darkMode ? "#161a20" : "#ffffff"}
                 borderRadius={10}
                 glowColor="210 90 65"
                 glowRadius={24}
                 glowIntensity={0.7}
               >
-                <span className="text-sm text-blue-600">{title}</span>
-                <p className="mt-6 text-lg leading-7 text-slate-700">
+                <span className="text-sm text-blue-600 dark:text-blue-300">{title}</span>
+                <p className="mt-6 text-lg leading-7 text-foreground/80">
                   &quot;{quote}&quot;
                 </p>
-                <p className="mt-6 text-sm text-slate-500">Cliente EasySell</p>
+                <p className="mt-6 text-sm text-foreground/40">Cliente EasySell</p>
               </BorderGlow>
             ))}
           </div>
@@ -393,7 +421,7 @@ export function Home() {
           className="mx-auto max-w-6xl px-4 py-24 sm:px-8 sm:py-32"
         >
           <div className="text-center">
-            <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 uppercase">
+            <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
               Planos
             </span>
             <SplitText
@@ -408,7 +436,7 @@ export function Home() {
               imageSrc={heroBg}
               altText="Fundo azul da EasySell"
               captionText="Plano Gratis"
-              containerHeight="500px"
+              containerHeight="520px"
               containerWidth="100%"
               imageHeight="100%"
               imageWidth="100%"
@@ -418,7 +446,7 @@ export function Home() {
               showMobileWarning={false}
               displayOverlayContent
               overlayContent={
-                <div className="h-full w-full rounded-[7px] bg-white/95">
+                <div className="h-full w-full rounded-md bg-card">
                   <Plan
                     title="Gratis"
                     description="Pra quem esta comecando a organizar o negocio."
@@ -437,7 +465,7 @@ export function Home() {
               imageSrc={heroBg}
               altText="Fundo azul da EasySell"
               captionText="Plano Profissional"
-              containerHeight="500px"
+              containerHeight="520px"
               containerWidth="100%"
               imageHeight="100%"
               imageWidth="100%"
@@ -447,7 +475,7 @@ export function Home() {
               showMobileWarning={false}
               displayOverlayContent
               overlayContent={
-                <div className="h-full w-full rounded-[7px] bg-white/95">
+                <div className="h-full w-full rounded-md bg-card">
                   <Plan
                     title="Profissional"
                     description="Pra quem vende todo dia e precisa de controle total."
@@ -466,16 +494,16 @@ export function Home() {
               }
             />
           </div>
-          <p className="mt-8 text-center text-sm text-slate-500">
+          <p className="mt-8 text-center text-sm text-foreground/45">
             Cancele quando quiser · Sem fidelidade · 7 dias de garantia
           </p>
         </section>
         <section
           id="faq"
-          className="border-y border-slate-200 bg-white/70 px-4 py-24 sm:px-8"
+          className="border-y border-border bg-card px-4 py-24 sm:px-8"
         >
           <div className="mx-auto max-w-4xl">
-            <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 uppercase">
+            <span className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
               FAQ
             </span>
             <SplitText
@@ -485,21 +513,21 @@ export function Home() {
               className="mt-4 font-heading text-4xl font-bold sm:text-6xl"
               textAlign="left"
             />
-            <div className="mt-10 border-t border-slate-200">
+            <div className="mt-10 border-t border-border">
               {faqs.map(([question, answer], index) => (
-                <div key={question} className="border-b border-slate-200">
+                <div key={question} className="border-b border-border">
                   <button
                     type="button"
                     onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                    className="flex w-full items-center justify-between gap-5 py-5 text-left text-base font-semibold text-slate-900"
+                    className="flex w-full items-center justify-between gap-5 py-5 text-left text-base font-semibold text-foreground"
                   >
                     <span>{question}</span>
-                    <span className="text-2xl font-normal text-blue-600">
+                    <span className="text-2xl font-normal text-blue-600 dark:text-blue-300">
                       {openFaq === index ? "-" : "+"}
                     </span>
                   </button>
                   {openFaq === index && (
-                    <p className="max-w-3xl pb-5 leading-7 text-slate-600">
+                    <p className="max-w-3xl pb-5 leading-7 text-foreground/55">
                       {answer}
                     </p>
                   )}
@@ -513,7 +541,7 @@ export function Home() {
           className="px-4 py-24 text-center sm:px-8 sm:py-32"
         >
           <div className="mx-auto max-w-3xl">
-            <span className="text-xs font-semibold tracking-[0.28em] text-blue-600 uppercase">
+            <span className="text-xs font-semibold tracking-[0.28em] text-blue-600 dark:text-blue-300 uppercase">
               Seu proximo passo comeca aqui
             </span>
             <SplitText
@@ -522,63 +550,63 @@ export function Home() {
               splitType="words"
               className="mt-5 font-heading text-4xl leading-tight font-bold sm:text-6xl"
             />
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-7 text-slate-600">
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-7 text-foreground/60">
               Tenha as ferramentas certas para vender melhor, organizar sua
               operacao e crescer com mais tranquilidade.
             </p>
             <Button
               size="lg"
               onClick={() => scrollTo("planos")}
-              className="mt-8 bg-blue-600 px-7 text-white shadow-[0_8px_24px_rgba(37,99,235,0.18)] hover:bg-blue-500"
+              className="mt-8 bg-blue-600 px-7 text-white shadow-[0_0_28px_rgba(59,130,246,0.28)] hover:bg-blue-500"
             >
               Comecar gratis
             </Button>
           </div>
         </section>
       </main>
-      <footer className="relative z-10 border-t border-slate-200 bg-white px-4 py-12 sm:px-8">
+      <footer className="relative z-10 border-t border-border bg-background px-4 py-12 sm:px-8">
         <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-3">
           <div>
             <span className="font-heading text-xl font-bold">
-              EasySell<span className="text-blue-600">.</span>
+              EasySell<span className="text-blue-400">.</span>
             </span>
-            <p className="mt-3 max-w-xs text-sm leading-6 text-slate-500">
+            <p className="mt-3 max-w-xs text-sm leading-6 text-foreground/45">
               Tudo para gerenciar sua empresa em um so lugar.
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">Produtos</h3>
-            <div className="mt-4 flex flex-col gap-2 text-sm text-slate-600">
-              <a href="#solucoes" className="hover:text-slate-950">
+            <h3 className="text-sm font-semibold text-foreground">Produtos</h3>
+            <div className="mt-4 flex flex-col gap-2 text-sm text-foreground/50">
+              <a href="#solucoes" className="hover:text-foreground">
                 EasySell
               </a>
-              <a href="#solucoes" className="hover:text-violet-300">
+              <a href="#solucoes" className="hover:text-violet-600 dark:hover:text-violet-300">
                 Easy Market
               </a>
-              <a href="#easy-crew" className="hover:text-amber-300">
+              <a href="#easy-crew" className="hover:text-amber-600 dark:hover:text-amber-300">
                 Easy Crew
               </a>
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">Empresa</h3>
-            <div className="mt-4 flex flex-col gap-2 text-sm text-slate-600">
-              <a href="#como-funciona" className="hover:text-slate-950">
+            <h3 className="text-sm font-semibold text-foreground">Empresa</h3>
+            <div className="mt-4 flex flex-col gap-2 text-sm text-foreground/50">
+              <a href="#como-funciona" className="hover:text-foreground">
                 Como funciona
               </a>
-              <a href="#planos" className="hover:text-slate-950">
+              <a href="#planos" className="hover:text-foreground">
                 Planos
               </a>
-              <a href="#faq" className="hover:text-slate-950">
+              <a href="#faq" className="hover:text-foreground">
                 FAQ
               </a>
-              <a href="#comecar" className="hover:text-slate-950">
+              <a href="#comecar" className="hover:text-foreground">
                 Contato
               </a>
             </div>
           </div>
         </div>
-        <div className="mx-auto mt-10 flex max-w-6xl flex-wrap gap-4 border-t border-slate-200 pt-6 text-xs text-slate-400">
+        <div className="mx-auto mt-10 flex max-w-6xl flex-wrap gap-4 border-t border-border pt-6 text-xs text-foreground/35">
           <span>© 2026 EasySell</span>
           <span>CNPJ: em breve</span>
           <span>Politica de Privacidade</span>
@@ -613,19 +641,19 @@ function Plan({
           textAlign="left"
         />
         {featured && (
-          <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
+          <span className="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-300">
             Mais escolhido
           </span>
         )}
       </div>
-      <p className="mt-3 text-sm leading-6 text-slate-600">{description}</p>
+      <p className="mt-3 text-sm leading-6 text-foreground/55">{description}</p>
       <p className="mt-7 font-heading text-4xl font-bold">
         {price}
-        <span className="text-sm font-normal text-slate-500">
+        <span className="text-sm font-normal text-foreground/45">
           {price !== "R$ 0" && "/mes"}
         </span>
       </p>
-      <ul className="mt-7 space-y-3 text-sm text-slate-700">
+      <ul className="mt-7 space-y-3 text-sm text-foreground/70">
         {features.map((feature) => (
           <li key={feature} className="flex gap-2">
             <span className="text-green-400">+</span>

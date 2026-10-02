@@ -46,7 +46,7 @@ type CompanyData = {
 }
 
 const inputClass =
-  "mt-2 h-11 w-full rounded-lg border border-white/10 bg-white/[0.05] px-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-400/60"
+  "mt-2 h-11 w-full rounded-md border border-border bg-foreground/[0.05] px-3 text-sm text-foreground outline-none placeholder:text-foreground/30 focus:border-blue-400/60"
 
 // Animação padrão aplicada a todos os botões da tela
 const btnAnim =
@@ -198,16 +198,16 @@ const statusStyles: Record<
 > = {
   pendente: {
     label: "Pendente",
-    className: "border border-white/15 bg-white/[0.06] text-white/55",
+    className: "border border-foreground/15 bg-foreground/[0.06] text-foreground/55",
   },
   concluido: {
     label: "Concluído",
     className:
-      "border border-[#5DCAA5]/30 bg-[#5DCAA5]/15 text-[#5DCAA5]",
+      "border border-[#5DCAA5]/30 bg-[#5DCAA5]/15 text-emerald-600 dark:text-[#5DCAA5]",
   },
   verificado: {
     label: "Verificado",
-    className: "border border-blue-400/30 bg-blue-400/15 text-blue-200",
+    className: "border border-blue-400/30 bg-blue-400/15 text-blue-700 dark:text-blue-200",
   },
 }
 
@@ -399,19 +399,18 @@ export function Empresa() {
   ]
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#0B1220] px-4 pt-20 pb-16 text-white sm:px-8">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_85%_8%,rgba(37,99,235,0.16),transparent_28%),radial-gradient(circle_at_10%_90%,rgba(14,165,233,0.08),transparent_30%)]" />
+    <main className="min-h-screen overflow-hidden bg-background px-4 pt-20 pb-16 text-foreground sm:px-8">
       <div className="relative z-10 mx-auto max-w-6xl">
         {mode !== "tasks" ? (
           <div className="mx-auto grid max-w-5xl gap-10 py-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
             <FadeIn>
-              <p className="text-xs font-semibold tracking-[0.24em] text-blue-300 uppercase">
+              <p className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
                 Sua organização
               </p>
               <h1 className="mt-4 font-heading text-4xl font-bold sm:text-6xl">
                 {mode === "created" ? "Tudo pronto." : "Escolha como começar."}
               </h1>
-              <p className="mt-5 max-w-md text-sm leading-6 text-white/50">
+              <p className="mt-5 max-w-md text-sm leading-6 text-foreground/50">
                 {mode === "created"
                   ? "Sua empresa foi cadastrada com sucesso. Confira os dados abaixo antes de seguir para o painel."
                   : "Crie uma empresa para administrar sua operação ou entre em uma equipe já existente."}
@@ -419,7 +418,7 @@ export function Empresa() {
             </FadeIn>
             <FadeIn
               delay={100}
-              className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-8"
+              className="relative overflow-hidden rounded-md border border-border bg-foreground/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-foreground/25 sm:p-8"
             >
               {mode === "choose" && (
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -427,14 +426,14 @@ export function Empresa() {
                     onClick={() => setMode("create")}
                     className={cx(
                       btnAnim,
-                      "rounded-lg border border-blue-400/25 bg-blue-500/10 p-5 text-left hover:bg-blue-500/15"
+                      "rounded-md border border-blue-400/25 bg-blue-500/10 p-5 text-left hover:bg-blue-500/15"
                     )}
                   >
-                    <Building2 className="text-blue-300" size={24} />
+                    <Building2 className="text-blue-600 dark:text-blue-300" size={24} />
                     <h2 className="mt-6 font-heading text-xl font-bold">
                       Criar empresa
                     </h2>
-                    <p className="mt-2 text-sm leading-6 text-white/50">
+                    <p className="mt-2 text-sm leading-6 text-foreground/50">
                       Cadastre o CNPJ e confirme seus dados para começar.
                     </p>
                   </button>
@@ -442,14 +441,14 @@ export function Empresa() {
                     onClick={() => setMode("join")}
                     className={cx(
                       btnAnim,
-                      "rounded-lg border border-white/15 bg-white/[0.03] p-5 text-left hover:bg-white/[0.07]"
+                      "rounded-md border border-foreground/15 bg-foreground/[0.03] p-5 text-left hover:bg-foreground/[0.07]"
                     )}
                   >
-                    <UserRound className="text-[#5DCAA5]" size={24} />
+                    <UserRound className="text-emerald-600 dark:text-[#5DCAA5]" size={24} />
                     <h2 className="mt-6 font-heading text-xl font-bold">
                       Entrar na empresa
                     </h2>
-                    <p className="mt-2 text-sm leading-6 text-white/50">
+                    <p className="mt-2 text-sm leading-6 text-foreground/50">
                       Use o código ou nome da empresa para enviar uma
                       solicitação.
                     </p>
@@ -460,11 +459,11 @@ export function Empresa() {
                 <div>
                   <button
                     onClick={() => setMode("choose")}
-                    className={cx(btnAnim, "mb-6 text-sm text-white/45 hover:text-white")}
+                    className={cx(btnAnim, "mb-6 text-sm text-foreground/45 hover:text-foreground")}
                   >
                     ← Voltar
                   </button>
-                  <p className="text-xs font-semibold tracking-[0.18em] text-blue-300 uppercase">
+                  <p className="text-xs font-semibold tracking-[0.18em] text-blue-600 dark:text-blue-300 uppercase">
                     Criar empresa
                   </p>
                   <h2 className="mt-3 font-heading text-3xl font-bold">
@@ -484,26 +483,26 @@ export function Empresa() {
                     disabled={loadingCompany}
                     className={cx(
                       btnAnim,
-                      "mt-4 inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+                      "mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
                     )}
                   >
                     <Search size={16} />{" "}
                     {loadingCompany ? "Consultando..." : "Buscar empresa"}
                   </button>
                   {foundCompany && (
-                    <FadeIn className="mt-6 rounded-lg border border-[#5DCAA5]/25 bg-[#5DCAA5]/10 p-4">
-                      <p className="text-xs text-[#5DCAA5]">
+                    <FadeIn className="mt-6 rounded-md border border-[#5DCAA5]/25 bg-[#5DCAA5]/10 p-4">
+                      <p className="text-xs text-emerald-600 dark:text-[#5DCAA5]">
                         Empresa encontrada
                       </p>
                       <p className="mt-1 font-semibold">
                         {foundCompany.razao_social}
                       </p>
                       {foundCompany.nome_fantasia && (
-                        <p className="mt-1 text-sm text-white/55">
+                        <p className="mt-1 text-sm text-foreground/55">
                           {foundCompany.nome_fantasia}
                         </p>
                       )}
-                      <p className="mt-2 text-xs text-[#5DCAA5]">
+                      <p className="mt-2 text-xs text-emerald-600 dark:text-[#5DCAA5]">
                         Situação: {foundCompany.situacao_cadastral || "ATIVA"}
                       </p>
                       <label className="mt-4 block text-sm">
@@ -519,7 +518,7 @@ export function Empresa() {
                         onClick={createCompany}
                         className={cx(
                           btnAnim,
-                          "mt-4 inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500"
+                          "mt-4 inline-flex h-10 items-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500"
                         )}
                       >
                         <Check size={16} /> Confirmar e criar
@@ -532,11 +531,11 @@ export function Empresa() {
                 <div>
                   <button
                     onClick={() => setMode("choose")}
-                    className={cx(btnAnim, "mb-6 text-sm text-white/45 hover:text-white")}
+                    className={cx(btnAnim, "mb-6 text-sm text-foreground/45 hover:text-foreground")}
                   >
                     ← Voltar
                   </button>
-                  <p className="text-xs font-semibold tracking-[0.18em] text-blue-300 uppercase">
+                  <p className="text-xs font-semibold tracking-[0.18em] text-blue-600 dark:text-blue-300 uppercase">
                     Entrar na empresa
                   </p>
                   <h2 className="mt-3 font-heading text-3xl font-bold">
@@ -555,7 +554,7 @@ export function Empresa() {
                     onClick={requestJoin}
                     className={cx(
                       btnAnim,
-                      "mt-6 inline-flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500"
+                      "mt-6 inline-flex h-10 items-center gap-2 rounded-md bg-blue-600 px-4 text-sm font-semibold hover:bg-blue-500"
                     )}
                   >
                     <UserRound size={16} /> Enviar solicitação
@@ -564,35 +563,35 @@ export function Empresa() {
               )}
               {mode === "created" && createdCompany && (
                 <div>
-                  <div className="flex size-12 items-center justify-center rounded-full border border-[#5DCAA5]/30 bg-[#5DCAA5]/10 text-[#5DCAA5]">
+                  <div className="flex size-12 items-center justify-center rounded-full border border-[#5DCAA5]/30 bg-[#5DCAA5]/10 text-emerald-600 dark:text-[#5DCAA5]">
                     <PartyPopper size={22} />
                   </div>
-                  <p className="mt-5 text-xs font-semibold tracking-[0.18em] text-[#5DCAA5] uppercase">
+                  <p className="mt-5 text-xs font-semibold tracking-[0.18em] text-emerald-600 dark:text-[#5DCAA5] uppercase">
                     Empresa criada
                   </p>
                   <h2 className="mt-3 font-heading text-3xl font-bold">
                     {createdCompany.razao_social}
                   </h2>
                   {createdCompany.nome_fantasia && (
-                    <p className="mt-1 text-sm text-white/55">
+                    <p className="mt-1 text-sm text-foreground/55">
                       {createdCompany.nome_fantasia}
                     </p>
                   )}
-                  <div className="mt-6 space-y-3 rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm">
+                  <div className="mt-6 space-y-3 rounded-md border border-border bg-foreground/[0.03] p-4 text-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-white/40">CNPJ</span>
+                      <span className="text-foreground/40">CNPJ</span>
                       <span className="font-semibold">
                         {createdCompany.cnpj}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-white/40">Situação</span>
-                      <span className="font-semibold text-[#5DCAA5]">
+                      <span className="text-foreground/40">Situação</span>
+                      <span className="font-semibold text-emerald-600 dark:text-[#5DCAA5]">
                         {createdCompany.situacao_cadastral || "ATIVA"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-white/40">CPF do responsável</span>
+                      <span className="text-foreground/40">CPF do responsável</span>
                       <span className="font-semibold">{createdCpf}</span>
                     </div>
                   </div>
@@ -602,31 +601,31 @@ export function Empresa() {
                     }}
                     className={cx(
                       btnAnim,
-                      "mt-6 inline-flex h-11 items-center gap-2 rounded-lg bg-blue-600 px-5 text-sm font-semibold hover:bg-blue-500"
+                      "mt-6 inline-flex h-11 items-center gap-2 rounded-md bg-blue-600 px-5 text-sm font-semibold hover:bg-blue-500"
                     )}
                   >
                     <LayoutDashboard size={16} /> Ir para o painel
                   </button>
                 </div>
               )}
-              {notice && <p className="mt-5 text-sm text-blue-200">{notice}</p>}
+              {notice && <p className="mt-5 text-sm text-blue-700 dark:text-blue-200">{notice}</p>}
             </FadeIn>
           </div>
         ) : (
           <div className="mx-auto max-w-5xl py-12">
-            <FadeIn className="flex flex-col justify-between gap-6 border-b border-white/10 pb-8 sm:flex-row sm:items-end">
+            <FadeIn className="flex flex-col justify-between gap-6 border-b border-border pb-8 sm:flex-row sm:items-end">
               <div>
-                <p className="text-xs font-semibold tracking-[0.24em] text-blue-300 uppercase">
+                <p className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
                   Área do funcionário
                 </p>
                 <h1 className="mt-4 font-heading text-4xl font-bold sm:text-5xl">
                   Tarefas de hoje.
                 </h1>
-                <p className="mt-4 text-sm text-white/50">
+                <p className="mt-4 text-sm text-foreground/50">
                   Organize seu dia e acompanhe o que precisa ser concluído.
                 </p>
               </div>
-              <div className="shrink-0 rounded-lg border border-[#5DCAA5]/25 bg-[#5DCAA5]/10 px-4 py-3 text-sm text-[#5DCAA5]">
+              <div className="shrink-0 rounded-md border border-[#5DCAA5]/25 bg-[#5DCAA5]/10 px-4 py-3 text-sm text-emerald-600 dark:text-[#5DCAA5]">
                 <strong>
                   {completed}/{tasks.length}
                 </strong>{" "}
@@ -634,14 +633,14 @@ export function Empresa() {
               </div>
             </FadeIn>
             <nav
-              className="mt-8 flex gap-2 overflow-x-auto border-b border-white/10 pb-px"
+              className="mt-8 flex gap-2 overflow-x-auto border-b border-border pb-px"
               aria-label="Ferramentas do funcionário"
             >
               {tabItems.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   onClick={() => setEmployeeTab(id)}
-                  className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold ${employeeTab === id ? "border-blue-400 text-white" : "border-transparent text-white/45 hover:text-white"}`}
+                  className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold ${employeeTab === id ? "border-blue-400 text-foreground" : "border-transparent text-foreground/45 hover:text-foreground"}`}
                 >
                   <Icon size={15} /> {label}
                 </button>
@@ -651,35 +650,35 @@ export function Empresa() {
             {employeeTab === "tasks" && (
               <section className="mt-8 space-y-4">
                 {/* Minha jornada */}
-                <FadeIn className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
+                <FadeIn className="relative overflow-hidden rounded-md border border-border bg-foreground/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-foreground/25 sm:p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
+                      <p className="text-xs font-semibold tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
                         Minha jornada
                       </p>
                       <h2 className="mt-2 font-heading text-xl font-bold sm:text-2xl">
                         Horário definido pela empresa
                       </h2>
-                      <p className="mt-2 text-sm text-white/45">
+                      <p className="mt-2 text-sm text-foreground/45">
                         Este é o horário usado como referência para o seu
                         ponto.
                       </p>
                     </div>
-                    <Clock className="hidden shrink-0 text-white/30 sm:block" size={22} />
+                    <Clock className="hidden shrink-0 text-foreground/30 sm:block" size={22} />
                   </div>
                   <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
                     {[
                       ["Entrada", employeeSchedule.start, ""],
                       ["Saída", employeeSchedule.end, ""],
                       ["Almoço", employeeSchedule.lunch, ""],
-                      ["Carga diária", employeeSchedule.total, "text-[#5DCAA5]"],
+                      ["Carga diária", employeeSchedule.total, "text-emerald-600 dark:text-[#5DCAA5]"],
                     ].map(([label, value, extraClass], index) => (
                       <FadeIn
                         key={label}
                         delay={index * 80}
-                        className="rounded-lg border border-white/10 bg-white/[0.03] p-4"
+                        className="rounded-md border border-border bg-foreground/[0.03] p-4"
                       >
-                        <p className="text-xs text-white/40">{label}</p>
+                        <p className="text-xs text-foreground/40">{label}</p>
                         <p className={`mt-1 text-lg font-semibold ${extraClass}`}>
                           {value}
                         </p>
@@ -691,17 +690,17 @@ export function Empresa() {
                 {/* Tabela de tarefas */}
                 <FadeIn
                   delay={80}
-                  className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25"
+                  className="relative overflow-hidden rounded-md border border-border bg-foreground/[0.045] shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-foreground/25"
                 >
                   {/* Cabeçalho — apenas telas grandes */}
-                  <div className="hidden grid-cols-[1.1fr_1.6fr_1.1fr_1fr] gap-4 border-b border-white/10 px-6 py-4 text-xs font-semibold tracking-[0.1em] text-white/40 uppercase lg:grid">
+                  <div className="hidden grid-cols-[1.1fr_1.6fr_1.1fr_1fr] gap-4 border-b border-border px-6 py-4 text-xs font-semibold tracking-[0.1em] text-foreground/40 uppercase lg:grid">
                     <span>O que fazer</span>
                     <span>Descrição</span>
                     <span>Anexo</span>
                     <span>Status</span>
                   </div>
 
-                  <div className="divide-y divide-white/10">
+                  <div className="divide-y divide-border">
                     {tasks.map((task, taskIndex) => {
                       const expanded = expandedTaskId === task.id
                       const status = statusStyles[task.status]
@@ -720,13 +719,13 @@ export function Empresa() {
                             >
                               <ChevronDown
                                 size={16}
-                                className={`mt-1 shrink-0 text-white/40 transition-transform ${expanded ? "rotate-0" : "-rotate-90"}`}
+                                className={`mt-1 shrink-0 text-foreground/40 transition-transform ${expanded ? "rotate-0" : "-rotate-90"}`}
                               />
                               <span>
-                                <span className="block font-semibold text-white">
+                                <span className="block font-semibold text-foreground">
                                   {task.title}
                                 </span>
-                                <span className="mt-1 block text-xs font-semibold text-white/40">
+                                <span className="mt-1 block text-xs font-semibold text-foreground/40">
                                   {task.deadline}
                                 </span>
                               </span>
@@ -734,10 +733,10 @@ export function Empresa() {
 
                             {/* Descrição / passos */}
                             {expanded ? (
-                              <ol className="space-y-2 text-sm leading-6 text-white/55">
+                              <ol className="space-y-2 text-sm leading-6 text-foreground/55">
                                 {task.steps.map((step, index) => (
                                   <li key={step} className="flex gap-2">
-                                    <span className="shrink-0 text-white/35">
+                                    <span className="shrink-0 text-foreground/35">
                                       {index + 1}.
                                     </span>
                                     <span>{step}</span>
@@ -745,7 +744,7 @@ export function Empresa() {
                                 ))}
                               </ol>
                             ) : (
-                              <span className="hidden text-sm text-white/30 lg:block">
+                              <span className="hidden text-sm text-foreground/30 lg:block">
                                 —
                               </span>
                             )}
@@ -753,7 +752,7 @@ export function Empresa() {
                             {/* Anexo */}
                             <div className="flex flex-col gap-2">
                               {expanded && (
-                                <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-blue-400/30 bg-blue-500/10 px-3 py-2 text-xs font-semibold text-blue-200 hover:bg-blue-500/20">
+                                <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-md border border-blue-400/30 bg-blue-500/10 px-3 py-2 text-xs font-semibold text-blue-700 dark:text-blue-200 hover:bg-blue-500/20">
                                   <Paperclip size={13} />
                                   {task.attachment ? "Anexar novo" : "Anexar arquivo"}
                                   <input
@@ -768,7 +767,7 @@ export function Empresa() {
                                   />
                                 </label>
                               )}
-                              <div className="flex items-center gap-2 rounded-lg border border-dashed border-white/15 bg-white/[0.02] px-3 py-2 text-xs text-white/40">
+                              <div className="flex items-center gap-2 rounded-md border border-dashed border-foreground/15 bg-foreground/[0.02] px-3 py-2 text-xs text-foreground/40">
                                 <FileUp size={14} className="shrink-0" />
                                 <span className="truncate">
                                   {task.attachment ?? "Nenhum arquivo"}
@@ -788,7 +787,7 @@ export function Empresa() {
                               </span>
                               {task.status === "verificado" &&
                                 task.verifiedBy && (
-                                  <span className="text-[11px] text-white/35">
+                                  <span className="text-[11px] text-foreground/35">
                                     Verificado por {task.verifiedBy}
                                   </span>
                                 )}
@@ -797,10 +796,10 @@ export function Empresa() {
                                   <button
                                     type="button"
                                     onClick={() => toggleTaskStatus(task.id)}
-                                    className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                                    className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-semibold ${
                                       task.status === "concluido"
-                                        ? "border border-white/15 text-white/50 hover:bg-white/5"
-                                        : "bg-[#5DCAA5] text-[#0B1220] hover:bg-[#4fb996]"
+                                        ? "border border-foreground/15 text-foreground/50 hover:bg-foreground/5"
+                                        : "bg-[#5DCAA5] text-[#070B14] hover:bg-[#4fb996]"
                                     }`}
                                   >
                                     <Check size={13} />
@@ -821,14 +820,14 @@ export function Empresa() {
             {employeeTab === "time" && (
               <section className="mt-4 space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <FadeIn className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
-                    <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
+                  <FadeIn className="relative overflow-hidden rounded-md border border-border bg-foreground/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-foreground/25 sm:p-6">
+                    <p className="text-xs font-semibold tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
                       Registro de ponto
                     </p>
                     <h2 className="mt-2 font-heading text-2xl font-bold">
                       Jornada de hoje
                     </h2>
-                    <p className="mt-3 text-sm text-white/50">
+                    <p className="mt-3 text-sm text-foreground/50">
                       {clockedIn
                         ? `Entrada às ${formatTime(clockInAt)} · tempo trabalhado ${formatDuration(clockElapsed)}`
                         : clockOutAt
@@ -837,7 +836,7 @@ export function Empresa() {
                     </p>
                     <button
                       onClick={toggleClock}
-                      className="mt-6 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500"
+                      className="mt-6 inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500"
                     >
                       <Clock3 size={16} />{" "}
                       {clockedIn
@@ -849,15 +848,15 @@ export function Empresa() {
                   </FadeIn>
                   <FadeIn
                     delay={100}
-                    className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6"
+                    className="relative overflow-hidden rounded-md border border-border bg-foreground/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-foreground/25 sm:p-6"
                   >
-                    <p className="text-xs font-semibold tracking-[0.16em] text-[#5DCAA5] uppercase">
+                    <p className="text-xs font-semibold tracking-[0.16em] text-emerald-600 dark:text-[#5DCAA5] uppercase">
                       Descanso e almoço
                     </p>
                     <h2 className="mt-2 font-heading text-2xl font-bold">
                       Pausa do dia
                     </h2>
-                    <p className="mt-3 text-sm text-white/50">
+                    <p className="mt-3 text-sm text-foreground/50">
                       {lunchStarted
                         ? `Almoço iniciado às ${formatTime(lunchStartedAt)} · ${formatDuration(activeLunchElapsed)}`
                         : lunchElapsed > 0
@@ -869,7 +868,7 @@ export function Empresa() {
                       disabled={
                         lunchStarted && activeLunchElapsed < minimumLunchSeconds
                       }
-                      className="mt-6 inline-flex items-center gap-2 rounded-lg border border-[#5DCAA5]/30 bg-[#5DCAA5]/10 px-4 py-2 text-sm font-semibold text-[#5DCAA5] hover:bg-[#5DCAA5]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="mt-6 inline-flex items-center gap-2 rounded-md border border-[#5DCAA5]/30 bg-[#5DCAA5]/10 px-4 py-2 text-sm font-semibold text-emerald-600 dark:text-[#5DCAA5] hover:bg-[#5DCAA5]/20 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Clock3 size={16} />{" "}
                       {lunchStarted
@@ -879,7 +878,7 @@ export function Empresa() {
                         : "Iniciar almoço"}
                     </button>
                     {lunchStarted && (
-                      <p className="mt-3 text-xs text-white/40">
+                      <p className="mt-3 text-xs text-foreground/40">
                         Mínimo restante:{" "}
                         {formatDuration(
                           Math.max(0, minimumLunchSeconds - activeLunchElapsed)
@@ -891,15 +890,15 @@ export function Empresa() {
               </section>
             )}
             {employeeTab === "calendar" && (
-              <FadeIn className="relative mt-4 overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6">
-                <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
+              <FadeIn className="relative mt-4 overflow-hidden rounded-md border border-border bg-foreground/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-foreground/25 sm:p-6">
+                <p className="text-xs font-semibold tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
                   Presença
                 </p>
                 <h2 className="mt-2 font-heading text-2xl font-bold">
                   Setembro 2026
                 </h2>
                 <div className="mt-6 grid grid-cols-7 gap-2 text-center text-xs">
-                  <div className="col-span-7 grid grid-cols-7 text-white/35">
+                  <div className="col-span-7 grid grid-cols-7 text-foreground/35">
                     {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map(
                       (day) => (
                         <span key={day}>{day}</span>
@@ -915,18 +914,18 @@ export function Empresa() {
                         new Date(2026, 8, index + 1).getDay() === 6
                       }
                       onClick={() => setSelectedDay(index + 1)}
-                      className={`rounded-md py-2 transition ${calendarRecords[index + 1]?.type === "folga" ? "bg-blue-400/25 text-blue-200" : calendarRecords[index + 1]?.type === "falta" ? "bg-red-400/20 text-red-300" : new Date(2026, 8, index + 1).getDay() === 0 || new Date(2026, 8, index + 1).getDay() === 6 ? "cursor-not-allowed text-white/20" : "bg-[#5DCAA5]/15 text-[#5DCAA5] hover:bg-[#5DCAA5]/25"}`}
+                      className={`rounded-md py-2 transition ${calendarRecords[index + 1]?.type === "folga" ? "bg-blue-400/25 text-blue-700 dark:text-blue-200" : calendarRecords[index + 1]?.type === "falta" ? "bg-red-400/20 text-red-600 dark:text-red-300" : new Date(2026, 8, index + 1).getDay() === 0 || new Date(2026, 8, index + 1).getDay() === 6 ? "cursor-not-allowed text-foreground/20" : "bg-[#5DCAA5]/15 text-emerald-600 dark:text-[#5DCAA5] hover:bg-[#5DCAA5]/25"}`}
                     >
                       {index + 1}
                     </button>
                   ))}
                 </div>
                 {selectedDay && selectedDateIsWeekday && (
-                  <FadeIn className="mt-6 rounded-lg border border-blue-400/20 bg-blue-500/5 p-4">
-                    <p className="text-sm font-semibold text-white">
+                  <FadeIn className="mt-6 rounded-md border border-blue-400/20 bg-blue-500/5 p-4">
+                    <p className="text-sm font-semibold text-foreground">
                       Dia {selectedDay} de setembro
                     </p>
-                    <p className="mt-1 text-xs text-white/45">
+                    <p className="mt-1 text-xs text-foreground/45">
                       Escolha o registro e, para folga, informe o motivo.
                     </p>
                     <textarea
@@ -935,7 +934,7 @@ export function Empresa() {
                         setDayJustification(event.target.value)
                       }
                       placeholder="Justificativa da folga (opcional para falta)"
-                      className="mt-3 min-h-20 w-full rounded-md border border-white/10 bg-[#0B1220] p-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-400/60"
+                      className="mt-3 min-h-20 w-full rounded-md border border-border bg-inset p-3 text-sm text-foreground outline-none placeholder:text-foreground/30 focus:border-blue-400/60"
                     />
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
@@ -948,14 +947,14 @@ export function Empresa() {
                       <button
                         type="button"
                         onClick={() => registerCalendarRecord("falta")}
-                        className="rounded-md border border-red-400/30 px-3 py-2 text-xs font-semibold text-red-200 hover:bg-red-400/10"
+                        className="rounded-md border border-red-400/30 px-3 py-2 text-xs font-semibold text-red-700 dark:text-red-200 hover:bg-red-400/10"
                       >
                         Registrar falta não justificada
                       </button>
                     </div>
                   </FadeIn>
                 )}
-                <p className="mt-5 text-xs text-white/45">
+                <p className="mt-5 text-xs text-foreground/45">
                   Clique em um dia útil para solicitar folga ou registrar uma
                   falta.
                 </p>
@@ -970,9 +969,9 @@ export function Empresa() {
                     setNotice("Relatório enviado para a gestão.")
                     setReport("")
                   }}
-                  className="relative overflow-hidden rounded-md border border-white/12 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-white/25 sm:p-6"
+                  className="relative overflow-hidden rounded-md border border-border bg-foreground/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-foreground/25 sm:p-6"
                 >
-                  <p className="text-xs font-semibold tracking-[0.16em] text-blue-300 uppercase">
+                  <p className="text-xs font-semibold tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
                     Relatório
                   </p>
                   <h2 className="mt-2 font-heading text-2xl font-bold">
@@ -983,9 +982,9 @@ export function Empresa() {
                     value={report}
                     onChange={(event) => setReport(event.target.value)}
                     placeholder="Descreva o que você realizou hoje..."
-                    className="mt-5 min-h-32 w-full rounded-lg border border-white/10 bg-white/[0.04] p-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-blue-400/60"
+                    className="mt-5 min-h-32 w-full rounded-md border border-border bg-foreground/[0.04] p-3 text-sm text-foreground outline-none placeholder:text-foreground/35 focus:border-blue-400/60"
                   />
-                  <button className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500">
+                  <button className="mt-4 inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500">
                     <Send size={15} /> Enviar relatório
                   </button>
                 </FadeIn>
@@ -997,9 +996,9 @@ export function Empresa() {
                     setNotice("Problema enviado para a gestão.")
                     setProblem("")
                   }}
-                  className="relative overflow-hidden rounded-md border border-red-400/20 bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-red-300/25 sm:p-6"
+                  className="relative overflow-hidden rounded-md border border-red-400/20 bg-foreground/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-red-300/25 sm:p-6"
                 >
-                  <p className="text-xs font-semibold tracking-[0.16em] text-red-300 uppercase">
+                  <p className="text-xs font-semibold tracking-[0.16em] text-red-600 dark:text-red-300 uppercase">
                     Suporte interno
                   </p>
                   <h2 className="mt-2 font-heading text-2xl font-bold">
@@ -1010,9 +1009,9 @@ export function Empresa() {
                     value={problem}
                     onChange={(event) => setProblem(event.target.value)}
                     placeholder="O que aconteceu na empresa?"
-                    className="mt-5 min-h-32 w-full rounded-lg border border-white/10 bg-white/[0.04] p-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-red-400/60"
+                    className="mt-5 min-h-32 w-full rounded-md border border-border bg-foreground/[0.04] p-3 text-sm text-foreground outline-none placeholder:text-foreground/35 focus:border-red-400/60"
                   />
-                  <button className="mt-4 inline-flex items-center gap-2 rounded-lg border border-red-400/30 px-4 py-2 text-sm font-semibold text-red-200 hover:bg-red-400/10">
+                  <button className="mt-4 inline-flex items-center gap-2 rounded-md border border-red-400/30 px-4 py-2 text-sm font-semibold text-red-700 dark:text-red-200 hover:bg-red-400/10">
                     <Flag size={15} /> Enviar problema
                   </button>
                 </FadeIn>
@@ -1020,7 +1019,7 @@ export function Empresa() {
             )}
 
             {notice && (
-              <p className="mt-4 rounded-lg border border-blue-400/15 bg-blue-400/5 px-4 py-3 text-sm text-blue-200">
+              <p className="mt-4 rounded-md border border-blue-400/15 bg-blue-400/5 px-4 py-3 text-sm text-blue-700 dark:text-blue-200">
                 {notice}
               </p>
             )}

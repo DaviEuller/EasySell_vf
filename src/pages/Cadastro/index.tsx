@@ -21,7 +21,7 @@ const initialForm: FormData = {
   segment: "",
 }
 const inputClassName =
-  "mt-2 w-full rounded-md border border-white/12 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-blue-400 focus:bg-white/[0.09]"
+  "mt-2 w-full rounded-md border border-border bg-foreground/[0.06] px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-foreground/30 focus:border-blue-400 focus:bg-foreground/[0.09]"
 
 export function Cadastro() {
   const [form, setForm] = useState<FormData>(initialForm)
@@ -43,25 +43,25 @@ export function Cadastro() {
 
   if (submitted) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#0B1220] px-4 pt-20 text-white">
+      <main className="flex min-h-screen items-center justify-center bg-background px-4 pt-20 text-foreground">
         <NavbarPreset />
         <section className="app-panel w-full max-w-lg p-8 text-center sm:p-12">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/15 text-3xl text-blue-300">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/15 text-3xl text-blue-600 dark:text-blue-300">
             ✓
           </div>
-          <p className="mt-7 text-xs font-semibold tracking-[0.24em] text-blue-300 uppercase">
+          <p className="mt-7 text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
             Cadastro concluido
           </p>
           <h1 className="mt-4 font-heading text-4xl font-bold">
             Bem-vindo, {form.name.split(" ")[0]}.
           </h1>
-          <p className="mt-4 leading-7 text-white/60">
+          <p className="mt-4 leading-7 text-foreground/60">
             Sua conta da EasySell esta pronta. Em breve voce podera organizar
             sua operacao em um so lugar.
           </p>
           <a
             href="/"
-            className="mt-8 inline-flex rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
+            className="mt-8 inline-flex rounded-md bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
           >
             Voltar para a home
           </a>
@@ -71,37 +71,36 @@ export function Cadastro() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#0B1220] pt-20 text-white">
+    <main className="min-h-screen overflow-x-hidden bg-background pt-20 text-foreground">
       <NavbarPreset />
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.18),transparent_32%),radial-gradient(circle_at_80%_80%,rgba(14,165,233,0.1),transparent_28%)]" />
       <header className="relative z-10 flex items-center justify-end px-5 py-6 sm:px-10">
         <a
           href="/"
-          className="text-sm text-white/55 transition hover:text-white"
+          className="text-sm text-foreground/55 transition hover:text-foreground"
         >
           Voltar para a home
         </a>
       </header>
       <div className="relative z-10 mx-auto grid min-h-[calc(100vh-88px)] max-w-6xl items-center gap-12 px-5 pb-12 sm:px-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
         <section className="max-w-md">
-          <p className="text-xs font-semibold tracking-[0.24em] text-blue-300 uppercase">
+          <p className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
             Comece agora
           </p>
           <h1 className="mt-5 font-heading text-5xl leading-[0.98] font-bold sm:text-6xl">
             Sua empresa merece mais controle.
           </h1>
-          <p className="mt-6 leading-7 text-white/55">
+          <p className="mt-6 leading-7 text-foreground/55">
             Crie sua conta gratuitamente e tenha uma visao mais clara do que
             acontece no seu negocio.
           </p>
-          <div className="mt-10 space-y-4 text-sm text-white/65">
+          <div className="mt-10 space-y-4 text-sm text-foreground/65">
             {[
               "Organize estoque e vendas",
               "Acompanhe seu financeiro",
               "Conheca melhor seus clientes",
             ].map((item) => (
               <div key={item} className="flex items-center gap-3">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/15 text-xs text-blue-300">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/15 text-xs text-blue-600 dark:text-blue-300">
                   ✓
                 </span>
                 {item}
@@ -120,7 +119,7 @@ export function Cadastro() {
             nextButtonProps={{
               disabled: !stepIsValid,
               className:
-                "!h-11 !min-w-32 !rounded-md border border-blue-400/30 bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition-all hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-blue-900/50 focus-visible:ring-2 focus-visible:ring-blue-300/70 active:translate-y-0 disabled:translate-y-0 disabled:border-white/10 disabled:bg-white/10 disabled:text-white/40 disabled:shadow-none",
+                "!h-11 !min-w-32 !rounded-md border border-blue-400/30 bg-blue-600 px-5 text-sm font-semibold text-white shadow-lg shadow-blue-950/30 transition-all hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-blue-900/50 focus-visible:ring-2 focus-visible:ring-blue-300/70 active:translate-y-0 disabled:translate-y-0 disabled:border-border disabled:bg-foreground/10 disabled:text-foreground/40 disabled:shadow-none",
             }}
             stepCircleContainerClassName="border-0 shadow-none"
             stepContainerClassName="px-6 sm:px-10"
@@ -128,13 +127,13 @@ export function Cadastro() {
             footerClassName="px-6 sm:px-10"
           >
             <Step>
-              <p className="text-xs font-semibold tracking-[0.2em] text-blue-300 uppercase">
+              <p className="text-xs font-semibold tracking-[0.2em] text-blue-600 dark:text-blue-300 uppercase">
                 01 / seus dados
               </p>
               <h2 className="mt-3 font-heading text-3xl font-bold">
                 Vamos criar seu acesso.
               </h2>
-              <p className="mt-2 text-sm leading-6 text-white/50">
+              <p className="mt-2 text-sm leading-6 text-foreground/50">
                 Use seus dados principais para entrar na EasySell.
               </p>
               <label className="mt-7 block text-sm font-medium">
@@ -185,20 +184,20 @@ export function Cadastro() {
                   autoComplete="new-password"
                 />
                 {passwordMismatch && (
-                  <p className="mt-2 text-xs font-medium text-red-300">
+                  <p className="mt-2 text-xs font-medium text-red-600 dark:text-red-300">
                     As senhas nao coincidem.
                   </p>
                 )}
               </label>
             </Step>
             <Step>
-              <p className="text-xs font-semibold tracking-[0.2em] text-blue-300 uppercase">
+              <p className="text-xs font-semibold tracking-[0.2em] text-blue-600 dark:text-blue-300 uppercase">
                 02 / seu negocio
               </p>
               <h2 className="mt-3 font-heading text-3xl font-bold">
                 Conte sobre sua empresa.
               </h2>
-              <p className="mt-2 text-sm leading-6 text-white/50">
+              <p className="mt-2 text-sm leading-6 text-foreground/50">
                 Assim a EasySell pode preparar uma experiencia mais relevante.
               </p>
               <label className="mt-7 block text-sm font-medium">
@@ -221,49 +220,49 @@ export function Cadastro() {
                     updateField("segment", event.target.value)
                   }
                 >
-                  <option value="" className="bg-[#0B1120]">
+                  <option value="" className="bg-card">
                     Selecione uma opcao
                   </option>
-                  <option value="varejo" className="bg-[#0B1120]">
+                  <option value="varejo" className="bg-card">
                     Varejo
                   </option>
-                  <option value="servicos" className="bg-[#0B1120]">
+                  <option value="servicos" className="bg-card">
                     Servicos
                   </option>
-                  <option value="alimentacao" className="bg-[#0B1120]">
+                  <option value="alimentacao" className="bg-card">
                     Alimentacao
                   </option>
-                  <option value="outro" className="bg-[#0B1120]">
+                  <option value="outro" className="bg-card">
                     Outro
                   </option>
                 </select>
               </label>
             </Step>
             <Step>
-              <p className="text-xs font-semibold tracking-[0.2em] text-blue-300 uppercase">
+              <p className="text-xs font-semibold tracking-[0.2em] text-blue-600 dark:text-blue-300 uppercase">
                 03 / tudo certo
               </p>
               <h2 className="mt-3 font-heading text-3xl font-bold">
                 Pronto para comecar?
               </h2>
-              <p className="mt-2 text-sm leading-6 text-white/50">
+              <p className="mt-2 text-sm leading-6 text-foreground/50">
                 Confira seus dados e crie sua conta gratuita.
               </p>
-              <div className="mt-8 space-y-4 border-y border-white/10 py-5 text-sm">
+              <div className="mt-8 space-y-4 border-y border-border py-5 text-sm">
                 <div className="flex justify-between gap-4">
-                  <span className="text-white/45">Nome</span>
+                  <span className="text-foreground/45">Nome</span>
                   <strong>{form.name}</strong>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <span className="text-white/45">E-mail</span>
+                  <span className="text-foreground/45">E-mail</span>
                   <strong>{form.email}</strong>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <span className="text-white/45">Empresa</span>
+                  <span className="text-foreground/45">Empresa</span>
                   <strong>{form.business}</strong>
                 </div>
               </div>
-              <p className="mt-6 text-xs leading-5 text-white/40">
+              <p className="mt-6 text-xs leading-5 text-foreground/40">
                 Ao continuar, voce concorda com os termos de uso da EasySell.
               </p>
             </Step>

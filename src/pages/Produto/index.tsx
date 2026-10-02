@@ -9,8 +9,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react"
-import NavbarPreset from "@/components/navbar_preset"
-import JellyRadio from "@/components/jellyradio"
+import JellyRadio from "@/components/JellyRadio"
 
 type Product = {
   id: number
@@ -41,7 +40,7 @@ type ViewMode = "list" | "grid"
 const productsKey = "easysell-products"
 const salesKey = "easysell-product-sales"
 
-const panel = "rounded-md border border-white/10 bg-[#111B2E]"
+const panel = "rounded-md border border-border bg-card"
 
 const stockFilters: StockFilter[] = [
   "Todos",
@@ -128,20 +127,20 @@ function stockInfo(stock: number) {
   if (stock === 0) {
     return {
       label: "Sem estoque",
-      className: "border-red-400/25 bg-red-400/10 text-red-300",
+      className: "border-red-400/25 bg-red-400/10 text-red-600 dark:text-red-300",
     }
   }
 
   if (stock <= 10) {
     return {
       label: `${stock} un.`,
-      className: "border-amber-400/25 bg-amber-400/10 text-amber-300",
+      className: "border-amber-400/25 bg-amber-400/10 text-amber-600 dark:text-amber-300",
     }
   }
 
   return {
     label: `${stock} un.`,
-    className: "border-[#5DCAA5]/25 bg-[#5DCAA5]/10 text-[#5DCAA5]",
+    className: "border-[#5DCAA5]/25 bg-[#5DCAA5]/10 text-emerald-600 dark:text-[#5DCAA5]",
   }
 }
 
@@ -356,8 +355,7 @@ export default function Produtos() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0B1220] px-4 pt-20 pb-28 text-white sm:px-8">
-      <NavbarPreset />
+    <main className="relative min-h-screen overflow-hidden bg-background px-4 pt-20 pb-28 text-foreground sm:px-8">
 
       <style>{`
         @keyframes fade-up {
@@ -379,25 +377,25 @@ export default function Produtos() {
 
       <div className="relative z-10 mx-auto max-w-6xl">
         <header
-          className="animate-fade-up flex flex-col justify-between gap-5 border-b border-white/10 py-8 sm:flex-row sm:items-end"
+          className="animate-fade-up flex flex-col justify-between gap-5 border-b border-border py-8 sm:flex-row sm:items-end"
           style={{ animationDelay: "0.05s" }}
         >
           <div>
-            <p className="text-xs font-medium tracking-[0.24em] text-blue-300 uppercase">
+            <p className="text-xs font-medium tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
               Catálogo de produtos
             </p>
 
-            <h1 className="mt-3 text-4xl font-medium tracking-tight text-white sm:text-5xl">
+            <h1 className="mt-3 text-4xl font-medium tracking-tight text-foreground sm:text-5xl">
               Crie, edite e acompanhe seus produtos.
             </h1>
 
-            <p className="mt-3 max-w-xl text-sm leading-6 text-white/50">
+            <p className="mt-3 max-w-xl text-sm leading-6 text-foreground/50">
               Gerencie o catálogo, altere preços e consulte o desempenho de
               vendas de cada produto.
             </p>
           </div>
 
-          <span className="inline-flex items-center gap-2 rounded-sm border border-blue-300/25 bg-blue-400/10 px-4 py-3 text-sm font-normal text-blue-200">
+          <span className="inline-flex items-center gap-2 rounded-sm border border-blue-300/25 bg-blue-400/10 px-4 py-3 text-sm font-normal text-blue-700 dark:text-blue-200">
             <Package size={16} />
             {products.length}{" "}
             {products.length === 1
@@ -429,11 +427,11 @@ export default function Produtos() {
             },
           ].map((item) => (
             <div key={item.label} className={`${panel} p-4`}>
-              <p className="text-xs font-normal text-white/45">
+              <p className="text-xs font-normal text-foreground/45">
                 {item.label}
               </p>
 
-              <strong className="mt-2 block text-2xl font-medium tracking-tight text-white">
+              <strong className="mt-2 block text-2xl font-medium tracking-tight text-foreground">
                 {item.value}
               </strong>
             </div>
@@ -446,18 +444,18 @@ export default function Produtos() {
         >
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-medium tracking-[0.16em] text-blue-300 uppercase">
+              <p className="text-xs font-medium tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
                 {editingId ? "Editar produto" : "Novo produto"}
               </p>
 
-              <h2 className="mt-2 text-2xl font-medium tracking-tight text-white">
+              <h2 className="mt-2 text-2xl font-medium tracking-tight text-foreground">
                 {editingId
                   ? "Atualize as informações"
                   : "Cadastre um produto"}
               </h2>
             </div>
 
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-sm bg-blue-400/15 text-blue-300">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-sm bg-blue-400/15 text-blue-600 dark:text-blue-300">
               {editingId ? (
                 <Pencil size={19} />
               ) : (
@@ -476,7 +474,7 @@ export default function Produtos() {
                 updateForm("name", event.target.value)
               }
               placeholder="Nome do produto"
-              className="h-11 rounded-sm border border-white/10 bg-[#0B1220] px-3 text-sm font-normal outline-none transition placeholder:text-white/30 focus:border-blue-400/60 lg:col-span-2"
+              className="h-11 rounded-sm border border-border bg-inset px-3 text-sm font-normal outline-none transition placeholder:text-foreground/30 focus:border-blue-400/60 lg:col-span-2"
             />
 
             <input
@@ -485,7 +483,7 @@ export default function Produtos() {
                 updateForm("category", event.target.value)
               }
               placeholder="Categoria"
-              className="h-11 rounded-sm border border-white/10 bg-[#0B1220] px-3 text-sm font-normal outline-none transition placeholder:text-white/30 focus:border-blue-400/60"
+              className="h-11 rounded-sm border border-border bg-inset px-3 text-sm font-normal outline-none transition placeholder:text-foreground/30 focus:border-blue-400/60"
             />
 
             <input
@@ -495,7 +493,7 @@ export default function Produtos() {
               }
               placeholder="Valor em R$"
               inputMode="decimal"
-              className="h-11 rounded-sm border border-white/10 bg-[#0B1220] px-3 text-sm font-normal outline-none transition placeholder:text-white/30 focus:border-blue-400/60"
+              className="h-11 rounded-sm border border-border bg-inset px-3 text-sm font-normal outline-none transition placeholder:text-foreground/30 focus:border-blue-400/60"
             />
 
             <input
@@ -505,7 +503,7 @@ export default function Produtos() {
               }
               placeholder="Estoque"
               inputMode="numeric"
-              className="h-11 rounded-sm border border-white/10 bg-[#0B1220] px-3 text-sm font-normal outline-none transition placeholder:text-white/30 focus:border-blue-400/60"
+              className="h-11 rounded-sm border border-border bg-inset px-3 text-sm font-normal outline-none transition placeholder:text-foreground/30 focus:border-blue-400/60"
             />
 
             <div className="flex gap-2">
@@ -521,7 +519,7 @@ export default function Produtos() {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="h-11 rounded-sm border border-white/15 px-4 text-sm font-normal text-white/70 transition hover:bg-white/10"
+                  className="h-11 rounded-sm border border-foreground/15 px-4 text-sm font-normal text-foreground/70 transition hover:bg-foreground/10"
                 >
                   Cancelar
                 </button>
@@ -530,7 +528,7 @@ export default function Produtos() {
           </form>
 
           {notice && (
-            <p className="mt-4 rounded-sm border border-blue-300/20 bg-blue-400/10 px-4 py-3 text-sm font-normal text-blue-200">
+            <p className="mt-4 rounded-sm border border-blue-300/20 bg-blue-400/10 px-4 py-3 text-sm font-normal text-blue-700 dark:text-blue-200">
               {notice}
             </p>
           )}
@@ -540,26 +538,26 @@ export default function Produtos() {
           className={`animate-fade-up ${panel} mt-8 overflow-hidden`}
           style={{ animationDelay: "0.25s" }}
         >
-          <div className="border-b border-white/10 p-5">
+          <div className="border-b border-border p-5">
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
               <div>
-                <p className="text-xs font-medium tracking-[0.16em] text-blue-300 uppercase">
+                <p className="text-xs font-medium tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
                   Catálogo
                 </p>
 
-                <h2 className="mt-2 text-2xl font-medium tracking-tight text-white">
+                <h2 className="mt-2 text-2xl font-medium tracking-tight text-foreground">
                   Todos os produtos
                 </h2>
               </div>
 
-              <label className="flex h-10 w-full items-center gap-2 rounded-sm border border-white/10 bg-[#0B1220] px-3 text-sm font-normal text-white/60 focus-within:border-blue-400/60 sm:w-72">
-                <Search size={15} className="shrink-0 text-white/35" />
+              <label className="flex h-10 w-full items-center gap-2 rounded-sm border border-border bg-inset px-3 text-sm font-normal text-foreground/60 focus-within:border-blue-400/60 sm:w-72">
+                <Search size={15} className="shrink-0 text-foreground/35" />
 
                 <input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Buscar produto ou categoria"
-                  className="w-full bg-transparent text-white outline-none placeholder:text-white/30"
+                  className="w-full bg-transparent text-foreground outline-none placeholder:text-foreground/30"
                 />
               </label>
             </div>
@@ -571,15 +569,15 @@ export default function Produtos() {
                 onChange={(value: string) =>
                   setStockFilter(value as StockFilter)
                 }
-                chipColor="#0B1220"
+                chipColor="var(--surface-inset)"
                 activeColor="#3B82F6"
-                textColor="#A8B3C7"
+                textColor="var(--muted-foreground)"
                 activeTextColor="#FFFFFF"
                 size="md"
                 gap={8}
-                radius={18}
-                swell={0.2}
-                barge={6}
+                radius={6}
+                swell={0.04}
+                barge={2}
                 shrink={0.05}
                 jelly={1}
                 bounce={0.25}
@@ -604,13 +602,15 @@ export default function Produtos() {
                 onChange={(value: string) =>
                   setViewMode(value as ViewMode)
                 }
-                chipColor="#0B1220"
+                chipColor="var(--surface-inset)"
                 activeColor="#3B82F6"
-                textColor="#A8B3C7"
+                textColor="var(--muted-foreground)"
                 activeTextColor="#FFFFFF"
                 size="md"
                 gap={8}
-                radius={18}
+                radius={6}
+                swell={0.04}
+                barge={2}
                 disabled={false}
               />
             </div>
@@ -620,7 +620,7 @@ export default function Produtos() {
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-white/10 text-xs font-normal tracking-[0.12em] text-white/40 uppercase">
+                  <tr className="border-b border-border text-xs font-normal tracking-[0.12em] text-foreground/40 uppercase">
                     <th className="px-5 py-4 font-normal">Produto</th>
                     <th className="px-5 py-4 font-normal">Categoria</th>
                     <th className="px-5 py-4 font-normal">Valor</th>
@@ -647,17 +647,17 @@ export default function Produtos() {
                     return (
                       <tr
                         key={product.id}
-                        className="border-b border-white/5 text-sm transition last:border-0 hover:bg-white/[0.03]"
+                        className="border-b border-border text-sm transition last:border-0 hover:bg-foreground/[0.03]"
                       >
-                        <td className="px-5 py-4 font-normal text-white">
+                        <td className="px-5 py-4 font-normal text-foreground">
                           {product.name}
                         </td>
 
-                        <td className="px-5 py-4 font-normal text-white/60">
+                        <td className="px-5 py-4 font-normal text-foreground/60">
                           {product.category}
                         </td>
 
-                        <td className="px-5 py-4 font-normal text-white">
+                        <td className="px-5 py-4 font-normal text-foreground">
                           {money(product.price)}
                         </td>
 
@@ -669,11 +669,11 @@ export default function Produtos() {
                           </span>
                         </td>
 
-                        <td className="px-5 py-4 font-normal text-white/60">
+                        <td className="px-5 py-4 font-normal text-foreground/60">
                           {stats.quantity}
                         </td>
 
-                        <td className="px-5 py-4 font-normal text-[#5DCAA5]">
+                        <td className="px-5 py-4 font-normal text-emerald-600 dark:text-[#5DCAA5]">
                           {money(stats.revenue)}
                         </td>
 
@@ -682,7 +682,7 @@ export default function Produtos() {
                             <button
                               type="button"
                               onClick={() => startEdit(product)}
-                              className="inline-flex items-center gap-2 rounded-sm border border-blue-300/20 px-3 py-2 text-xs font-normal text-blue-200 transition hover:bg-blue-400/10"
+                              className="inline-flex items-center gap-2 rounded-sm border border-blue-300/20 px-3 py-2 text-xs font-normal text-blue-700 dark:text-blue-200 transition hover:bg-blue-400/10"
                             >
                               <Pencil size={14} />
                               Editar
@@ -691,7 +691,7 @@ export default function Produtos() {
                             <button
                               type="button"
                               onClick={() => removeProduct(product)}
-                              className="inline-flex items-center gap-2 rounded-sm border border-red-400/20 px-3 py-2 text-xs font-normal text-red-300 transition hover:bg-red-400/10"
+                              className="inline-flex items-center gap-2 rounded-sm border border-red-400/20 px-3 py-2 text-xs font-normal text-red-600 dark:text-red-300 transition hover:bg-red-400/10"
                             >
                               <Trash2 size={14} />
                               Remover
@@ -719,15 +719,15 @@ export default function Produtos() {
                 return (
                   <article
                     key={product.id}
-                    className="rounded-[7px] border border-white/10 bg-[#0B1220] p-4"
+                    className="rounded-md border border-border bg-inset p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-medium text-white">
+                        <p className="text-sm font-medium text-foreground">
                           {product.name}
                         </p>
 
-                        <p className="mt-1 text-xs font-normal text-white/40">
+                        <p className="mt-1 text-xs font-normal text-foreground/40">
                           {product.category}
                         </p>
                       </div>
@@ -740,11 +740,11 @@ export default function Produtos() {
                     </div>
 
                     <div className="mt-4 flex items-end justify-between">
-                      <strong className="text-xl font-medium tracking-tight text-white">
+                      <strong className="text-xl font-medium tracking-tight text-foreground">
                         {money(product.price)}
                       </strong>
 
-                      <span className="text-xs font-normal text-white/40">
+                      <span className="text-xs font-normal text-foreground/40">
                         {stats.quantity} vendidos
                       </span>
                     </div>
@@ -753,7 +753,7 @@ export default function Produtos() {
                       <button
                         type="button"
                         onClick={() => startEdit(product)}
-                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-blue-300/20 px-3 py-2 text-xs font-normal text-blue-200 transition hover:bg-blue-400/10"
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-blue-300/20 px-3 py-2 text-xs font-normal text-blue-700 dark:text-blue-200 transition hover:bg-blue-400/10"
                       >
                         <Pencil size={14} />
                         Editar
@@ -762,7 +762,7 @@ export default function Produtos() {
                       <button
                         type="button"
                         onClick={() => removeProduct(product)}
-                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-400/20 px-3 py-2 text-xs font-normal text-red-300 transition hover:bg-red-400/10"
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-400/20 px-3 py-2 text-xs font-normal text-red-600 dark:text-red-300 transition hover:bg-red-400/10"
                       >
                         <Trash2 size={14} />
                         Remover
@@ -775,7 +775,7 @@ export default function Produtos() {
           )}
 
           {filteredProducts.length === 0 && (
-            <div className="p-10 text-center text-sm font-normal text-white/45">
+            <div className="p-10 text-center text-sm font-normal text-foreground/45">
               Nenhum produto encontrado.
             </div>
           )}
@@ -787,11 +787,11 @@ export default function Produtos() {
           style={{ animationDelay: "0.2s" }}
         >
           <div className="mb-4">
-            <p className="text-xs font-medium tracking-[0.16em] text-blue-300 uppercase">
+            <p className="text-xs font-medium tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
               Relatório
             </p>
 
-            <h2 className="mt-2 text-2xl font-medium tracking-tight text-white">
+            <h2 className="mt-2 text-2xl font-medium tracking-tight text-foreground">
               Vendas por produto
             </h2>
           </div>
@@ -803,15 +803,15 @@ export default function Produtos() {
               return (
                 <article
                   key={product.id}
-                  className="rounded-[7px] border border-white/10 bg-[#090B14] p-4"
+                  className="rounded-md border border-border bg-inset p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-foreground">
                         {product.name}
                       </p>
 
-                      <p className="mt-1 text-xs font-normal text-white/40">
+                      <p className="mt-1 text-xs font-normal text-foreground/40">
                         {product.category}
                       </p>
                     </div>
@@ -824,11 +824,11 @@ export default function Produtos() {
                   </div>
 
                   <div className="mt-4 flex items-end justify-between">
-                    <strong className="text-xl font-medium tracking-tight text-white">
+                    <strong className="text-xl font-medium tracking-tight text-foreground">
                       {money(product.price)}
                     </strong>
 
-                    <span className="text-xs font-normal text-white/40">
+                    <span className="text-xs font-normal text-foreground/40">
                       {product.quantity} vendidos
                     </span>
                   </div>
@@ -837,7 +837,7 @@ export default function Produtos() {
                     <button
                       type="button"
                       onClick={() => startEdit(product)}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-blue-300/20 px-3 py-2 text-xs font-normal text-blue-200 transition hover:bg-blue-400/10"
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-blue-300/20 px-3 py-2 text-xs font-normal text-blue-700 dark:text-blue-200 transition hover:bg-blue-400/10"
                     >
                       <Pencil size={14} />
                       Editar
@@ -846,7 +846,7 @@ export default function Produtos() {
                     <button
                       type="button"
                       onClick={() => removeProduct(product)}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-400/20 px-3 py-2 text-xs font-normal text-red-300 transition hover:bg-red-400/10"
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-400/20 px-3 py-2 text-xs font-normal text-red-600 dark:text-red-300 transition hover:bg-red-400/10"
                     >
                       <Trash2 size={14} />
                       Remover
@@ -858,7 +858,7 @@ export default function Produtos() {
           </div>
         </section>
 
-        <div className="mt-6 flex items-center gap-2 text-xs font-normal text-white/35">
+        <div className="mt-6 flex items-center gap-2 text-xs font-normal text-foreground/35">
           <CircleDollarSign size={14} />
           Os valores usam o formato brasileiro e ficam salvos neste navegador.
         </div>
