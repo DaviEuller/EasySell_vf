@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   ArrowUpRight,
   CircleAlert,
@@ -9,26 +9,118 @@ import {
 } from "lucide-react"
 
 type Product = {
-  id: number
+  id: string | number
   name: string
   category: string
   price: number
   stock: number
-  min: number
 }
 
-const initialProducts: Product[] = [
-  { id: 1, name: "Kit organização", category: "Organização", price: 99.9, stock: 84, min: 20 },
-  { id: 2, name: "Cadeira Office", category: "Mobiliário", price: 899.0, stock: 41, min: 15 },
-  { id: 3, name: "Mesa compacta", category: "Mobiliário", price: 459.0, stock: 32, min: 10 },
-  { id: 4, name: "Luminária LED", category: "Iluminação", price: 59.9, stock: 6, min: 15 },
-  { id: 5, name: "Suporte notebook", category: "Acessórios", price: 89.9, stock: 0, min: 10 },
-  { id: 6, name: "Mousepad XL", category: "Acessórios", price: 39.9, stock: 3, min: 12 },
-  { id: 7, name: "Garrafa térmica", category: "Acessórios", price: 79.9, stock: 128, min: 25 },
-  { id: 8, name: "Fone Bluetooth", category: "Eletrônicos", price: 149.9, stock: 0, min: 8 },
-  { id: 9, name: "Teclado mecânico", category: "Eletrônicos", price: 349.0, stock: 22, min: 8 },
-  { id: 10, name: "Webcam Full HD", category: "Eletrônicos", price: 229.0, stock: 14, min: 10 },
-]
+const minimumStock = 10
+
+type ApiRecord = Record<string, unknown>
+
+function isApiRecord(value: unknown): value is ApiRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function getProductId(product: ApiRecord): string | number | undefined {
+  for (const key of ["id", "_id", "productId", "produtoId"]) {
+    const value = product[key]
+    if (typeof value === "string" && value.trim()) return value.trim()
+    if (typeof value === "number" && Number.isFinite(value)) return value
+  }
+  return undefined
+}
+
+function getNumber(record: ApiRecord, keys: string[]) {
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === "number" && Number.isFinite(value)) return value
+    if (typeof value === "string" && value.trim()) {
+      const parsed = Number(value.replace(",", "."))
+      if (Number.isFinite(parsed)) return parsed
+    }
+  }
+  return undefined
+}
+
+function parseProduct(value: unknown): Product | null {
+  if (!isApiRecord(value)) return null
+  const id = getProductId(value)
+  const name =
+    typeof value.name === "string"
+      ? value.name
+      : typeof value.nome === "string"
+        ? value.nome
+        : undefined
+  const category =
+    typeof value.categoria === "string"
+      ? value.categoria
+      : typeof value.category === "string"
+        ? value.category
+        : ""
+  const price = getNumber(value, ["preco", "price"])
+  const stock = getNumber(value, ["quantidade", "stock"])
+
+  if (id === undefined || !name || price === undefined || stock === undefined) {
+    return null
+  }
+
+  return { id, name, category, price, stock }
+}
+
+function parseProducts(payload: unknown): Product[] {
+  let data = payload
+  if (isApiRecord(data) && "data" in data) data = data.data
+  if (isApiRecord(data)) {
+    data = data.products ?? data.produtos ?? data.items
+  }
+  if (!Array.isArray(data)) {
+    throw new Error("A resposta da API de produtos está em um formato inválido.")
+  }
+
+  const products = data.map(parseProduct)
+  if (products.some((product) => product === null)) {
+    throw new Error("A API retornou um produto com dados inválidos.")
+  }
+  return products.filter((product): product is Product => product !== null)
+}
+
+async function getApiError(response: Response) {
+  const responseText = await response.text()
+  if (!responseText) {
+    return `Não foi possível carregar o estoque (erro ${response.status}).`
+  }
+
+  try {
+    const body: unknown = JSON.parse(responseText)
+    if (isApiRecord(body)) {
+      if (typeof body.message === "string") return body.message
+      if (
+        Array.isArray(body.message) &&
+        body.message.every((item) => typeof item === "string")
+      ) {
+        return body.message.join(" ")
+      }
+      if (typeof body.error === "string") return body.error
+    }
+  } catch {
+    return responseText
+  }
+
+  return `Não foi possível carregar o estoque (erro ${response.status}).`
+}
+
+async function readApiJson(response: Response): Promise<unknown> {
+  const responseText = await response.text()
+  if (!responseText) return null
+  try {
+    return JSON.parse(responseText) as unknown
+  } catch {
+    throw new Error("A resposta da API de produtos está em um formato inválido.")
+  }
+}
 
 function money(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -37,17 +129,65 @@ function money(value: number) {
 function statusOf(product: Product) {
   if (product.stock === 0)
     return { label: "Sem estoque", badge: "bg-red-400/15 text-red-600 dark:text-red-300 border-red-400/25", bar: "bg-red-400", level: 0 }
-  if (product.stock <= product.min)
-    return { label: "Estoque baixo", badge: "bg-amber-400/15 text-amber-600 dark:text-amber-300 border-amber-400/25", bar: "bg-amber-400", level: product.stock / product.min }
+  if (product.stock <= minimumStock)
+    return { label: "Estoque baixo", badge: "bg-amber-400/15 text-amber-600 dark:text-amber-300 border-amber-400/25", bar: "bg-amber-400", level: product.stock / minimumStock }
   return { label: "Em dia", badge: "bg-[#5DCAA5]/15 text-emerald-600 dark:text-[#5DCAA5] border-[#5DCAA5]/25", bar: "bg-[#5DCAA5]", level: 1 }
 }
 
 export function Estoque() {
-  const [products] = useState(initialProducts)
+  const [products, setProducts] = useState<Product[]>([])
   const [search, setSearch] = useState("")
   const [notice, setNotice] = useState("")
+  const [loadError, setLoadError] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
 
-  const lowStock = products.filter((p) => p.stock > 0 && p.stock <= p.min)
+  const loadProducts = useCallback(async () => {
+    const apiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "")
+    const companyId = localStorage.getItem("companyId")
+    if (!apiUrl) {
+      throw new Error("A API não está configurada. Defina VITE_API_URL.")
+    }
+    if (!companyId) {
+      throw new Error("Não foi possível identificar a empresa. Entre novamente.")
+    }
+
+    const token = localStorage.getItem("accessToken")
+    const response = await fetch(
+      `${apiUrl}/produtos/company/${encodeURIComponent(companyId)}`,
+      {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      }
+    )
+    if (!response.ok) throw new Error(await getApiError(response))
+    setProducts(parseProducts(await readApiJson(response)))
+    setLoadError("")
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    Promise.resolve()
+      .then(loadProducts)
+      .catch((error: unknown) => {
+        if (active) {
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Não foi possível carregar o estoque."
+          )
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [loadProducts])
+
+  const lowStock = products.filter(
+    (p) => p.stock > 0 && p.stock <= minimumStock
+  )
   const outOfStock = products.filter((p) => p.stock === 0)
   const restockList = [...lowStock, ...outOfStock]
   const totalUnits = products.reduce((sum, p) => sum + p.stock, 0)
@@ -59,7 +199,7 @@ export function Estoque() {
 
   const requestRestock = (product: Product) => {
     setNotice(
-      `Pedido de reposição criado para ${product.name} (${product.min * 2 - product.stock} unidades sugeridas).`
+      `Sugestão para ${product.name}: ${minimumStock * 2 - product.stock} unidades. Esta tela ainda não registra pedidos de reposição na API.`
     )
   }
 
@@ -102,10 +242,10 @@ export function Estoque() {
         {/* KPIs */}
         <section className="grid grid-cols-1 gap-3 py-6 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { label: "Total de itens", value: totalUnits.toLocaleString("pt-BR"), positive: true },
-            { label: "Valor em estoque", value: money(stockValue), positive: true },
-            { label: "Estoque baixo", value: String(lowStock.length), positive: false },
-            { label: "Sem estoque", value: String(outOfStock.length), positive: false },
+            { label: "Total de itens", value: isLoading || loadError ? "—" : totalUnits.toLocaleString("pt-BR"), positive: true },
+            { label: "Valor em estoque", value: isLoading || loadError ? "—" : money(stockValue), positive: true },
+            { label: "Estoque baixo", value: isLoading || loadError ? "—" : String(lowStock.length), positive: false },
+            { label: "Sem estoque", value: isLoading || loadError ? "—" : String(outOfStock.length), positive: false },
           ].map((kpi, index) => (
             <div
               key={kpi.label}
@@ -125,7 +265,7 @@ export function Estoque() {
         </section>
 
         {/* Alertas */}
-        {restockList.length > 0 && (
+        {!isLoading && !loadError && restockList.length > 0 && (
           <section
             className="animate-fade-up mb-3 grid gap-3 sm:grid-cols-2"
             style={{ animationDelay: "0.2s" }}
@@ -241,10 +381,26 @@ export function Estoque() {
                       </tr>
                     )
                   })}
-                  {filtered.length === 0 && (
+                  {isLoading && (
+                    <tr>
+                      <td colSpan={5} className="py-10 text-center text-sm text-foreground/45">
+                        Carregando estoque...
+                      </td>
+                    </tr>
+                  )}
+                  {!isLoading && loadError && (
+                    <tr>
+                      <td colSpan={5} role="alert" className="py-10 text-center text-sm text-red-600 dark:text-red-300">
+                        {loadError}
+                      </td>
+                    </tr>
+                  )}
+                  {!isLoading && !loadError && filtered.length === 0 && (
                     <tr>
                       <td colSpan={5} className="py-10 text-center text-sm text-foreground/35">
-                        Nenhum produto encontrado para "{search}".
+                        {search
+                          ? `Nenhum produto encontrado para "${search}".`
+                          : "Nenhum produto cadastrado."}
                       </td>
                     </tr>
                   )}
@@ -272,7 +428,11 @@ export function Estoque() {
               </div>
             </div>
 
-            {restockList.length > 0 ? (
+            {isLoading ? (
+              <p className="mt-6 text-sm text-foreground/45">
+                Carregando recomendações de reposição...
+              </p>
+            ) : loadError ? null : restockList.length > 0 ? (
               <div className="mt-6 overflow-x-auto">
                 <table className="w-full min-w-[560px] text-sm">
                   <thead>
@@ -301,16 +461,16 @@ export function Estoque() {
                         >
                           {product.stock} un.
                         </td>
-                        <td className="py-3.5 pr-4 text-foreground/50">{product.min} un.</td>
+                        <td className="py-3.5 pr-4 text-foreground/50">{minimumStock} un.</td>
                         <td className="py-3.5 pr-4 text-emerald-600 dark:text-[#5DCAA5]">
-                          {product.min * 2 - product.stock} un.
+                          {minimumStock * 2 - product.stock} un.
                         </td>
                         <td className="py-3.5 text-right">
                           <button
                             onClick={() => requestRestock(product)}
                             className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold transition hover:bg-blue-500"
                           >
-                            Criar pedido <ArrowUpRight size={13} />
+                            Ver sugestão <ArrowUpRight size={13} />
                           </button>
                         </td>
                       </tr>

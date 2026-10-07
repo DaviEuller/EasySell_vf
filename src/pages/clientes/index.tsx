@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   MessageCircle,
   Search,
@@ -7,7 +7,7 @@ import {
 } from "lucide-react"
 
 type Customer = {
-  id: number
+  id: string
   name: string
   product: string
   value: number
@@ -15,18 +15,8 @@ type Customer = {
   phone: string
 }
 
-const initialCustomers: Customer[] = [
-  { id: 1, name: "Marina Souza", product: "Kit organização", value: 99.9, quantity: 1, phone: "11987654321" },
-  { id: 2, name: "Carlos Eduardo", product: "Cadeira Office", value: 899.0, quantity: 1, phone: "21976543210" },
-  { id: 3, name: "Fernanda Lima", product: "Mesa compacta", value: 918.0, quantity: 2, phone: "31965432109" },
-  { id: 4, name: "João Pedro", product: "Luminária LED", value: 179.7, quantity: 3, phone: "41954321098" },
-  { id: 5, name: "Beatriz Alves", product: "Suporte notebook", value: 89.9, quantity: 1, phone: "51943210987" },
-  { id: 6, name: "Rafael Torres", product: "Mousepad XL", value: 79.8, quantity: 2, phone: "61932109876" },
-  { id: 7, name: "Camila Rocha", product: "Garrafa térmica", value: 79.9, quantity: 1, phone: "71921098765" },
-  { id: 8, name: "Lucas Martins", product: "Fone Bluetooth", value: 299.8, quantity: 2, phone: "81910987654" },
-  { id: 9, name: "Juliana Costa", product: "Teclado mecânico", value: 349.0, quantity: 1, phone: "91909876543" },
-  { id: 10, name: "Pedro Henrique", product: "Webcam Full HD", value: 458.0, quantity: 2, phone: "11998765432" },
-]
+type Product = { id: string; name: string }
+type ApiRecord = Record<string, unknown>
 
 const quickMessages = [
   { label: "Agradecimento", text: "compra" },
@@ -39,7 +29,133 @@ function money(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 }
 
+function isApiRecord(value: unknown): value is ApiRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function getId(record: ApiRecord, keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === "string" && value.trim()) return value.trim()
+    if (typeof value === "number" && Number.isFinite(value)) return String(value)
+  }
+  return undefined
+}
+
+function getNumber(record: ApiRecord, keys: string[]): number | undefined {
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === "number" && Number.isFinite(value)) return value
+    if (typeof value === "string" && value.trim()) {
+      const parsed = Number(value.replace(",", "."))
+      if (Number.isFinite(parsed)) return parsed
+    }
+  }
+  return undefined
+}
+
+function getArrayPayload(payload: unknown, keys: string[]): unknown[] {
+  let data = payload
+  if (isApiRecord(data) && "data" in data) data = data.data
+  if (isApiRecord(data)) {
+    for (const key of keys) {
+      if (Array.isArray(data[key])) return data[key]
+    }
+  }
+  if (Array.isArray(data)) return data
+  throw new Error("A resposta da API está em um formato inválido.")
+}
+
+function parseProduct(value: unknown): Product | null {
+  if (!isApiRecord(value)) return null
+  const id = getId(value, ["id", "_id", "productId", "produtoId"])
+  const name =
+    typeof value.name === "string"
+      ? value.name
+      : typeof value.nome === "string"
+        ? value.nome
+        : undefined
+  return id && name ? { id, name } : null
+}
+
+function parseCustomer(
+  value: unknown,
+  productsById: Map<string, string>
+): Customer | null {
+  if (!isApiRecord(value)) return null
+
+  const id = getId(value, ["id", "_id"])
+  const name = typeof value.name === "string" ? value.name : undefined
+  const phoneValue = value.Numero ?? value.numero ?? value.phone
+  const phone =
+    typeof phoneValue === "string" || typeof phoneValue === "number"
+      ? String(phoneValue).replace(/\D/g, "")
+      : ""
+  const productValue = value.Id_Produto ?? value.IdProduto ?? value.product
+  const productId = isApiRecord(productValue)
+    ? getId(productValue, ["id", "_id", "productId", "produtoId"])
+    : typeof productValue === "string" || typeof productValue === "number"
+      ? String(productValue)
+      : undefined
+  const embeddedProductName =
+    isApiRecord(productValue) && typeof productValue.name === "string"
+      ? productValue.name
+      : undefined
+  const product =
+    embeddedProductName ??
+    (productId ? productsById.get(productId) ?? productId : "Produto não informado")
+  const valuePaid = getNumber(value, ["Preco_gasto", "preco_gasto", "value"])
+  const quantity = getNumber(value, ["Quantidade", "quantidade", "quantity"])
+
+  if (
+    !id ||
+    !name ||
+    valuePaid === undefined ||
+    quantity === undefined
+  ) {
+    return null
+  }
+
+  return { id, name, product, value: valuePaid, quantity, phone }
+}
+
+async function getApiError(response: Response) {
+  const responseText = await response.text()
+  if (!responseText) {
+    return `Não foi possível carregar os clientes (erro ${response.status}).`
+  }
+
+  try {
+    const body: unknown = JSON.parse(responseText)
+    if (isApiRecord(body)) {
+      if (typeof body.message === "string") return body.message
+      if (
+        Array.isArray(body.message) &&
+        body.message.every((item) => typeof item === "string")
+      ) {
+        return body.message.join(" ")
+      }
+      if (typeof body.error === "string") return body.error
+    }
+  } catch {
+    return responseText
+  }
+
+  return `Não foi possível carregar os clientes (erro ${response.status}).`
+}
+
+async function readApiJson(response: Response): Promise<unknown> {
+  const responseText = await response.text()
+  if (!responseText) return null
+  try {
+    return JSON.parse(responseText) as unknown
+  } catch {
+    throw new Error("A resposta da API está em um formato inválido.")
+  }
+}
+
 function formatPhone(phone: string) {
+  if (!phone) return "Não informado"
   const ddd = phone.slice(0, 2)
   const rest = phone.slice(2)
   if (rest.length === 9) {
@@ -69,10 +185,95 @@ function openWhatsApp(phone: string, message: string) {
 }
 
 export function Clientes() {
-  const [customers] = useState(initialCustomers)
+  const [customers, setCustomers] = useState<Customer[]>([])
   const [search, setSearch] = useState("")
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [customMessage, setCustomMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState("")
+
+  const loadCustomers = useCallback(async () => {
+    const apiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "")
+    const companyId = localStorage.getItem("companyId")
+    if (!apiUrl) {
+      throw new Error("A API não está configurada. Defina VITE_API_URL.")
+    }
+    if (!companyId) {
+      throw new Error("Não foi possível identificar a empresa. Entre novamente.")
+    }
+
+    const token = localStorage.getItem("accessToken")
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined
+    const [customersResponse, productsResponse] = await Promise.all([
+      fetch(
+        `${apiUrl}/clientes/company/${encodeURIComponent(companyId)}`,
+        { headers }
+      ),
+      fetch(
+        `${apiUrl}/produtos/company/${encodeURIComponent(companyId)}`,
+        { headers }
+      ),
+    ])
+    if (!customersResponse.ok) {
+      throw new Error(await getApiError(customersResponse))
+    }
+    if (!productsResponse.ok) {
+      throw new Error(await getApiError(productsResponse))
+    }
+
+    const productRows = getArrayPayload(
+      await readApiJson(productsResponse),
+      ["products", "produtos", "items"]
+    )
+    const products = productRows.map(parseProduct)
+    const validProducts = products.filter(
+      (product): product is Product => product !== null
+    )
+    if (validProducts.length !== productRows.length) {
+      throw new Error("A API retornou um produto com dados inválidos.")
+    }
+    const productsById = new Map(
+      validProducts.map((product) => [product.id, product.name])
+    )
+
+    const customerRows = getArrayPayload(
+      await readApiJson(customersResponse),
+      ["customers", "clientes", "items"]
+    )
+    const parsedCustomers = customerRows.map((customer) =>
+      parseCustomer(customer, productsById)
+    )
+    const validCustomers = parsedCustomers.filter(
+      (customer): customer is Customer => customer !== null
+    )
+    if (validCustomers.length !== customerRows.length) {
+      throw new Error("A API retornou um cliente com dados inválidos.")
+    }
+    setCustomers(validCustomers)
+    setLoadError("")
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    Promise.resolve()
+      .then(loadCustomers)
+      .catch((error: unknown) => {
+        if (active) {
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Não foi possível carregar os clientes."
+          )
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [loadCustomers])
 
   const filtered = customers.filter((c) =>
     `${c.name} ${c.product} ${c.phone}`.toLowerCase().includes(search.toLowerCase())
@@ -82,7 +283,7 @@ export function Clientes() {
   const totalItems = customers.reduce((sum, c) => sum + c.quantity, 0)
 
 
-  const toggleMenu = (id: number) => {
+  const toggleMenu = (id: string) => {
     setCustomMessage("")
     setOpenMenuId((current) => (current === id ? null : id))
   }
@@ -137,9 +338,9 @@ export function Clientes() {
         {/* KPIs */}
         <section className="grid grid-cols-1 gap-3 py-6 sm:grid-cols-3">
           {[
-            { label: "Clientes", value: customers.length.toLocaleString("pt-BR") },
-            { label: "Itens vendidos", value: totalItems.toLocaleString("pt-BR") },
-            { label: "Receita total", value: money(totalRevenue) },
+            { label: "Clientes", value: isLoading || loadError ? "—" : customers.length.toLocaleString("pt-BR") },
+            { label: "Itens vendidos", value: isLoading || loadError ? "—" : totalItems.toLocaleString("pt-BR") },
+            { label: "Receita total", value: isLoading || loadError ? "—" : money(totalRevenue) },
           ].map((kpi, index) => (
             <div
               key={kpi.label}
@@ -195,6 +396,20 @@ export function Clientes() {
                   </tr>
                 </thead>
                 <tbody>
+                  {isLoading && (
+                    <tr>
+                      <td colSpan={6} className="py-10 text-center text-sm text-foreground/45">
+                        Carregando clientes...
+                      </td>
+                    </tr>
+                  )}
+                  {!isLoading && loadError && (
+                    <tr>
+                      <td colSpan={6} role="alert" className="py-10 text-center text-sm text-red-600 dark:text-red-300">
+                        {loadError}
+                      </td>
+                    </tr>
+                  )}
                   {filtered.map((customer) => (
                     <tr
                       key={customer.id}
@@ -219,6 +434,8 @@ export function Clientes() {
                         <div className="relative inline-block text-left">
                           <button
                             onClick={() => toggleMenu(customer.id)}
+                            disabled={!customer.phone}
+                            title={!customer.phone ? "Telefone não informado" : undefined}
                             className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                               openMenuId === customer.id
                                 ? "bg-[#25D366]/20 text-[#25D366]"
@@ -284,10 +501,12 @@ export function Clientes() {
                       </td>
                     </tr>
                   ))}
-                  {filtered.length === 0 && (
+                  {!isLoading && !loadError && filtered.length === 0 && (
                     <tr>
                       <td colSpan={6} className="py-10 text-center text-sm text-foreground/35">
-                        Nenhum cliente encontrado para "{search}".
+                        {search
+                          ? `Nenhum cliente encontrado para "${search}".`
+                          : "Nenhum cliente cadastrado."}
                       </td>
                     </tr>
                   )}

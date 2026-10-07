@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
-  CircleDollarSign,
   LayoutGrid,
   List,
   Package,
@@ -12,19 +11,11 @@ import {
 import JellyRadio from "@/components/JellyRadio"
 
 type Product = {
-  id: number
+  id: string | number
   name: string
   category: string
   price: number
   stock: number
-}
-
-type Sale = {
-  id: number
-  productId: number
-  quantity: number
-  total: number
-  date: string
 }
 
 type ProductForm = {
@@ -37,9 +28,6 @@ type ProductForm = {
 type StockFilter = "Todos" | "Em estoque" | "Estoque baixo" | "Sem estoque"
 type ViewMode = "list" | "grid"
 
-const productsKey = "easysell-products"
-const salesKey = "easysell-product-sales"
-
 const panel = "rounded-md border border-border bg-card"
 
 const stockFilters: StockFilter[] = [
@@ -49,70 +37,107 @@ const stockFilters: StockFilter[] = [
   "Sem estoque",
 ]
 
-const initialProducts: Product[] = [
-  {
-    id: 1,
-    name: "Kit organização",
-    category: "Organização",
-    price: 99.9,
-    stock: 84,
-  },
-  {
-    id: 2,
-    name: "Cadeira Office",
-    category: "Mobiliário",
-    price: 899,
-    stock: 41,
-  },
-  {
-    id: 3,
-    name: "Luminária LED",
-    category: "Iluminação",
-    price: 59.9,
-    stock: 6,
-  },
-  {
-    id: 4,
-    name: "Fone Bluetooth",
-    category: "Eletrônicos",
-    price: 149.9,
-    stock: 0,
-  },
-  {
-    id: 5,
-    name: "Garrafa térmica",
-    category: "Acessórios",
-    price: 79.9,
-    stock: 128,
-  },
-  {
-    id: 6,
-    name: "Teclado mecânico",
-    category: "Eletrônicos",
-    price: 349,
-    stock: 22,
-  },
-]
+type ApiRecord = Record<string, unknown>
 
-const initialSales: Sale[] = [
-  { id: 1, productId: 1, quantity: 4, total: 399.6, date: "2026-09-01" },
-  { id: 2, productId: 1, quantity: 2, total: 199.8, date: "2026-09-04" },
-  { id: 3, productId: 2, quantity: 1, total: 899, date: "2026-09-02" },
-  { id: 4, productId: 3, quantity: 5, total: 299.5, date: "2026-09-03" },
-  { id: 5, productId: 4, quantity: 6, total: 899.4, date: "2026-09-05" },
-  { id: 6, productId: 4, quantity: 3, total: 449.7, date: "2026-09-07" },
-  { id: 7, productId: 5, quantity: 8, total: 639.2, date: "2026-09-05" },
-  { id: 8, productId: 6, quantity: 2, total: 698, date: "2026-09-06" },
-]
+function isApiRecord(value: unknown): value is ApiRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
 
-function loadStorage<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback
+function getProductId(product: ApiRecord): string | number | undefined {
+  for (const key of ["id", "_id", "productId", "produtoId"]) {
+    const value = product[key]
+    if (typeof value === "string" && value.trim()) return value.trim()
+    if (typeof value === "number" && Number.isFinite(value)) return value
+  }
+  return undefined
+}
+
+function getNumber(record: ApiRecord, keys: string[]) {
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === "number" && Number.isFinite(value)) return value
+    if (typeof value === "string" && value.trim()) {
+      const parsed = Number(value.replace(",", "."))
+      if (Number.isFinite(parsed)) return parsed
+    }
+  }
+  return undefined
+}
+
+function parseProduct(value: unknown): Product | null {
+  if (!isApiRecord(value)) return null
+  const id = getProductId(value)
+  const name =
+    typeof value.name === "string"
+      ? value.name
+      : typeof value.nome === "string"
+        ? value.nome
+        : undefined
+  const category =
+    typeof value.category === "string"
+      ? value.category
+      : typeof value.categoria === "string"
+        ? value.categoria
+        : ""
+  const price = getNumber(value, ["price", "preco", "valor"])
+  const stock = getNumber(value, ["stock", "estoque", "quantity", "quantidade"])
+
+  if (id === undefined || !name || price === undefined || stock === undefined) {
+    return null
+  }
+
+  return { id, name, category, price, stock }
+}
+
+function parseProducts(payload: unknown): Product[] {
+  let data = payload
+  if (isApiRecord(data) && "data" in data) data = data.data
+  if (isApiRecord(data)) {
+    data = data.products ?? data.produtos ?? data.items
+  }
+  if (!Array.isArray(data)) {
+    throw new Error("A resposta da API de produtos está em um formato inválido.")
+  }
+
+  const products = data.map(parseProduct)
+  if (products.some((product) => product === null)) {
+    throw new Error("A API retornou um produto com dados inválidos.")
+  }
+  return products.filter((product): product is Product => product !== null)
+}
+
+async function getApiError(response: Response) {
+  const responseText = await response.text()
+  if (!responseText) {
+    return `Não foi possível concluir a operação (erro ${response.status}).`
+  }
 
   try {
-    const saved = window.localStorage.getItem(key)
-    return saved ? (JSON.parse(saved) as T) : fallback
+    const body: unknown = JSON.parse(responseText)
+    if (isApiRecord(body)) {
+      if (typeof body.message === "string") return body.message
+      if (
+        Array.isArray(body.message) &&
+        body.message.every((item) => typeof item === "string")
+      ) {
+        return body.message.join(" ")
+      }
+      if (typeof body.error === "string") return body.error
+    }
   } catch {
-    return fallback
+    return responseText
+  }
+
+  return `Não foi possível concluir a operação (erro ${response.status}).`
+}
+
+async function readApiJson(response: Response): Promise<unknown> {
+  const responseText = await response.text()
+  if (!responseText) return null
+  try {
+    return JSON.parse(responseText) as unknown
+  } catch {
+    throw new Error("A resposta da API de produtos está em um formato inválido.")
   }
 }
 
@@ -152,13 +177,7 @@ function matchesStockFilter(stock: number, filter: StockFilter) {
 }
 
 export default function Produtos() {
-  const [products, setProducts] = useState<Product[]>(() =>
-    loadStorage(productsKey, initialProducts)
-  )
-
-  const [sales, setSales] = useState<Sale[]>(() =>
-    loadStorage(salesKey, initialSales)
-  )
+  const [products, setProducts] = useState<Product[]>([])
 
   const [form, setForm] = useState<ProductForm>({
     name: "",
@@ -167,87 +186,64 @@ export default function Produtos() {
     stock: "",
   })
 
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<string | number | null>(null)
   const [search, setSearch] = useState("")
   const [notice, setNotice] = useState("")
   const [stockFilter, setStockFilter] = useState<StockFilter>("Todos")
   const [viewMode, setViewMode] = useState<ViewMode>("list")
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
 
-  useEffect(() => {
-    window.localStorage.setItem(productsKey, JSON.stringify(products))
-  }, [products])
+  const loadProducts = useCallback(async () => {
+    const apiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "")
+    const companyId = localStorage.getItem("companyId")
+    if (!apiUrl) {
+      throw new Error("A API não está configurada. Defina VITE_API_URL.")
+    }
+    if (!companyId) {
+      throw new Error("Não foi possível identificar a empresa. Entre novamente.")
+    }
 
-  useEffect(() => {
-    window.localStorage.setItem(salesKey, JSON.stringify(sales))
-  }, [sales])
-
-  const statsByProduct = useMemo(() => {
-    const map = new Map<
-      number,
+    const token = localStorage.getItem("accessToken")
+    const response = await fetch(
+      `${apiUrl}/produtos/company/${encodeURIComponent(companyId)}`,
       {
-        quantity: number
-        revenue: number
-        salesCount: number
-        lastSale: string | null
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       }
-    >()
+    )
+    if (!response.ok) throw new Error(await getApiError(response))
+    setProducts(parseProducts(await readApiJson(response)))
+    setLoadError("")
+  }, [])
 
-    sales.forEach((sale) => {
-      const current = map.get(sale.productId) ?? {
-        quantity: 0,
-        revenue: 0,
-        salesCount: 0,
-        lastSale: null,
-      }
-
-      map.set(sale.productId, {
-        quantity: current.quantity + sale.quantity,
-        revenue: current.revenue + sale.total,
-        salesCount: current.salesCount + 1,
-        lastSale:
-          !current.lastSale || sale.date > current.lastSale
-            ? sale.date
-            : current.lastSale,
+  useEffect(() => {
+    let active = true
+    Promise.resolve()
+      .then(loadProducts)
+      .catch((error: unknown) => {
+        if (active) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Não foi possível carregar os produtos."
+          setLoadError(message)
+          setNotice(message)
+        }
       })
-    })
+      .finally(() => {
+        if (active) setIsLoading(false)
+      })
 
-    return map
-  }, [sales])
-
-  const totalRevenue = sales.reduce((sum, sale) => sum + sale.total, 0)
-
-  const totalUnitsSold = sales.reduce(
-    (sum, sale) => sum + sale.quantity,
-    0
-  )
+    return () => {
+      active = false
+    }
+  }, [loadProducts])
 
   const totalStockValue = products.reduce(
     (sum, product) => sum + product.price * product.stock,
     0
   )
-
-  const productReports = useMemo(() => {
-    return products
-      .map((product) => {
-        const stats = statsByProduct.get(product.id) ?? {
-          quantity: 0,
-          revenue: 0,
-          salesCount: 0,
-          lastSale: null,
-        }
-
-        return {
-          ...product,
-          ...stats,
-          lastSaleLabel: stats.lastSale
-            ? new Date(
-                `${stats.lastSale}T12:00:00`
-              ).toLocaleDateString("pt-BR")
-            : "Sem vendas",
-        }
-      })
-      .sort((a, b) => b.revenue - a.revenue)
-  }, [products, statsByProduct])
 
   const filteredProducts = products.filter(
     (product) =>
@@ -275,15 +271,19 @@ export default function Produtos() {
     setEditingId(null)
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const price = Number(form.price.replace(",", "."))
-    const stock = Number.parseInt(form.stock, 10)
+    const stock = Number(form.stock)
 
     if (
       !form.name.trim() ||
       !form.category.trim() ||
+      !form.price.trim() ||
+      !form.stock.trim() ||
+      !Number.isFinite(price) ||
+      !Number.isInteger(stock) ||
       price < 0 ||
       stock < 0
     ) {
@@ -291,31 +291,58 @@ export default function Produtos() {
       return
     }
 
-    const nextProduct: Product = {
-      id: editingId ?? Date.now(),
-      name: form.name.trim(),
-      category: form.category.trim(),
-      price,
-      stock,
+    const apiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "")
+    const companyId = localStorage.getItem("companyId")
+    if (!apiUrl || !companyId) {
+      setNotice(
+        !apiUrl
+          ? "A API não está configurada. Defina VITE_API_URL."
+          : "Não foi possível identificar a empresa. Entre novamente."
+      )
+      return
     }
 
-    setProducts((current) => {
-      if (editingId) {
-        return current.map((product) =>
-          product.id === editingId ? nextProduct : product
-        )
-      }
+    const token = localStorage.getItem("accessToken")
+    setIsSaving(true)
+    setNotice("")
+    try {
+      const response = await fetch(
+        editingId
+          ? `${apiUrl}/produtos/${encodeURIComponent(editingId)}`
+          : `${apiUrl}/produtos`,
+        {
+          method: editingId ? "PATCH" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            name: form.name.trim(),
+            categoria: form.category.trim(),
+            preco: price,
+            quantidade: stock,
+            companyId,
+          }),
+        }
+      )
+      if (!response.ok) throw new Error(await getApiError(response))
 
-      return [nextProduct, ...current]
-    })
-
-    setNotice(
-      editingId
-        ? "Produto atualizado com sucesso."
-        : "Produto criado com sucesso."
-    )
-
-    resetForm()
+      await loadProducts()
+      setNotice(
+        editingId
+          ? "Produto atualizado com sucesso."
+          : "Produto criado com sucesso."
+      )
+      resetForm()
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível salvar o produto."
+      )
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const startEdit = (product: Product) => {
@@ -334,24 +361,44 @@ export default function Produtos() {
     })
   }
 
-  const removeProduct = (product: Product) => {
+  const removeProduct = async (product: Product) => {
     const confirmed = window.confirm(
-      `Remover o produto "${product.name}" e as vendas relacionadas?`
+      `Remover o produto "${product.name}"?`
     )
 
     if (!confirmed) return
 
-    setProducts((current) =>
-      current.filter((item) => item.id !== product.id)
-    )
+    const apiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "")
+    if (!apiUrl) {
+      setNotice("A API não está configurada. Defina VITE_API_URL.")
+      return
+    }
 
-    setSales((current) =>
-      current.filter((sale) => sale.productId !== product.id)
-    )
+    const token = localStorage.getItem("accessToken")
+    setIsSaving(true)
+    setNotice("")
+    try {
+      const response = await fetch(
+        `${apiUrl}/produtos/${encodeURIComponent(product.id)}`,
+        {
+          method: "DELETE",
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        }
+      )
+      if (!response.ok) throw new Error(await getApiError(response))
 
-    if (editingId === product.id) resetForm()
-
-    setNotice(`Produto "${product.name}" removido.`)
+      await loadProducts()
+      if (editingId === product.id) resetForm()
+      setNotice(`Produto "${product.name}" removido.`)
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível remover o produto."
+      )
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -390,8 +437,8 @@ export default function Produtos() {
             </h1>
 
             <p className="mt-3 max-w-xl text-sm leading-6 text-foreground/50">
-              Gerencie o catálogo, altere preços e consulte o desempenho de
-              vendas de cada produto.
+              Gerencie o catálogo, ajuste preços e acompanhe os níveis de
+              estoque da empresa.
             </p>
           </div>
 
@@ -415,11 +462,11 @@ export default function Produtos() {
             },
             {
               label: "Receita das vendas",
-              value: money(totalRevenue),
+              value: "—",
             },
             {
               label: "Unidades vendidas",
-              value: totalUnitsSold.toLocaleString("pt-BR"),
+              value: "—",
             },
             {
               label: "Valor em estoque",
@@ -509,10 +556,11 @@ export default function Produtos() {
             <div className="flex gap-2">
               <button
                 type="submit"
+                disabled={isSaving}
                 className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-sm bg-blue-500 text-sm font-medium text-white transition hover:bg-blue-400"
               >
                 <PackagePlus size={16} />
-                {editingId ? "Salvar" : "Criar"}
+                {isSaving ? "Salvando..." : editingId ? "Salvar" : "Criar"}
               </button>
 
               {editingId && (
@@ -625,8 +673,6 @@ export default function Produtos() {
                     <th className="px-5 py-4 font-normal">Categoria</th>
                     <th className="px-5 py-4 font-normal">Valor</th>
                     <th className="px-5 py-4 font-normal">Estoque</th>
-                    <th className="px-5 py-4 font-normal">Vendidos</th>
-                    <th className="px-5 py-4 font-normal">Receita</th>
                     <th className="px-5 py-4 text-right font-normal">
                       Ações
                     </th>
@@ -635,13 +681,6 @@ export default function Produtos() {
 
                 <tbody>
                   {filteredProducts.map((product) => {
-                    const stats = statsByProduct.get(product.id) ?? {
-                      quantity: 0,
-                      revenue: 0,
-                      salesCount: 0,
-                      lastSale: null,
-                    }
-
                     const stock = stockInfo(product.stock)
 
                     return (
@@ -667,14 +706,6 @@ export default function Produtos() {
                           >
                             {stock.label}
                           </span>
-                        </td>
-
-                        <td className="px-5 py-4 font-normal text-foreground/60">
-                          {stats.quantity}
-                        </td>
-
-                        <td className="px-5 py-4 font-normal text-emerald-600 dark:text-[#5DCAA5]">
-                          {money(stats.revenue)}
                         </td>
 
                         <td className="px-5 py-4">
@@ -707,13 +738,6 @@ export default function Produtos() {
           ) : (
             <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
               {filteredProducts.map((product) => {
-                const stats = statsByProduct.get(product.id) ?? {
-                  quantity: 0,
-                  revenue: 0,
-                  salesCount: 0,
-                  lastSale: null,
-                }
-
                 const stock = stockInfo(product.stock)
 
                 return (
@@ -745,7 +769,7 @@ export default function Produtos() {
                       </strong>
 
                       <span className="text-xs font-normal text-foreground/40">
-                        {stats.quantity} vendidos
+                        Estoque: {product.stock} un.
                       </span>
                     </div>
 
@@ -774,7 +798,19 @@ export default function Produtos() {
             </div>
           )}
 
-          {filteredProducts.length === 0 && (
+          {isLoading && (
+            <div className="p-10 text-center text-sm font-normal text-foreground/45">
+              Carregando produtos...
+            </div>
+          )}
+
+          {!isLoading && loadError && (
+            <div role="alert" className="p-10 text-center text-sm text-red-600 dark:text-red-300">
+              {loadError}
+            </div>
+          )}
+
+          {!isLoading && !loadError && filteredProducts.length === 0 && (
             <div className="p-10 text-center text-sm font-normal text-foreground/45">
               Nenhum produto encontrado.
             </div>
@@ -796,71 +832,14 @@ export default function Produtos() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {productReports.map((product) => {
-              const stock = stockInfo(product.stock)
-
-              return (
-                <article
-                  key={product.id}
-                  className="rounded-md border border-border bg-inset p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {product.name}
-                      </p>
-
-                      <p className="mt-1 text-xs font-normal text-foreground/40">
-                        {product.category}
-                      </p>
-                    </div>
-
-                    <span
-                      className={`shrink-0 rounded-sm border px-2.5 py-1 text-xs font-normal ${stock.className}`}
-                    >
-                      {stock.label}
-                    </span>
-                  </div>
-
-                  <div className="mt-4 flex items-end justify-between">
-                    <strong className="text-xl font-medium tracking-tight text-foreground">
-                      {money(product.price)}
-                    </strong>
-
-                    <span className="text-xs font-normal text-foreground/40">
-                      {product.quantity} vendidos
-                    </span>
-                  </div>
-
-                  <div className="mt-4 flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => startEdit(product)}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-blue-300/20 px-3 py-2 text-xs font-normal text-blue-700 dark:text-blue-200 transition hover:bg-blue-400/10"
-                    >
-                      <Pencil size={14} />
-                      Editar
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => removeProduct(product)}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-red-400/20 px-3 py-2 text-xs font-normal text-red-600 dark:text-red-300 transition hover:bg-red-400/10"
-                    >
-                      <Trash2 size={14} />
-                      Remover
-                    </button>
-                  </div>
-                </article>
-              )
-            })}
+          <div className={`${panel} p-5 text-sm text-foreground/50`}>
+            A API informada ainda não possui uma rota de vendas para gerar este
+            relatório.
           </div>
         </section>
 
-        <div className="mt-6 flex items-center gap-2 text-xs font-normal text-foreground/35">
-          <CircleDollarSign size={14} />
-          Os valores usam o formato brasileiro e ficam salvos neste navegador.
+        <div className="mt-6 text-xs font-normal text-foreground/35">
+          Os produtos são carregados e salvos na API da empresa.
         </div>
       </div>
     </main>

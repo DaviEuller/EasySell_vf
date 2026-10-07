@@ -56,6 +56,19 @@ type CnpjWsResponse = {
   }
 }
 
+function getCompanyId(value: unknown): string | undefined {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return undefined
+  }
+  const record = value as Record<string, unknown>
+  for (const key of ["id", "_id", "companyId", "company_id", "idcompany"]) {
+    const id = record[key]
+    if (typeof id === "string" && id.trim()) return id.trim()
+    if (typeof id === "number") return String(id)
+  }
+  return undefined
+}
+
 async function getApiError(response: Response) {
   const responseText = await response.text()
   if (!responseText) {
@@ -396,6 +409,31 @@ export function Empresa() {
 
       if (!response.ok) {
         throw new Error(await getApiError(response))
+      }
+
+      const responseText = await response.text()
+      if (responseText) {
+        try {
+          const companyBody: unknown = JSON.parse(responseText)
+          const companyRecord =
+            typeof companyBody === "object" &&
+            companyBody !== null &&
+            !Array.isArray(companyBody) &&
+            "data" in companyBody
+              ? companyBody.data
+              : companyBody
+          const companyId = getCompanyId(
+            typeof companyRecord === "object" &&
+              companyRecord !== null &&
+              !Array.isArray(companyRecord) &&
+              "company" in companyRecord
+              ? companyRecord.company
+              : companyRecord
+          )
+          if (companyId) localStorage.setItem("companyId", companyId)
+        } catch {
+          throw new Error("A resposta da API de empresa está em um formato inválido.")
+        }
       }
 
       sessionStorage.setItem("easysell:has-company", "true")

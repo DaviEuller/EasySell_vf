@@ -43,6 +43,15 @@ function getResponsibleId(company: ApiRecord): string | undefined {
 	return undefined
 }
 
+function getCompanyId(company: ApiRecord): string | undefined {
+	for (const key of ["id", "_id", "companyId", "company_id", "idcompany"]) {
+		const value = company[key]
+		if (typeof value === "string" && value.trim()) return value.trim()
+		if (typeof value === "number") return String(value)
+	}
+	return undefined
+}
+
 export function Login() {
 	const navigate = useNavigate()
 	const [email, setEmail] = useState("")
@@ -66,6 +75,8 @@ export function Login() {
 
 		sessionStorage.removeItem("easysell:has-company")
 		localStorage.removeItem("userId")
+		localStorage.removeItem("companyId")
+		localStorage.removeItem("accessToken")
 		setIsSubmitting(true)
 		setError("")
 
@@ -139,6 +150,7 @@ export function Login() {
 						: typeof data.token === "string"
 							? data.token
 							: undefined
+			if (token) localStorage.setItem("accessToken", token)
 
 			let hasCompany = false
 			if (sub && token) {
@@ -173,11 +185,16 @@ export function Login() {
 						: isApiRecord(companiesPayload)
 							? [companiesPayload]
 							: []
-					hasCompany = companies.some(
+					const userCompany = companies.find(
 						(company) =>
 							isApiRecord(company) &&
 							getResponsibleId(company) === sub,
 					)
+					if (isApiRecord(userCompany)) {
+						hasCompany = true
+						const companyId = getCompanyId(userCompany)
+						if (companyId) localStorage.setItem("companyId", companyId)
+					}
 				}
 			}
 
