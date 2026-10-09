@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom"
 import { Moon, Sun } from "lucide-react"
 
 import AppLayout from "@/components/AppLayout"
@@ -15,6 +15,8 @@ import Financias from "@/pages/Financias"
 import Clientes from "@/pages/clientes"
 import Produtos from "@/pages/Produto"
 import Sellia from "@/pages/sellia"
+import Configuracoes from "@/pages/Configuracoes"
+import NotFound from "@/pages/NotFound"
 
 // Páginas públicas (landing, login, cadastro): sem sidebar, com botão de tema.
 function PublicLayout() {
@@ -62,7 +64,10 @@ export function App() {
           <Route path="/equipe" element={<Equipe />} />
           <Route path="/empresa" element={<Empresa />} />
           <Route path="/sell" element={<Sellia />} />
+          <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/config" element={<Navigate to="/configuracoes" replace />} />
         </Route>
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )

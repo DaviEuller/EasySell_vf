@@ -77,6 +77,8 @@ export function Login() {
 		localStorage.removeItem("userId")
 		localStorage.removeItem("companyId")
 		localStorage.removeItem("accessToken")
+		localStorage.removeItem("role")
+		localStorage.removeItem("equipeMemberId")
 		setIsSubmitting(true)
 		setError("")
 
@@ -131,6 +133,13 @@ export function Login() {
 			const root = isApiRecord(responseBody) ? responseBody : {}
 			const data = isApiRecord(root.data) ? root.data : root
 			const user = isApiRecord(data.user) ? data.user : data
+			const role =
+				typeof data.role === "string"
+					? data.role
+					: typeof user.role === "string"
+						? user.role
+						: undefined
+			if (role) localStorage.setItem("role", role)
 			const sub =
 				getUserId(user) ??
 				(typeof data.sub === "string" && data.sub.trim()
@@ -151,6 +160,24 @@ export function Login() {
 							? data.token
 							: undefined
 			if (token) localStorage.setItem("accessToken", token)
+
+			const equipeMember =
+				typeof data.equipeMember === "string"
+					? data.equipeMember
+					: typeof user.equipeMember === "string"
+						? user.equipeMember
+						: undefined
+			if (equipeMember) {
+				localStorage.setItem("equipeMemberId", equipeMember)
+			}
+			if (
+				(role === "atendente" || role === "funcionario") &&
+				equipeMember
+			) {
+				sessionStorage.setItem("easysell:has-company", "false")
+				navigate("/equipe", { replace: true })
+				return
+			}
 
 			let hasCompany = false
 			if (sub && token) {

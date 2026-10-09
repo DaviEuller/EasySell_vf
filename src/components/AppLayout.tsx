@@ -9,6 +9,7 @@ import {
   Package,
   PanelLeftClose,
   PanelLeftOpen,
+  Settings,
   Sparkles,
   Sun,
   Users,
@@ -50,6 +51,10 @@ const sections = [
     title: "Inteligência",
     items: [{ to: "/sell", label: "Sellia", icon: Sparkles }],
   },
+  {
+    title: "Conta",
+    items: [{ to: "/configuracoes", label: "Configurações", icon: Settings }],
+  },
 ]
 
 const allItems = sections.flatMap((section) => section.items)
@@ -84,19 +89,37 @@ export function AppLayout() {
   const visible = isDesktop ? !hidden : mobileOpen
   const offset = isDesktop && !hidden ? SIDEBAR_WIDTH : 0
   const hasCompany = sessionStorage.getItem("easysell:has-company") === "true"
-  const visibleSections = hasCompany
-    ? sections
-    : [
+  const role = localStorage.getItem("role")
+  const isAssociatedEmployee =
+    role === "funcionario" || role === "atendente"
+  const employeeSections = [
+    {
+      title: "Área do funcionário",
+      items: [
+        { to: "/equipe", label: "Equipe", icon: UsersRound },
+        { to: "/sell", label: "Sellia", icon: Sparkles },
+        { to: "/configuracoes", label: "Configurações", icon: Settings },
+      ],
+    },
+  ]
+  const visibleSections = isAssociatedEmployee
+    ? employeeSections
+    : hasCompany
+      ? sections
+      : [
         {
           title: "Organização",
           items: [{ to: "/empresa?mode=create", label: "Empresa", icon: Building2 }],
         },
       ]
   const pageTitle =
-    allItems.find(
+    [...allItems, ...employeeSections.flatMap((section) => section.items)].find(
       (item) =>
         pathname.startsWith(item.to) &&
-        (hasCompany || item.to === "/empresa")
+        (hasCompany ||
+          isAssociatedEmployee ||
+          item.to === "/empresa" ||
+          item.to === "/configuracoes")
     )?.label ?? "EasySell"
 
   const toggleSidebar = () => {
@@ -133,7 +156,20 @@ export function AppLayout() {
     return () => window.removeEventListener("keydown", onKeyDown)
   })
 
-  if (!hasCompany && pathname !== "/empresa") {
+  if (
+    isAssociatedEmployee &&
+    !["/equipe", "/sell", "/configuracoes", "/config"].includes(pathname)
+  ) {
+    return <Navigate to="/equipe" replace />
+  }
+
+  if (
+    !hasCompany &&
+    !isAssociatedEmployee &&
+    pathname !== "/empresa" &&
+    pathname !== "/configuracoes" &&
+    pathname !== "/config"
+  ) {
     return <Navigate to="/empresa?mode=create" replace />
   }
 
@@ -218,15 +254,7 @@ export function AppLayout() {
             {darkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
-          <div className="flex items-center gap-3 rounded-md border border-border px-3 py-2.5">
-            <div className="flex size-8 items-center justify-center rounded-full bg-blue-500/15 text-xs font-medium text-blue-600 dark:text-blue-300">
-              D
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">Davi</p>
-              <p className="text-xs text-foreground/40">Administrador</p>
-            </div>
-          </div>
+          
         </div>
       </aside>
 

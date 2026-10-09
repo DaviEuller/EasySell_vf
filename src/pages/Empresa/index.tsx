@@ -436,6 +436,7 @@ export function Empresa() {
         }
       }
 
+      localStorage.setItem("role", "administrador")
       sessionStorage.setItem("easysell:has-company", "true")
       setCreatedCompany(foundCompany)
       setCreatedCpf(cpf)
