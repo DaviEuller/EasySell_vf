@@ -21,6 +21,18 @@ function getUserId(user: ApiRecord): string | undefined {
 	return undefined
 }
 
+function getEquipeMemberId(value: unknown): string | undefined {
+	if (typeof value === "string" && value.trim()) return value.trim()
+	if (typeof value === "number") return String(value)
+	if (!isApiRecord(value)) return undefined
+	for (const key of ["id", "_id", "equipeMemberId", "equipe_member_id"]) {
+		const id = value[key]
+		if (typeof id === "string" && id.trim()) return id.trim()
+		if (typeof id === "number") return String(id)
+	}
+	return undefined
+}
+
 function getResponsibleId(company: ApiRecord): string | undefined {
 	for (const key of [
 		"responsavelId",
@@ -161,12 +173,9 @@ export function Login() {
 							: undefined
 			if (token) localStorage.setItem("accessToken", token)
 
-			const equipeMember =
-				typeof data.equipeMember === "string"
-					? data.equipeMember
-					: typeof user.equipeMember === "string"
-						? user.equipeMember
-						: undefined
+			const equipeMember = getEquipeMemberId(
+				data.equipeMember ?? data.equipe_member ?? user.equipeMember ?? user.equipe_member,
+			)
 			if (equipeMember) {
 				localStorage.setItem("equipeMemberId", equipeMember)
 			}
@@ -223,6 +232,45 @@ export function Login() {
 						if (companyId) localStorage.setItem("companyId", companyId)
 					}
 				}
+			}
+
+			let isAssociatedEmployee =
+				(role === "atendente" || role === "funcionario") && Boolean(equipeMember)
+			if (!hasCompany && !isAssociatedEmployee && token) {
+				const membershipResponse = await fetch(
+					`${apiUrl}/equipe/minhas-tarefas`,
+					{ headers: { Authorization: `Bearer ${token}` } },
+				)
+				if (membershipResponse.ok) {
+					isAssociatedEmployee = true
+					localStorage.setItem("role", "funcionario")
+					const membershipText = await membershipResponse.text()
+					if (membershipText) {
+						try {
+							const membershipBody: unknown = JSON.parse(membershipText)
+							const membership = isApiRecord(membershipBody)
+								? isApiRecord(membershipBody.data)
+									? membershipBody.data
+									: membershipBody
+								: {}
+							const membershipId = getEquipeMemberId(membership)
+							if (membershipId) {
+								localStorage.setItem("equipeMemberId", membershipId)
+							}
+						} catch {
+							throw new Error("A resposta da API de equipe está em um formato inválido.")
+						}
+					}
+				} else if (![401, 403, 404].includes(membershipResponse.status)) {
+					throw new Error(
+						`Não foi possível verificar o vínculo com a empresa (erro ${membershipResponse.status}).`,
+					)
+				}
+			}
+			if (isAssociatedEmployee) {
+				sessionStorage.setItem("easysell:has-company", "false")
+				navigate("/equipe", { replace: true })
+				return
 			}
 
 			sessionStorage.setItem("easysell:has-company", String(hasCompany))
