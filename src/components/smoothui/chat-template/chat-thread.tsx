@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import AIApproval from "@/components/smoothui/ai-approval";
 import AIArtifact from "@/components/smoothui/ai-artifact";
 import AIContextMeter from "@/components/smoothui/ai-context-meter";
 import AIConversation from "@/components/smoothui/ai-conversation";
@@ -9,9 +8,8 @@ import type { AIState } from "@/components/smoothui/ai-core";
 import AIDiff from "@/components/smoothui/ai-diff";
 import AILoader from "@/components/smoothui/ai-loader";
 import AIMessage from "@/components/smoothui/ai-message";
-import AIPromptInput, {
-  type AIPromptAttachment,
-} from "@/components/smoothui/ai-prompt-input";
+import AIApproval from "@/components/smoothui/ai-approval";
+import AIPromptInput from "@/components/smoothui/ai-prompt-input";
 import AIReasoning from "@/components/smoothui/ai-reasoning";
 import AIResponse from "@/components/smoothui/ai-response";
 import AISources from "@/components/smoothui/ai-sources";
@@ -19,34 +17,24 @@ import AISuggestions from "@/components/smoothui/ai-suggestions";
 import AITaskList from "@/components/smoothui/ai-task-list";
 import AIToolCall from "@/components/smoothui/ai-tool-call";
 import SiriOrb from "@/components/smoothui/siri-orb";
-import { ChevronDown, PanelLeftOpen, Paperclip } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  ATTACHABLE_FILES,
-  type ChatTurn,
-  CONTEXT_LIMIT,
-  MODELS,
-  SIMULATED_REPLY,
-  STARTER_SUGGESTIONS,
-} from "./chat-data";
-
-const THINK_MS = 900;
-const TOOL_MS = 1900;
-const STREAM_INTERVAL_MS = 45;
-/** Rough English ratio, good enough for a meter that is showing pressure. */
-const CHARS_PER_TOKEN = 4;
-const SYSTEM_TOKENS = 1800;
-const TOKENS_PER_SOURCE = 9200;
-const TOKENS_PER_ATTACHMENT = 6400;
-
-type LivePhase = "idle" | "thinking" | "tool" | "streaming";
+import { PanelLeftOpen, Paperclip } from "lucide-react";
+import { useMemo, useState } from "react";
+import { type ChatConversation, type ChatTurn, CONTEXT_LIMIT } from "./chat-data";
 
 const formatClock = (date: Date) =>
   `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 
 export type ChatThreadProps = {
   className?: string;
-  /** Opens the conversation list on narrow screens, where it has no column. */
+  conversationId?: string;
+  errorMessage?: string;
+  isLoadingConversations?: boolean;
+  onAction: (conversationId: string, actionId: string, confirm: boolean) => Promise<void>;
+  onRetry: () => void;
+  onSend: (
+    message: string,
+    conversationId: string | undefined
+  ) => Promise<ChatConversation>;
   onOpenSidebar?: () => void;
   title: string;
   turns: ChatTurn[];
@@ -54,89 +42,84 @@ export type ChatThreadProps = {
 
 export const ChatThread = ({
   className,
+  conversationId,
+  errorMessage,
+  isLoadingConversations = false,
+  onAction,
+  onRetry,
+  onSend,
   onOpenSidebar,
   title,
   turns,
 }: ChatThreadProps) => {
   const [localTurns, setLocalTurns] = useState<ChatTurn[]>([]);
-  const [phase, setPhase] = useState<LivePhase>("idle");
-  const [streamed, setStreamed] = useState("");
-  const [draftAttachments, setDraftAttachments] = useState<
-    AIPromptAttachment[]
-  >([]);
-  const [model, setModel] = useState<string>(MODELS[0].label);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const [phase, setPhase] = useState<"idle" | "thinking">("idle");
+  const [actionError, setActionError] = useState("");
+  const [activeActionId, setActiveActionId] = useState<string | null>(null);
 
-  const clearTimers = useCallback(() => {
-    for (const timer of timers.current) {
-      clearTimeout(timer);
-    }
-    timers.current = [];
-  }, []);
-
-  useEffect(() => clearTimers, [clearTimers]);
-
-  useEffect(() => {
-    if (phase !== "streaming") {
-      return;
-    }
-    const words = SIMULATED_REPLY.text.split(" ");
-    let index = 0;
-    const interval = setInterval(() => {
-      index += 1;
-      setStreamed(words.slice(0, index).join(" "));
-      if (index >= words.length) {
-        clearInterval(interval);
-        setPhase("idle");
-        setLocalTurns((current) => [
-          ...current,
-          {
-            citations: [...SIMULATED_REPLY.citations],
-            from: "assistant",
-            id: `live-a-${current.length}`,
-            reasoning: SIMULATED_REPLY.reasoning,
-            sources: [...SIMULATED_REPLY.sources],
-            suggestions: [...SIMULATED_REPLY.suggestions],
-            text: SIMULATED_REPLY.text,
-            timestamp: formatClock(new Date()),
-            tool: { ...SIMULATED_REPLY.tool },
-          },
-        ]);
-        setStreamed("");
-      }
-    }, STREAM_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [phase]);
-
-  const send = (value: string) => {
+  const send = async (value: string) => {
     const draft = value.trim();
     if (!draft || phase !== "idle") {
       return;
     }
 
-    clearTimers();
-    const attachments = draftAttachments;
-    setDraftAttachments([]);
+    const optimisticId = `local-${crypto.randomUUID()}`;
     setLocalTurns((current) => [
       ...current,
       {
-        attachments: attachments.length > 0 ? attachments : undefined,
         from: "user",
-        id: `live-u-${current.length}`,
+        id: optimisticId,
         text: draft,
         timestamp: formatClock(new Date()),
       },
     ]);
     setPhase("thinking");
-    // Stand-ins for a request's stages. No model runs here.
-    timers.current.push(setTimeout(() => setPhase("tool"), THINK_MS));
-    timers.current.push(setTimeout(() => setPhase("streaming"), TOOL_MS));
+    setActionError("");
+    try {
+      await onSend(draft, conversationId);
+      setLocalTurns([]);
+    } catch (error) {
+      setLocalTurns((current) => [
+        ...current,
+        {
+          from: "assistant",
+          id: `error-${crypto.randomUUID()}`,
+          text:
+            error instanceof Error
+              ? error.message
+              : "Não foi possível obter uma resposta da Sellia.",
+          timestamp: formatClock(new Date()),
+        },
+      ]);
+    } finally {
+      setPhase("idle");
+    }
   };
 
-  const stop = () => {
-    clearTimers();
-    setPhase("idle");
-    setStreamed("");
+  const decideAction = async (turn: ChatTurn, optionId: string) => {
+    if (
+      turn.from !== "assistant" ||
+      !conversationId ||
+      !turn.pendingAction ||
+      activeActionId
+    ) {
+      return;
+    }
+    setActiveActionId(turn.pendingAction.id);
+    setActionError("");
+    try {
+      await onAction(
+        conversationId,
+        turn.pendingAction.id,
+        optionId === "confirm"
+      );
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : "Não foi possível processar a ação."
+      );
+    } finally {
+      setActiveActionId(null);
+    }
   };
 
   // Memoised because the token breakdown below depends on it; a fresh array each
@@ -146,53 +129,34 @@ export const ChatThread = ({
     [turns, localTurns]
   );
   const isBusy = phase !== "idle";
-  const state: AIState = phase === "streaming" ? "streaming" : "thinking";
+  const hasPendingAction = allTurns.some(
+    (turn) => turn.from === "assistant" && Boolean(turn.pendingAction)
+  );
+  const isComposerDisabled =
+    isBusy || isLoadingConversations || hasPendingAction;
+  const state: AIState = isBusy ? "thinking" : "idle";
   // Derived from what is actually on screen, so an empty chat reads as empty
   // instead of inheriting a fixture's 67k. A fixed number here was a lie the
-  // moment you pressed "New chat".
+  // moment a new conversation starts.
   const breakdown = useMemo(() => {
     // Everything the model would actually have been sent, not just the prose:
     // a reasoning trace and an artifact's source are the bulk of a real turn.
     const transcript =
-      allTurns.reduce((total, turn) => {
-        if (turn.from === "user") {
-          return total + turn.text.length;
-        }
-        return (
+      allTurns.reduce(
+        (total, turn) =>
           total +
-          (turn.text?.length ?? 0) +
-          (turn.reasoning?.length ?? 0) +
-          (turn.artifact?.code.length ?? 0) +
-          (turn.tool ? turn.tool.args.length + turn.tool.result.length : 0) +
-          (turn.diff?.lines.reduce(
-            (chars, line) => chars + line.content.length,
-            0
-          ) ?? 0)
-        );
-      }, 0) / CHARS_PER_TOKEN;
-    const retrieved = allTurns.reduce(
-      (total, turn) =>
-        total +
-        (turn.from === "assistant" && turn.sources
-          ? turn.sources.length * TOKENS_PER_SOURCE
-          : 0) +
-        (turn.from === "user" && turn.attachments
-          ? turn.attachments.length * TOKENS_PER_ATTACHMENT
-          : 0),
-      0
-    );
+          (turn.from === "user" ? turn.text.length : turn.text?.length ?? 0),
+        0
+      ) / 4;
 
     return [
-      { label: "System", tokens: SYSTEM_TOKENS },
+      { label: "Sistema", tokens: 350 },
       {
         label: "Transcript",
-        tokens: Math.round(transcript + streamed.length / CHARS_PER_TOKEN),
+        tokens: Math.round(transcript),
       },
-      ...(retrieved > 0
-        ? [{ label: "Retrieved files", tokens: retrieved }]
-        : []),
     ];
-  }, [allTurns, streamed]);
+  }, [allTurns]);
 
   const used = breakdown.reduce((total, item) => total + item.tokens, 0);
 
@@ -203,7 +167,7 @@ export const ChatThread = ({
             has no column of its own. */}
         {onOpenSidebar ? (
           <button
-            aria-label="Open conversations"
+            aria-label="Abrir conversas"
             className="-ml-1 flex cursor-pointer items-center rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
             onClick={onOpenSidebar}
             type="button"
@@ -219,29 +183,70 @@ export const ChatThread = ({
         />
       </header>
 
+      {errorMessage || actionError ? (
+        <div className="flex items-center justify-center gap-3 border-b border-destructive/20 bg-destructive/5 px-4 py-2 text-destructive text-xs">
+          <p role="alert">{actionError || errorMessage}</p>
+          {errorMessage ? (
+            <button
+              className="font-semibold underline underline-offset-2"
+              onClick={onRetry}
+              type="button"
+            >
+              Tentar novamente
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       <AIConversation
         className="flex-1 px-4"
-        contentKey={`${allTurns.length}-${streamed.length}-${phase}`}
+        contentKey={`${allTurns.length}-${phase}`}
       >
         {/* `px-2`, not decoration: the scroller clips at its padding box, and the
               orb avatar sat flush against that edge — its glow extends past its
               own 26px box, so the left of it was being shaved off. */}
         <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col gap-5 px-2 py-5">
-          {allTurns.length === 0 && (
+          {allTurns.length === 0 && isLoadingConversations ? (
+            <div
+              aria-live="polite"
+              className="flex flex-1 flex-col items-center justify-center gap-3 py-10 text-center"
+              role="status"
+            >
+              <SiriOrb size="48px" state="thinking" />
+              <p className="text-muted-foreground text-sm">
+                Conectando à Sellia...
+              </p>
+            </div>
+          ) : null}
+
+          {allTurns.length === 0 && !isLoadingConversations && (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 py-10 text-center">
               <SiriOrb size="64px" state="idle" />
-              <p className="text-muted-foreground text-sm">
-                Ask about sales, stores or staffing.
-              </p>
+              <div>
+                <h3 className="font-medium text-foreground">Olá! Eu sou a Sellia.</h3>
+                <p className="mt-1 text-muted-foreground text-sm">
+                  Pergunte sobre seus produtos, estoque ou vendas.
+                </p>
+              </div>
               <AISuggestions
-                onSelect={(suggestion) => send(suggestion.label)}
-                suggestions={STARTER_SUGGESTIONS}
+                onSelect={(suggestion) => void send(suggestion.label)}
+                suggestions={[
+                  { id: "stock", label: "Quais produtos estão com estoque baixo?" },
+                  { id: "sales", label: "Resuma as vendas recentes." },
+                  { id: "product", label: "Quero cadastrar um produto." },
+                ]}
               />
             </div>
           )}
 
           {allTurns.map((turn) => (
-            <ChatTurnView key={turn.id} onSuggestion={send} turn={turn} />
+            <ChatTurnView
+              actionError={actionError}
+              key={turn.id}
+              onAction={(optionId) => void decideAction(turn, optionId)}
+              onSuggestion={(value) => void send(value)}
+              turn={turn}
+            />
           ))}
 
           {isBusy && (
@@ -250,31 +255,7 @@ export const ChatThread = ({
               bubble={false}
               from="assistant"
             >
-              <div className="flex flex-col gap-3">
-                <AIReasoning collapseWhenDone isStreaming>
-                  {SIMULATED_REPLY.reasoning}
-                </AIReasoning>
-
-                {phase !== "thinking" && (
-                  <AIToolCall
-                    args={<code>{SIMULATED_REPLY.tool.args}</code>}
-                    name={SIMULATED_REPLY.tool.name}
-                    result={<span>{SIMULATED_REPLY.tool.result}</span>}
-                    status={phase === "tool" ? "running" : "success"}
-                    summary={SIMULATED_REPLY.tool.summary}
-                  />
-                )}
-
-                {phase === "streaming" ? (
-                  <AIResponse
-                    citations={[...SIMULATED_REPLY.citations]}
-                    isStreaming
-                    text={streamed}
-                  />
-                ) : (
-                  <AILoader label="Thinking" showElapsed variant="dots" />
-                )}
-              </div>
+              <AILoader label="Sellia está pensando" showElapsed variant="dots" />
             </AIMessage>
           )}
         </div>
@@ -283,32 +264,20 @@ export const ChatThread = ({
       <div className="border-border/60 border-t px-4 py-3">
         <div className="mx-auto w-full max-w-2xl">
           <AIPromptInput
-            attachments={draftAttachments}
+            disabled={isComposerDisabled}
             maxLength={2000}
-            onAttach={() => {
-              // Stands in for a file dialog: adds the next unattached file, so
-              // the control does something real instead of miming it.
-              setDraftAttachments((current) => {
-                const next = ATTACHABLE_FILES.find(
-                  (file) => !current.some((item) => item.id === file.id)
-                );
-                return next ? [...current, next] : current;
-              });
-            }}
-            onRemoveAttachment={(id) =>
-              setDraftAttachments((current) =>
-                current.filter((file) => file.id !== id)
-              )
+            onSubmit={(value) => void send(value)}
+            placeholder={
+              hasPendingAction
+                ? "Confirme ou recuse a ação para continuar..."
+                : isBusy
+                  ? "Sellia está respondendo..."
+                  : "Pergunte à Sellia..."
             }
-            onStop={stop}
-            onSubmit={send}
-            placeholder="Ask anything about the shop…"
-            state={isBusy ? "streaming" : "idle"}
-          >
-            <ModelPicker onSelect={setModel} value={model} />
-          </AIPromptInput>
+            state={isBusy ? "thinking" : "idle"}
+          />
           <p className="pt-2 text-center text-muted-foreground text-xs">
-            Simulated responses. Nothing is sent anywhere.
+            Suas mensagens são enviadas com segurança. Alterações só são feitas após confirmação.
           </p>
         </div>
       </div>
@@ -324,9 +293,13 @@ export const ChatThread = ({
  * components slot in as one more branch here.
  */
 const ChatTurnView = ({
+  actionError,
+  onAction,
   onSuggestion,
   turn,
 }: {
+  actionError: string;
+  onAction: (optionId: string) => void;
   onSuggestion: (value: string) => void;
   turn: ChatTurn;
 }) => {
@@ -415,12 +388,17 @@ const ChatTurnView = ({
 
       {turn.approval ? (
         <AIApproval
-          onDecide={() => {
-            // Demo only.
-          }}
+          onDecide={(option) => onAction(option.id)}
           options={turn.approval.options}
           question={turn.approval.question}
-        />
+          key={`${turn.pendingAction?.id ?? turn.id}-${actionError}`}
+        >
+          {turn.pendingAction ? (
+            <pre className="mt-2 max-h-40 overflow-auto rounded-lg bg-muted p-2 text-xs">
+              {JSON.stringify(turn.pendingAction.arguments, null, 2)}
+            </pre>
+          ) : null}
+        </AIApproval>
       ) : null}
 
       {turn.suggestions ? (
@@ -444,90 +422,6 @@ const formatBytes = (size?: number) => {
   return size >= MIB
     ? `${(size / MIB).toFixed(1)} MB`
     : `${Math.round(size / KIB)} KB`;
-};
-
-/**
- * Model picker for the composer.
- *
- * Small enough to keep local: the template should not drag a popover library in
- * for one menu, and the pattern is the same one the sidebar's account menu uses.
- */
-const ModelPicker = ({
-  onSelect,
-  value,
-}: {
-  onSelect: (label: string) => void;
-  value: string;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-    const onPointerDown = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [isOpen]);
-
-  return (
-    <div className="relative" ref={containerRef}>
-      <button
-        aria-expanded={isOpen}
-        aria-haspopup="menu"
-        className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground"
-        onClick={() => setIsOpen((open) => !open)}
-        type="button"
-      >
-        {value}
-        <ChevronDown aria-hidden="true" size={12} />
-      </button>
-
-      {isOpen ? (
-        <div
-          className="absolute bottom-full left-0 z-10 mb-2 w-52 overflow-hidden rounded-xl border border-border/60 bg-background p-1 shadow-black/10 shadow-lg"
-          role="menu"
-        >
-          {MODELS.map((option) => (
-            <button
-              className={cn(
-                "flex w-full flex-col rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted",
-                option.label === value
-                  ? "text-foreground"
-                  : "text-muted-foreground"
-              )}
-              key={option.id}
-              onClick={() => {
-                onSelect(option.label);
-                setIsOpen(false);
-              }}
-              role="menuitem"
-              type="button"
-            >
-              <span className="text-sm">{option.label}</span>
-              <span className="text-muted-foreground text-xs">
-                {option.note}
-              </span>
-            </button>
-          ))}
-        </div>
-      ) : null}
-    </div>
-  );
 };
 
 /** The artifact's rendered pane — the real banner, not a grey box. */

@@ -35,7 +35,11 @@ URL da API. Reinicie o servidor Vite depois de alterar variaveis de ambiente.
 Depois de consultar o CNPJ, o formulário envia `POST ${VITE_API_URL}/company`
 com `name`, `categoria`, `cnpj`, `cpfResponsavel` e `responsavelId`. O último
 campo usa o `userId` salvo no `localStorage` pelo login; CNPJ e CPF são enviados
-somente com dígitos.
+somente com dígitos. Após a criação, o backend associa a empresa ao usuário; no
+login seguinte, o frontend recupera o `empresaId` retornado pela API e não
+redireciona o responsável novamente para o cadastro. Para contas vinculadas, o
+item Empresa abre a visualização dos dados cadastrados, em vez do formulário de
+criação.
 
 ## Produtos
 
@@ -55,3 +59,24 @@ ação apenas mostra uma sugestão.
 A tela de clientes consulta `GET /clientes/company/:companyId` e usa os campos
 `name`, `Numero`, `Id_Produto`, `Preco_gasto` e `Quantidade`. O nome do produto é
 associado pelo ID usando a listagem de produtos da mesma empresa.
+
+## Faturas
+
+A tela Financeiro permite criar uma fatura para cada venda sem cobrança, definir
+vencimento e marcar a fatura como paga ou pendente. Os dados vêm das rotas
+autenticadas `GET /faturas`, `GET /faturas/vendas-disponiveis`, `POST /faturas`
+e `PATCH /faturas/:id/status`. O backend calcula o valor a partir da venda e
+limita os registros à empresa da conta; não há integração de pagamento nem
+emissão de nota fiscal nesta funcionalidade.
+
+## Sellia (IA)
+
+A aba Sellia usa as rotas autenticadas do backend `GET /ai/conversations`,
+`GET /ai/conversations/:id`, `POST /ai/chat` e as rotas de confirmação ou recusa
+de ações. O backend salva o histórico no MongoDB e configura o provedor no
+`agent.json`; a chave de API deve ser configurada somente no `.env` do backend
+com o nome indicado por `apiKeyEnv` (atualmente `GROQ_API_KEY`), nunca no
+frontend. A integração suporta provedores
+compatíveis com Chat Completions e tool calling. A IA consulta produtos e vendas
+e pode propor operações em produtos, estoque, clientes e vendas; cada gravação
+exige confirmação explícita.

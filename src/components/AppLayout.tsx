@@ -36,7 +36,7 @@ const sections = [
     items: [
       { to: "/produtos", label: "Produtos", icon: Archive },
       { to: "/estoque", label: "Estoque", icon: Package },
-      { to: "/clientes", label: "Clientes", icon: Users },
+      { to: "/clientes", label: "Vendas", icon: Users },
       { to: "/financias", label: "Financeiro", icon: Wallet },
     ],
   },
@@ -88,7 +88,9 @@ export function AppLayout() {
 
   const visible = isDesktop ? !hidden : mobileOpen
   const offset = isDesktop && !hidden ? SIDEBAR_WIDTH : 0
-  const hasCompany = sessionStorage.getItem("easysell:has-company") === "true"
+  const hasCompany =
+    sessionStorage.getItem("easysell:has-company") === "true" ||
+    Boolean(localStorage.getItem("companyId"))
   const role = localStorage.getItem("role")
   const isAssociatedEmployee =
     role === "funcionario" || role === "atendente"
@@ -105,7 +107,14 @@ export function AppLayout() {
   const visibleSections = isAssociatedEmployee
     ? employeeSections
     : hasCompany
-      ? sections
+      ? sections.map((section) => ({
+          ...section,
+          items: section.items.map((item) =>
+            item.to === "/empresa"
+              ? { ...item, to: "/empresa?mode=view" }
+              : item
+          ),
+        }))
       : [
         {
           title: "Organização",

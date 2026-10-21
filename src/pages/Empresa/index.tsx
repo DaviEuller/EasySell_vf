@@ -19,7 +19,7 @@ import {
   UserRound,
 } from "lucide-react"
 
-type Mode = "choose" | "create" | "join" | "created" | "tasks"
+type Mode = "choose" | "create" | "join" | "created" | "view" | "tasks"
 type TaskStatus = "pendente" | "concluido" | "verificado"
 type Task = {
   id: number
@@ -44,6 +44,7 @@ type CompanyData = {
   situacao_cadastral?: string
   cnpj: string
   responsibleCpf?: string
+  categoria?: string
 }
 
 // Formato real retornado por publica.cnpj.ws
@@ -251,6 +252,14 @@ function formatCnpj(value: string) {
   )
 }
 
+function formatCpf(value: string) {
+  const digits = value.replace(/\D/g, "")
+  return digits.replace(
+    /^(\d{3})(\d{3})(\d{3})(\d{2})$/,
+    "$1.$2.$3-$4"
+  )
+}
+
 const statusStyles: Record<
   TaskStatus,
   { label: string; className: string }
@@ -273,8 +282,23 @@ const statusStyles: Record<
 export function Empresa() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const [mode, setMode] = useState<Mode>(() =>
-    searchParams.get("mode") === "create" ? "create" : "choose"
+  const requestedMode = searchParams.get("mode")
+  const [mode, setMode] = useState<Mode>(() => {
+    if (requestedMode === "create") return "create"
+    if (
+      requestedMode === "view" ||
+      localStorage.getItem("companyId") ||
+      sessionStorage.getItem("easysell:has-company") === "true"
+    ) {
+      return "view"
+    }
+    return "choose"
+  })
+  const initialCompanyView = mode === "view"
+  const canLoadSavedCompany = Boolean(
+    localStorage.getItem("companyId") &&
+      localStorage.getItem("accessToken") &&
+      import.meta.env.VITE_API_URL?.trim()
   )
   const [cnpj, setCnpj] = useState("")
   const [cpf, setCpf] = useState("")
@@ -285,7 +309,14 @@ export function Empresa() {
     null
   )
   const [createdCpf, setCreatedCpf] = useState("")
-  const [notice, setNotice] = useState("")
+  const [notice, setNotice] = useState(() =>
+    initialCompanyView && !canLoadSavedCompany
+      ? "Não foi possível carregar os dados da empresa. Entre novamente."
+      : ""
+  )
+  const [loadingSavedCompany, setLoadingSavedCompany] = useState(
+    initialCompanyView && canLoadSavedCompany
+  )
   const [loadingCompany, setLoadingCompany] = useState(false)
   const [creatingCompany, setCreatingCompany] = useState(false)
   const [tasks, setTasks] = useState(initialTasks)
@@ -317,6 +348,67 @@ export function Empresa() {
       ? Math.floor((now - lunchStartedAt) / 1000)
       : lunchElapsed
   const minimumLunchSeconds = 30 * 60
+
+  useEffect(() => {
+    if (mode !== "view") return
+    const companyId = localStorage.getItem("companyId")
+    const apiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "")
+    const token = localStorage.getItem("accessToken")
+    if (!companyId || !apiUrl || !token) {
+      return
+    }
+
+    let active = true
+    void fetch(`${apiUrl}/company/${encodeURIComponent(companyId)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Não foi possível carregar a empresa (erro ${response.status}).`)
+        }
+        const payload: unknown = await response.json()
+        const root =
+          typeof payload === "object" && payload !== null && !Array.isArray(payload)
+            ? (payload as Record<string, unknown>)
+            : null
+        const record =
+          root && typeof root.data === "object" && root.data !== null
+            ? (root.data as Record<string, unknown>)
+            : root
+        if (!record || typeof record.name !== "string") {
+          throw new Error("A API retornou dados inválidos para a empresa.")
+        }
+        if (!active) return
+        setCreatedCompany({
+          razao_social: record.name,
+          cnpj: typeof record.cnpj === "string" ? record.cnpj : "",
+          categoria:
+            typeof record.categoria === "string" ? record.categoria : undefined,
+          situacao_cadastral:
+            typeof record.situacao_cadastral === "string"
+              ? record.situacao_cadastral
+              : "Cadastrada",
+        })
+        setCreatedCpf(
+          typeof record.cpfResponsavel === "string" ? record.cpfResponsavel : ""
+        )
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setNotice(
+            error instanceof Error
+              ? error.message
+              : "Não foi possível carregar os dados da empresa."
+          )
+        }
+      })
+      .finally(() => {
+        if (active) setLoadingSavedCompany(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [mode])
 
   useEffect(() => {
     if (!clockedIn && !lunchStarted) return
@@ -554,11 +646,17 @@ export function Empresa() {
                 Sua organização
               </p>
               <h1 className="mt-4 font-heading text-4xl font-bold sm:text-6xl">
-                {mode === "created" ? "Tudo pronto." : "Escolha como começar."}
+                {mode === "created"
+                  ? "Tudo pronto."
+                  : mode === "view"
+                    ? "Sua empresa."
+                    : "Escolha como começar."}
               </h1>
               <p className="mt-5 max-w-md text-sm leading-6 text-foreground/50">
                 {mode === "created"
                   ? "Sua empresa foi cadastrada com sucesso. Confira os dados abaixo antes de seguir para o painel."
+                  : mode === "view"
+                    ? "Confira os dados da empresa vinculada à sua conta."
                   : "Crie uma empresa para administrar sua operação ou entre em uma equipe já existente."}
               </p>
             </FadeIn>
@@ -735,13 +833,22 @@ export function Empresa() {
                   </button>
                 </div>
               )}
-              {mode === "created" && createdCompany && (
+              {mode === "view" && loadingSavedCompany && (
+                <p className="text-sm text-foreground/55" role="status">
+                  Carregando dados da empresa...
+                </p>
+              )}
+              {(mode === "created" || mode === "view") && createdCompany && (
                 <div>
                   <div className="flex size-12 items-center justify-center rounded-full border border-[#5DCAA5]/30 bg-[#5DCAA5]/10 text-emerald-600 dark:text-[#5DCAA5]">
-                    <PartyPopper size={22} />
+                    {mode === "created" ? (
+                      <PartyPopper size={22} />
+                    ) : (
+                      <Building2 size={22} />
+                    )}
                   </div>
                   <p className="mt-5 text-xs font-semibold tracking-[0.18em] text-emerald-600 dark:text-[#5DCAA5] uppercase">
-                    Empresa criada
+                    {mode === "created" ? "Empresa criada" : "Empresa cadastrada"}
                   </p>
                   <h2 className="mt-3 font-heading text-3xl font-bold">
                     {createdCompany.razao_social}
@@ -766,8 +873,16 @@ export function Empresa() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-foreground/40">CPF do responsável</span>
-                      <span className="font-semibold">{createdCpf}</span>
+                      <span className="font-semibold">
+                        {createdCpf ? formatCpf(createdCpf) : "—"}
+                      </span>
                     </div>
+                    {createdCompany.categoria && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-foreground/40">Categoria</span>
+                        <span className="font-semibold">{createdCompany.categoria}</span>
+                      </div>
+                    )}
                   </div>
                   <button
                     onClick={() => {

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from "react-router-dom"
 import { Moon, Sun } from "lucide-react"
 
 import AppLayout from "@/components/AppLayout"
@@ -43,6 +43,11 @@ function DashboardRoute() {
   return <AdminPage darkMode={darkMode} setDarkMode={setDarkMode} />
 }
 
+function EmpresaRoute() {
+  const location = useLocation()
+  return <Empresa key={location.search} />
+}
+
 export function App() {
   return (
     <BrowserRouter>
@@ -62,7 +67,7 @@ export function App() {
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/financias" element={<Financias />} />
           <Route path="/equipe" element={<Equipe />} />
-          <Route path="/empresa" element={<Empresa />} />
+          <Route path="/empresa" element={<EmpresaRoute />} />
           <Route path="/sell" element={<Sellia />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/config" element={<Navigate to="/configuracoes" replace />} />

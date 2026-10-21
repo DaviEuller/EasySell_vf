@@ -72,17 +72,17 @@ export const ChatSidebar = ({
         <SiriOrb size="22px" state="idle" />
         <RailButton
           icon={<PanelLeftOpen aria-hidden="true" size={16} />}
-          label="Expand sidebar"
+          label="Expandir menu"
           onClick={onToggleCollapsed}
         />
         <RailButton
           icon={<Plus aria-hidden="true" size={16} />}
-          label="New chat"
+          label="Nova conversa"
           onClick={onNewChat}
         />
         <RailButton
           icon={<Search aria-hidden="true" size={16} />}
-          label="Search chats"
+          label="Buscar conversas"
           onClick={() => {
             onToggleCollapsed?.();
             // Expanding and focusing in one action, so the icon is a shortcut
@@ -107,10 +107,10 @@ export const ChatSidebar = ({
       <div className="flex items-center justify-between gap-2 px-1">
         <span className="flex items-center gap-2 font-medium text-sm">
           <SiriOrb size="22px" state="idle" />
-          Scoop Assistant
+          Sellia
         </span>
         <button
-          aria-label="Collapse sidebar"
+          aria-label="Recolher menu"
           className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           onClick={onToggleCollapsed}
           type="button"
@@ -125,7 +125,7 @@ export const ChatSidebar = ({
         type="button"
       >
         <Plus aria-hidden="true" size={15} />
-        New chat
+        Nova conversa
       </button>
 
       {/* Icon and field share one flex row rather than absolute-positioning the
@@ -133,7 +133,7 @@ export const ChatSidebar = ({
           have to be kept in sync, and `type="search"` cannot push the text away
           with its own intrinsic padding. */}
       <label className="flex items-center gap-2 rounded-xl border border-transparent bg-muted px-2.5 py-2 transition-colors focus-within:border-border focus-within:bg-background">
-        <span className="sr-only">Search chats</span>
+        <span className="sr-only">Buscar conversas</span>
         <Search
           aria-hidden="true"
           className="shrink-0 text-muted-foreground"
@@ -142,7 +142,7 @@ export const ChatSidebar = ({
         <input
           className="w-full appearance-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search chats"
+          placeholder="Buscar conversas"
           ref={searchRef}
           type="search"
           value={query}
@@ -152,7 +152,7 @@ export const ChatSidebar = ({
       <nav className="-mx-1 flex-1 overflow-y-auto px-1">
         {groups.length === 0 && (
           <p className="px-2 py-6 text-center text-muted-foreground text-xs">
-            No chats match “{query}”.
+            Nenhuma conversa corresponde a “{query}”.
           </p>
         )}
 

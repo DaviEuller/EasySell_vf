@@ -38,6 +38,11 @@ export type ChatTurn =
       text?: string;
       timestamp: string;
       tool?: { args: string; name: string; result: string; summary: string };
+      pendingAction?: {
+        arguments: Record<string, unknown>;
+        id: string;
+        name: string;
+      };
     };
 
 export type ChatConversation = {

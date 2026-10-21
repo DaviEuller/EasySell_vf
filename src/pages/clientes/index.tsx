@@ -324,13 +324,13 @@ export function Clientes() {
         >
           <div>
             <p className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
-              Relacionamento
+              Vendas
             </p>
             <h1 className="mt-3 font-heading text-4xl font-bold sm:text-5xl">
-              Seus clientes, em um só lugar.
+              Vendas, em um só lugar.
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-foreground/50">
-              Veja o que cada cliente comprou e fale com ele direto pelo WhatsApp.
+              Acompanhe os produtos vendidos, os valores e os clientes pelo WhatsApp.
             </p>
           </div>
         </header>
@@ -357,7 +357,7 @@ export function Clientes() {
           ))}
         </section>
 
-        {/* Tabela de clientes */}
+        {/* Tabela de vendas */}
         <section
           className="animate-fade-up rounded-md border border-border bg-card p-5 sm:p-6"
           style={{ animationDelay: "0.2s" }}
@@ -366,10 +366,10 @@ export function Clientes() {
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
               <div>
                 <p className="text-xs font-semibold tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
-                  Base de clientes
+                  Histórico de vendas
                 </p>
                 <h2 className="mt-2 font-heading text-2xl font-bold">
-                  Todos os clientes
+                  Vendas por cliente
                 </h2>
               </div>
               <label className="flex h-10 w-full items-center gap-2 rounded-md border border-foreground/15 bg-foreground/[0.05] px-3 text-sm text-foreground/60 focus-within:border-blue-400/60 sm:w-64">
@@ -377,7 +377,7 @@ export function Clientes() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar cliente..."
+                  placeholder="Buscar cliente ou produto..."
                   className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-foreground/30"
                 />
               </label>

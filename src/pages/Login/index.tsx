@@ -55,11 +55,21 @@ function getResponsibleId(company: ApiRecord): string | undefined {
 	return undefined
 }
 
-function getCompanyId(company: ApiRecord): string | undefined {
-	for (const key of ["id", "_id", "companyId", "company_id", "idcompany"]) {
-		const value = company[key]
-		if (typeof value === "string" && value.trim()) return value.trim()
-		if (typeof value === "number") return String(value)
+function getCompanyId(value: unknown): string | undefined {
+	if (typeof value === "string" && value.trim()) return value.trim()
+	if (!isApiRecord(value)) return undefined
+	for (const key of [
+		"empresaId",
+		"empresa_id",
+		"companyId",
+		"company_id",
+		"idcompany",
+		"id",
+		"_id",
+	]) {
+		const id = value[key]
+		if (typeof id === "string" && id.trim()) return id.trim()
+		if (typeof id === "number") return String(id)
 	}
 	return undefined
 }
@@ -179,6 +189,14 @@ export function Login() {
 			if (equipeMember) {
 				localStorage.setItem("equipeMemberId", equipeMember)
 			}
+			const companyId = getCompanyId(
+				data.empresaId ??
+					data.empresa_id ??
+					data.companyId ??
+					data.company_id ??
+					user.company,
+			)
+			if (companyId) localStorage.setItem("companyId", companyId)
 			if (
 				(role === "atendente" || role === "funcionario") &&
 				equipeMember
@@ -188,8 +206,8 @@ export function Login() {
 				return
 			}
 
-			let hasCompany = false
-			if (sub && token) {
+			let hasCompany = Boolean(companyId)
+			if (!hasCompany && sub && token) {
 				const companyResponse = await fetch(
 					`${apiUrl}/company?responsibleId=${encodeURIComponent(sub)}`,
 					{

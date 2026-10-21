@@ -210,7 +210,7 @@ export function AppDock() {
     { icon: <Archive size={18} />, label: 'Produtos', onClick: () => { window.location.href = '/produtos'; } },
     { icon: <Package size={18} />, label: 'Estoque', onClick: () => { window.location.href = '/estoque'; } },
     { icon: <Wallet size={18} />, label: 'Financeiro', onClick: () => { window.location.href = '/financias'; } },
-    { icon: <Users size={18} />, label: 'Clientes', onClick: () => { window.location.href = '/clientes'; } },
+    { icon: <Users size={18} />, label: 'Vendas', onClick: () => { window.location.href = '/clientes'; } },
     { icon: <UserGroup   size={18} />, label: 'Equipe', onClick: () => { window.location.href = '/equipe'; } },
     { icon: <LayoutDashboard size={18} />, label: 'Dashboard', onClick: () => { window.location.href = '/dashboard'; } },
 
