@@ -1,4 +1,11 @@
-import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from "react-router-dom"
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Outlet,
+  Navigate,
+  useLocation,
+} from "react-router-dom"
 import { Moon, Sun } from "lucide-react"
 
 import AppLayout from "@/components/AppLayout"
@@ -6,15 +13,17 @@ import { useDarkMode } from "@/lib/use-dark-mode"
 import { Cadastro } from "@/pages/Cadastro"
 import { Home } from "@/pages/home"
 import { Login } from "@/pages/Login"
+import { RecuperarSenha } from "@/pages/RecuperarSenha"
 import { Equipe } from "@/pages/Equipe"
 import { Empresa } from "@/pages/Empresa"
-import ResumoCards from "@/pages/resumo"
+import ResumoCards from "@/pages/resumo/DynamicResumo"
 import Estoque from "@/pages/estoque"
 import AdminPage from "@/pages/dashboard"
 import Financias from "@/pages/Financias"
 import Clientes from "@/pages/clientes"
 import Produtos from "@/pages/Produto"
-import Sellia from "@/pages/sellia"
+import SellIA from "@/pages/sellia"
+import EasyBot from "@/pages/easybot"
 import Configuracoes from "@/pages/Configuracoes"
 import NotFound from "@/pages/NotFound"
 
@@ -55,6 +64,7 @@ export function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/recuperar-senha" element={<RecuperarSenha />} />
           <Route path="/cadastro" element={<Cadastro />} />
         </Route>
 
@@ -68,9 +78,13 @@ export function App() {
           <Route path="/financias" element={<Financias />} />
           <Route path="/equipe" element={<Equipe />} />
           <Route path="/empresa" element={<EmpresaRoute />} />
-          <Route path="/sell" element={<Sellia />} />
+          <Route path="/sell" element={<SellIA />} />
+          <Route path="/easybot" element={<EasyBot />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
-          <Route path="/config" element={<Navigate to="/configuracoes" replace />} />
+          <Route
+            path="/config"
+            element={<Navigate to="/configuracoes" replace />}
+          />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

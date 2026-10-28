@@ -1,44 +1,52 @@
-"use client";
+"use client"
 
-import { cn } from "@/lib/utils";
-import AIArtifact from "@/components/smoothui/ai-artifact";
-import AIContextMeter from "@/components/smoothui/ai-context-meter";
-import AIConversation from "@/components/smoothui/ai-conversation";
-import type { AIState } from "@/components/smoothui/ai-core";
-import AIDiff from "@/components/smoothui/ai-diff";
-import AILoader from "@/components/smoothui/ai-loader";
-import AIMessage from "@/components/smoothui/ai-message";
-import AIApproval from "@/components/smoothui/ai-approval";
-import AIPromptInput from "@/components/smoothui/ai-prompt-input";
-import AIReasoning from "@/components/smoothui/ai-reasoning";
-import AIResponse from "@/components/smoothui/ai-response";
-import AISources from "@/components/smoothui/ai-sources";
-import AISuggestions from "@/components/smoothui/ai-suggestions";
-import AITaskList from "@/components/smoothui/ai-task-list";
-import AIToolCall from "@/components/smoothui/ai-tool-call";
-import SiriOrb from "@/components/smoothui/siri-orb";
-import { PanelLeftOpen, Paperclip } from "lucide-react";
-import { useMemo, useState } from "react";
-import { type ChatConversation, type ChatTurn, CONTEXT_LIMIT } from "./chat-data";
+import { cn } from "@/lib/utils"
+import AIArtifact from "@/components/smoothui/ai-artifact"
+import AIContextMeter from "@/components/smoothui/ai-context-meter"
+import AIConversation from "@/components/smoothui/ai-conversation"
+import type { AIState } from "@/components/smoothui/ai-core"
+import AIDiff from "@/components/smoothui/ai-diff"
+import AILoader from "@/components/smoothui/ai-loader"
+import AIMessage from "@/components/smoothui/ai-message"
+import AIApproval from "@/components/smoothui/ai-approval"
+import AIPromptInput from "@/components/smoothui/ai-prompt-input"
+import AIReasoning from "@/components/smoothui/ai-reasoning"
+import AIResponse from "@/components/smoothui/ai-response"
+import AISources from "@/components/smoothui/ai-sources"
+import AISuggestions from "@/components/smoothui/ai-suggestions"
+import AITaskList from "@/components/smoothui/ai-task-list"
+import AIToolCall from "@/components/smoothui/ai-tool-call"
+import SiriOrb from "@/components/smoothui/siri-orb"
+import { PanelLeftOpen, Paperclip } from "lucide-react"
+import { useMemo, useState } from "react"
+import {
+  type ChatConversation,
+  type ChatTurn,
+  CONTEXT_LIMIT,
+} from "./chat-data"
 
 const formatClock = (date: Date) =>
-  `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`
 
 export type ChatThreadProps = {
-  className?: string;
-  conversationId?: string;
-  errorMessage?: string;
-  isLoadingConversations?: boolean;
-  onAction: (conversationId: string, actionId: string, confirm: boolean) => Promise<void>;
-  onRetry: () => void;
+  className?: string
+  conversationId?: string
+  errorMessage?: string
+  isLoadingConversations?: boolean
+  onAction: (
+    conversationId: string,
+    actionId: string,
+    confirm: boolean
+  ) => Promise<void>
+  onRetry: () => void
   onSend: (
     message: string,
     conversationId: string | undefined
-  ) => Promise<ChatConversation>;
-  onOpenSidebar?: () => void;
-  title: string;
-  turns: ChatTurn[];
-};
+  ) => Promise<ChatConversation>
+  onOpenSidebar?: () => void
+  title: string
+  turns: ChatTurn[]
+}
 
 export const ChatThread = ({
   className,
@@ -52,18 +60,18 @@ export const ChatThread = ({
   title,
   turns,
 }: ChatThreadProps) => {
-  const [localTurns, setLocalTurns] = useState<ChatTurn[]>([]);
-  const [phase, setPhase] = useState<"idle" | "thinking">("idle");
-  const [actionError, setActionError] = useState("");
-  const [activeActionId, setActiveActionId] = useState<string | null>(null);
+  const [localTurns, setLocalTurns] = useState<ChatTurn[]>([])
+  const [phase, setPhase] = useState<"idle" | "thinking">("idle")
+  const [actionError, setActionError] = useState("")
+  const [activeActionId, setActiveActionId] = useState<string | null>(null)
 
   const send = async (value: string) => {
-    const draft = value.trim();
+    const draft = value.trim()
     if (!draft || phase !== "idle") {
-      return;
+      return
     }
 
-    const optimisticId = `local-${crypto.randomUUID()}`;
+    const optimisticId = `local-${crypto.randomUUID()}`
     setLocalTurns((current) => [
       ...current,
       {
@@ -72,12 +80,12 @@ export const ChatThread = ({
         text: draft,
         timestamp: formatClock(new Date()),
       },
-    ]);
-    setPhase("thinking");
-    setActionError("");
+    ])
+    setPhase("thinking")
+    setActionError("")
     try {
-      await onSend(draft, conversationId);
-      setLocalTurns([]);
+      await onSend(draft, conversationId)
+      setLocalTurns([])
     } catch (error) {
       setLocalTurns((current) => [
         ...current,
@@ -87,14 +95,14 @@ export const ChatThread = ({
           text:
             error instanceof Error
               ? error.message
-              : "Não foi possível obter uma resposta da Sellia.",
+              : "Não foi possível obter uma resposta da Sell IA.",
           timestamp: formatClock(new Date()),
         },
-      ]);
+      ])
     } finally {
-      setPhase("idle");
+      setPhase("idle")
     }
-  };
+  }
 
   const decideAction = async (turn: ChatTurn, optionId: string) => {
     if (
@@ -103,38 +111,37 @@ export const ChatThread = ({
       !turn.pendingAction ||
       activeActionId
     ) {
-      return;
+      return
     }
-    setActiveActionId(turn.pendingAction.id);
-    setActionError("");
+    setActiveActionId(turn.pendingAction.id)
+    setActionError("")
     try {
       await onAction(
         conversationId,
         turn.pendingAction.id,
         optionId === "confirm"
-      );
+      )
     } catch (error) {
       setActionError(
-        error instanceof Error ? error.message : "Não foi possível processar a ação."
-      );
+        error instanceof Error
+          ? error.message
+          : "Não foi possível processar a ação."
+      )
     } finally {
-      setActiveActionId(null);
+      setActiveActionId(null)
     }
-  };
+  }
 
   // Memoised because the token breakdown below depends on it; a fresh array each
   // render would make that memo pointless.
-  const allTurns = useMemo(
-    () => [...turns, ...localTurns],
-    [turns, localTurns]
-  );
-  const isBusy = phase !== "idle";
+  const allTurns = useMemo(() => [...turns, ...localTurns], [turns, localTurns])
+  const isBusy = phase !== "idle"
   const hasPendingAction = allTurns.some(
     (turn) => turn.from === "assistant" && Boolean(turn.pendingAction)
-  );
+  )
   const isComposerDisabled =
-    isBusy || isLoadingConversations || hasPendingAction;
-  const state: AIState = isBusy ? "thinking" : "idle";
+    isBusy || isLoadingConversations || hasPendingAction
+  const state: AIState = isBusy ? "thinking" : "idle"
   // Derived from what is actually on screen, so an empty chat reads as empty
   // instead of inheriting a fixture's 67k. A fixed number here was a lie the
   // moment a new conversation starts.
@@ -145,9 +152,9 @@ export const ChatThread = ({
       allTurns.reduce(
         (total, turn) =>
           total +
-          (turn.from === "user" ? turn.text.length : turn.text?.length ?? 0),
+          (turn.from === "user" ? turn.text.length : (turn.text?.length ?? 0)),
         0
-      ) / 4;
+      ) / 4
 
     return [
       { label: "Sistema", tokens: 350 },
@@ -155,14 +162,14 @@ export const ChatThread = ({
         label: "Transcript",
         tokens: Math.round(transcript),
       },
-    ];
-  }, [allTurns]);
+    ]
+  }, [allTurns])
 
-  const used = breakdown.reduce((total, item) => total + item.tokens, 0);
+  const used = breakdown.reduce((total, item) => total + item.tokens, 0)
 
   return (
     <section className={cn("flex min-w-0 flex-1 flex-col", className)}>
-      <header className="flex items-center gap-3 border-border/60 border-b px-4 py-2.5">
+      <header className="flex items-center gap-3 border-b border-border/60 px-4 py-2.5">
         {/* The only way into the conversation list on a phone, where the sidebar
             has no column of its own. */}
         {onOpenSidebar ? (
@@ -175,7 +182,7 @@ export const ChatThread = ({
             <PanelLeftOpen aria-hidden="true" size={16} />
           </button>
         ) : null}
-        <h2 className="min-w-0 flex-1 truncate font-medium text-sm">{title}</h2>
+        <h2 className="min-w-0 flex-1 truncate text-sm font-medium">{title}</h2>
         <AIContextMeter
           breakdown={breakdown}
           limit={CONTEXT_LIMIT}
@@ -184,7 +191,7 @@ export const ChatThread = ({
       </header>
 
       {errorMessage || actionError ? (
-        <div className="flex items-center justify-center gap-3 border-b border-destructive/20 bg-destructive/5 px-4 py-2 text-destructive text-xs">
+        <div className="flex items-center justify-center gap-3 border-b border-destructive/20 bg-destructive/5 px-4 py-2 text-xs text-destructive">
           <p role="alert">{actionError || errorMessage}</p>
           {errorMessage ? (
             <button
@@ -213,8 +220,8 @@ export const ChatThread = ({
               role="status"
             >
               <SiriOrb size="48px" state="thinking" />
-              <p className="text-muted-foreground text-sm">
-                Conectando à Sellia...
+              <p className="text-sm text-muted-foreground">
+                Conectando à Sell IA...
               </p>
             </div>
           ) : null}
@@ -223,17 +230,23 @@ export const ChatThread = ({
             <div className="flex flex-1 flex-col items-center justify-center gap-4 py-10 text-center">
               <SiriOrb size="64px" state="idle" />
               <div>
-                <h3 className="font-medium text-foreground">Olá! Eu sou a Sellia.</h3>
-                <p className="mt-1 text-muted-foreground text-sm">
-                  Pergunte sobre seus produtos, estoque ou vendas.
+                <h3 className="font-medium text-foreground">
+                  Olá! Eu sou a Sell IA.
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Pergunte sobre seus produtos, funcionários, estoque ou vendas.
                 </p>
               </div>
               <AISuggestions
                 onSelect={(suggestion) => void send(suggestion.label)}
                 suggestions={[
-                  { id: "stock", label: "Quais produtos estão com estoque baixo?" },
+                  {
+                    id: "stock",
+                    label: "Quais produtos estão com estoque baixo?",
+                  },
                   { id: "sales", label: "Resuma as vendas recentes." },
                   { id: "product", label: "Quero cadastrar um produto." },
+                  { id: "employee", label: "Quero cadastrar um funcionário." },
                 ]}
               />
             </div>
@@ -255,13 +268,17 @@ export const ChatThread = ({
               bubble={false}
               from="assistant"
             >
-              <AILoader label="Sellia está pensando" showElapsed variant="dots" />
+              <AILoader
+                label="Sell IA está pensando"
+                showElapsed
+                variant="dots"
+              />
             </AIMessage>
           )}
         </div>
       </AIConversation>
 
-      <div className="border-border/60 border-t px-4 py-3">
+      <div className="border-t border-border/60 px-4 py-3">
         <div className="mx-auto w-full max-w-2xl">
           <AIPromptInput
             disabled={isComposerDisabled}
@@ -271,19 +288,20 @@ export const ChatThread = ({
               hasPendingAction
                 ? "Confirme ou recuse a ação para continuar..."
                 : isBusy
-                  ? "Sellia está respondendo..."
-                  : "Pergunte à Sellia..."
+                  ? "Sell IA está respondendo..."
+                  : "Pergunte à Sell IA..."
             }
             state={isBusy ? "thinking" : "idle"}
           />
-          <p className="pt-2 text-center text-muted-foreground text-xs">
-            Suas mensagens são enviadas com segurança. Alterações só são feitas após confirmação.
+          <p className="pt-2 text-center text-xs text-muted-foreground">
+            Suas mensagens são enviadas com segurança. Alterações só são feitas
+            após confirmação.
           </p>
         </div>
       </div>
     </section>
-  );
-};
+  )
+}
 
 /**
  * One transcript turn.
@@ -298,10 +316,10 @@ const ChatTurnView = ({
   onSuggestion,
   turn,
 }: {
-  actionError: string;
-  onAction: (optionId: string) => void;
-  onSuggestion: (value: string) => void;
-  turn: ChatTurn;
+  actionError: string
+  onAction: (optionId: string) => void
+  onSuggestion: (value: string) => void
+  turn: ChatTurn
 }) => {
   if (turn.from === "user") {
     return (
@@ -324,7 +342,7 @@ const ChatTurnView = ({
           )}
         </span>
       </AIMessage>
-    );
+    )
   }
 
   return (
@@ -409,30 +427,30 @@ const ChatTurnView = ({
         />
       ) : null}
     </div>
-  );
-};
+  )
+}
 
-const KIB = 1024;
-const MIB = KIB * KIB;
+const KIB = 1024
+const MIB = KIB * KIB
 
 const formatBytes = (size?: number) => {
   if (!size) {
-    return "";
+    return ""
   }
   return size >= MIB
     ? `${(size / MIB).toFixed(1)} MB`
-    : `${Math.round(size / KIB)} KB`;
-};
+    : `${Math.round(size / KIB)} KB`
+}
 
 /** The artifact's rendered pane — the real banner, not a grey box. */
 const SummerBannerPreview = () => (
   <section className="rounded-2xl bg-gradient-to-br from-pink-200 to-sky-200 p-6 text-neutral-900">
-    <p className="text-[0.65rem] uppercase tracking-widest">Summer 2026</p>
-    <h3 className="mt-1.5 font-semibold text-2xl">Two scoops, one price</h3>
+    <p className="text-[0.65rem] tracking-widest uppercase">Summer 2026</p>
+    <h3 className="mt-1.5 text-2xl font-semibold">Two scoops, one price</h3>
     <p className="mt-2 max-w-sm text-sm">
       Every weekday before 5pm, all summer.
     </p>
   </section>
-);
+)
 
-export default ChatThread;
+export default ChatThread

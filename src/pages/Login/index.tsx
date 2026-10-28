@@ -350,6 +350,7 @@ export function Login() {
 								required
 							/>
 						</label>
+						<a href="/recuperar-senha" className="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-300">Esqueci minha senha</a>
 						<label className="mt-5 block text-sm font-medium">
 							Senha
 							<input

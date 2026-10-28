@@ -5,6 +5,7 @@ import {
   Building2,
   Home,
   LayoutDashboard,
+  MessageCircle,
   Moon,
   Package,
   PanelLeftClose,
@@ -49,7 +50,10 @@ const sections = [
   },
   {
     title: "Inteligência",
-    items: [{ to: "/sell", label: "Sellia", icon: Sparkles }],
+    items: [
+      { to: "/sell", label: "Sell IA", icon: Sparkles },
+      { to: "/easybot", label: "EasyBot", icon: MessageCircle },
+    ],
   },
   {
     title: "Conta",
@@ -92,14 +96,13 @@ export function AppLayout() {
     sessionStorage.getItem("easysell:has-company") === "true" ||
     Boolean(localStorage.getItem("companyId"))
   const role = localStorage.getItem("role")
-  const isAssociatedEmployee =
-    role === "funcionario" || role === "atendente"
+  const isAssociatedEmployee = role === "funcionario" || role === "atendente"
   const employeeSections = [
     {
       title: "Área do funcionário",
       items: [
         { to: "/equipe", label: "Equipe", icon: UsersRound },
-        { to: "/sell", label: "Sellia", icon: Sparkles },
+        { to: "/sell", label: "Sell IA", icon: Sparkles },
         { to: "/configuracoes", label: "Configurações", icon: Settings },
       ],
     },
@@ -116,11 +119,13 @@ export function AppLayout() {
           ),
         }))
       : [
-        {
-          title: "Organização",
-          items: [{ to: "/empresa?mode=create", label: "Empresa", icon: Building2 }],
-        },
-      ]
+          {
+            title: "Organização",
+            items: [
+              { to: "/empresa?mode=create", label: "Empresa", icon: Building2 },
+            ],
+          },
+        ]
   const pageTitle =
     [...allItems, ...employeeSections.flatMap((section) => section.items)].find(
       (item) =>
@@ -262,8 +267,6 @@ export function AppLayout() {
             <span>Tema {darkMode ? "escuro" : "claro"}</span>
             {darkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
-
-          
         </div>
       </aside>
 
@@ -280,7 +283,11 @@ export function AppLayout() {
             aria-label={visible ? "Esconder menu" : "Mostrar menu"}
             className="flex size-9 items-center justify-center rounded-md border border-border bg-card text-foreground/70 transition-colors hover:text-foreground"
           >
-            {visible ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}
+            {visible ? (
+              <PanelLeftClose size={17} />
+            ) : (
+              <PanelLeftOpen size={17} />
+            )}
           </button>
           <span className="text-sm font-medium">{pageTitle}</span>
         </div>
