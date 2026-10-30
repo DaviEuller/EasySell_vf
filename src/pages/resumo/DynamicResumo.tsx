@@ -85,7 +85,7 @@ export function DynamicResumo() {
         {error && <div role="alert" className="mt-6 rounded-md border border-red-500/30 bg-red-500/5 p-4 text-sm text-red-700 dark:text-red-300">{error}</div>}
 
         <section className="grid grid-cols-1 gap-3 py-6 sm:grid-cols-2 lg:grid-cols-5" aria-busy={loading}>
-          {cards.map((card, index) => (
+          {cards.map((card) => (
             <a key={card.id} href={card.href} className="group flex min-h-36 flex-col justify-between rounded-md border border-border bg-card p-4 transition-colors hover:border-blue-500/50">
               <div>
                 <p className="text-xs text-foreground/45">{card.title}</p>
