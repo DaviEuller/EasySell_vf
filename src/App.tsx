@@ -25,6 +25,7 @@ import Produtos from "@/pages/Produto"
 import SellIA from "@/pages/sellia"
 import EasyBot from "@/pages/easybot"
 import Configuracoes from "@/pages/Configuracoes"
+import Integracoes from "@/pages/integracoes"
 import NotFound from "@/pages/NotFound"
 
 // Páginas públicas (landing, login, cadastro): sem sidebar, com botão de tema.
@@ -80,6 +81,7 @@ export function App() {
           <Route path="/empresa" element={<EmpresaRoute />} />
           <Route path="/sell" element={<SellIA />} />
           <Route path="/easybot" element={<EasyBot />} />
+          <Route path="/integracoes" element={<Integracoes />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route
             path="/config"

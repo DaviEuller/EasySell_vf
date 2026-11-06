@@ -4,6 +4,7 @@ import {
   Archive,
   Building2,
   Home,
+  Link2,
   LayoutDashboard,
   MessageCircle,
   Moon,
@@ -39,6 +40,7 @@ const sections = [
       { to: "/estoque", label: "Estoque", icon: Package },
       { to: "/clientes", label: "Vendas", icon: Users },
       { to: "/financias", label: "Financeiro", icon: Wallet },
+      { to: "/integracoes", label: "Integrações", icon: Link2 },
     ],
   },
   {

@@ -75,6 +75,7 @@ function formatTimestamp(value: unknown) {
 function actionLabel(name: string) {
   const labels: Record<string, string> = {
     create_product: "Criar produto",
+    create_marketplace_product: "Publicar produto no Mercado Livre",
     update_product: "Editar produto",
     set_product_stock: "Atualizar estoque",
     create_sale: "Registrar venda",

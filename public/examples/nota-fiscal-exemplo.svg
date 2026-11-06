@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1754" viewBox="0 0 1240 1754">
+  <rect width="1240" height="1754" fill="#eef1f5"/>
+  <rect x="95" y="65" width="1050" height="1624" rx="18" fill="#fff" stroke="#d7dce3" stroke-width="3"/>
+  <text x="145" y="145" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#111827">NOTA FISCAL DE EXEMPLO</text>
+  <text x="145" y="190" font-family="Arial, sans-serif" font-size="19" fill="#b42318">DOCUMENTO FICTÍCIO · SEM VALOR FISCAL</text>
+  <line x1="145" y1="225" x2="1095" y2="225" stroke="#9ca3af" stroke-width="2"/>
+  <text x="145" y="275" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#111827">VENDEDOR</text>
+  <text x="145" y="312" font-family="Arial, sans-serif" font-size="18" fill="#374151">Loja Exemplo EasySell</text>
+  <text x="145" y="345" font-family="Arial, sans-serif" font-size="18" fill="#374151">CNPJ: 00.000.000/0000-00</text>
+  <text x="145" y="405" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#111827">CLIENTE</text>
+  <text x="145" y="442" font-family="Arial, sans-serif" font-size="18" fill="#374151">Cliente de Demonstração</text>
+  <text x="145" y="475" font-family="Arial, sans-serif" font-size="18" fill="#374151">Número: 000123 · Série: 1 · Emissão: 06/11/2026</text>
+  <line x1="145" y1="515" x2="1095" y2="515" stroke="#9ca3af" stroke-width="2"/>
+  <text x="145" y="570" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#111827">DESCRIÇÃO DO PRODUTO</text>
+  <text x="735" y="570" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#111827">QTD.</text>
+  <text x="850" y="570" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#111827">UNITÁRIO</text>
+  <text x="1010" y="570" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#111827">TOTAL</text>
+  <line x1="145" y1="595" x2="1095" y2="595" stroke="#d1d5db" stroke-width="2"/>
+  <text x="145" y="650" font-family="Arial, sans-serif" font-size="20" fill="#111827">Caneca decorada de cerâmica</text>
+  <text x="745" y="650" font-family="Arial, sans-serif" font-size="20" fill="#111827">2</text>
+  <text x="850" y="650" font-family="Arial, sans-serif" font-size="20" fill="#111827">R$ 25,00</text>
+  <text x="1010" y="650" font-family="Arial, sans-serif" font-size="20" fill="#111827">R$ 50,00</text>
+  <line x1="145" y1="680" x2="1095" y2="680" stroke="#e5e7eb" stroke-width="2"/>
+  <text x="145" y="735" font-family="Arial, sans-serif" font-size="20" fill="#111827">Caderno universitário 100 folhas</text>
+  <text x="745" y="735" font-family="Arial, sans-serif" font-size="20" fill="#111827">1</text>
+  <text x="850" y="735" font-family="Arial, sans-serif" font-size="20" fill="#111827">R$ 18,90</text>
+  <text x="1010" y="735" font-family="Arial, sans-serif" font-size="20" fill="#111827">R$ 18,90</text>
+  <line x1="145" y1="765" x2="1095" y2="765" stroke="#e5e7eb" stroke-width="2"/>
+  <text x="145" y="820" font-family="Arial, sans-serif" font-size="20" fill="#111827">Caneta esferográfica azul</text>
+  <text x="745" y="820" font-family="Arial, sans-serif" font-size="20" fill="#111827">3</text>
+  <text x="850" y="820" font-family="Arial, sans-serif" font-size="20" fill="#111827">R$ 4,50</text>
+  <text x="1010" y="820" font-family="Arial, sans-serif" font-size="20" fill="#111827">R$ 13,50</text>
+  <line x1="145" y1="900" x2="1095" y2="900" stroke="#9ca3af" stroke-width="2"/>
+  <text x="145" y="965" font-family="Arial, sans-serif" font-size="18" fill="#4b5563">Quantidade total de itens: 6</text>
+  <text x="775" y="965" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#111827">TOTAL DA NOTA</text>
+  <text x="1010" y="965" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#111827">R$ 82,40</text>
+  <line x1="145" y1="1010" x2="1095" y2="1010" stroke="#d1d5db" stroke-width="2"/>
+  <text x="145" y="1080" font-family="Arial, sans-serif" font-size="18" fill="#6b7280">Use esta imagem para testar a leitura automática de itens e valores.</text>
+  <text x="145" y="1115" font-family="Arial, sans-serif" font-size="18" fill="#6b7280">Os produtos e dados acima são fictícios.</text>
+  <rect x="145" y="1490" width="950" height="100" rx="12" fill="#f3f4f6"/>
+  <text x="175" y="1548" font-family="Arial, sans-serif" font-size="18" fill="#6b7280">EXEMPLO DE DEMONSTRAÇÃO · SEM VALOR FISCAL</text>
+</svg>

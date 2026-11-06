@@ -60,6 +60,13 @@ A tela de clientes consulta `GET /clientes/company/:companyId` e usa os campos
 `name`, `Numero`, `Id_Produto`, `Preco_gasto` e `Quantidade`. O nome do produto é
 associado pelo ID usando a listagem de produtos da mesma empresa.
 
+A página **Vendas** permite importar notas XML, PDF ou imagem para leitura por
+OCR e análise automática da Sell IA, testar com a imagem fictícia
+`public/examples/nota-fiscal-exemplo.svg` ou preparar uma venda manual. As
+sugestões e valores podem ser editados na revisão; nenhuma venda ou baixa de
+estoque ocorre antes da confirmação. As compras e documentos fiscais do Mercado
+Livre permanecem na área **Integrações** e não são tratados como vendas.
+
 ## Faturas
 
 A tela Financeiro permite criar uma fatura para cada venda sem cobrança, definir

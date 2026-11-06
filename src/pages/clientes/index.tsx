@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
-import {
-  MessageCircle,
-  Search,
-  Send,
-  X,
-} from "lucide-react"
+import { MessageCircle, Search, Send, Sparkles, X } from "lucide-react"
+import InvoiceSalesImport from "./InvoiceSalesImport"
 
 type Customer = {
   id: string
@@ -37,7 +33,8 @@ function getId(record: ApiRecord, keys: string[]): string | undefined {
   for (const key of keys) {
     const value = record[key]
     if (typeof value === "string" && value.trim()) return value.trim()
-    if (typeof value === "number" && Number.isFinite(value)) return String(value)
+    if (typeof value === "number" && Number.isFinite(value))
+      return String(value)
   }
   return undefined
 }
@@ -103,16 +100,13 @@ function parseCustomer(
       : undefined
   const product =
     embeddedProductName ??
-    (productId ? productsById.get(productId) ?? productId : "Produto não informado")
+    (productId
+      ? (productsById.get(productId) ?? productId)
+      : "Produto não informado")
   const valuePaid = getNumber(value, ["Preco_gasto", "preco_gasto", "value"])
   const quantity = getNumber(value, ["Quantidade", "quantidade", "quantity"])
 
-  if (
-    !id ||
-    !name ||
-    valuePaid === undefined ||
-    quantity === undefined
-  ) {
+  if (!id || !name || valuePaid === undefined || quantity === undefined) {
     return null
   }
 
@@ -185,6 +179,7 @@ function openWhatsApp(phone: string, message: string) {
 }
 
 export function Clientes() {
+  const [activeTab, setActiveTab] = useState<"history" | "invoice">("history")
   const [customers, setCustomers] = useState<Customer[]>([])
   const [search, setSearch] = useState("")
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
@@ -199,20 +194,20 @@ export function Clientes() {
       throw new Error("A API não está configurada. Defina VITE_API_URL.")
     }
     if (!companyId) {
-      throw new Error("Não foi possível identificar a empresa. Entre novamente.")
+      throw new Error(
+        "Não foi possível identificar a empresa. Entre novamente."
+      )
     }
 
     const token = localStorage.getItem("accessToken")
     const headers = token ? { Authorization: `Bearer ${token}` } : undefined
     const [customersResponse, productsResponse] = await Promise.all([
-      fetch(
-        `${apiUrl}/clientes/company/${encodeURIComponent(companyId)}`,
-        { headers }
-      ),
-      fetch(
-        `${apiUrl}/produtos/company/${encodeURIComponent(companyId)}`,
-        { headers }
-      ),
+      fetch(`${apiUrl}/clientes/company/${encodeURIComponent(companyId)}`, {
+        headers,
+      }),
+      fetch(`${apiUrl}/produtos/company/${encodeURIComponent(companyId)}`, {
+        headers,
+      }),
     ])
     if (!customersResponse.ok) {
       throw new Error(await getApiError(customersResponse))
@@ -221,10 +216,11 @@ export function Clientes() {
       throw new Error(await getApiError(productsResponse))
     }
 
-    const productRows = getArrayPayload(
-      await readApiJson(productsResponse),
-      ["products", "produtos", "items"]
-    )
+    const productRows = getArrayPayload(await readApiJson(productsResponse), [
+      "products",
+      "produtos",
+      "items",
+    ])
     const products = productRows.map(parseProduct)
     const validProducts = products.filter(
       (product): product is Product => product !== null
@@ -236,10 +232,11 @@ export function Clientes() {
       validProducts.map((product) => [product.id, product.name])
     )
 
-    const customerRows = getArrayPayload(
-      await readApiJson(customersResponse),
-      ["customers", "clientes", "items"]
-    )
+    const customerRows = getArrayPayload(await readApiJson(customersResponse), [
+      "customers",
+      "clientes",
+      "items",
+    ])
     const parsedCustomers = customerRows.map((customer) =>
       parseCustomer(customer, productsById)
     )
@@ -276,12 +273,13 @@ export function Clientes() {
   }, [loadCustomers])
 
   const filtered = customers.filter((c) =>
-    `${c.name} ${c.product} ${c.phone}`.toLowerCase().includes(search.toLowerCase())
+    `${c.name} ${c.product} ${c.phone}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
   )
 
   const totalRevenue = customers.reduce((sum, c) => sum + c.value, 0)
   const totalItems = customers.reduce((sum, c) => sum + c.quantity, 0)
-
 
   const toggleMenu = (id: string) => {
     setCustomMessage("")
@@ -302,7 +300,6 @@ export function Clientes() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background px-4 pt-20 pb-16 text-foreground sm:px-8">
-
       <style>{`
         @keyframes fade-up {
           from { opacity: 0; transform: translateY(16px); }
@@ -323,14 +320,15 @@ export function Clientes() {
           style={{ animationDelay: "0.05s" }}
         >
           <div>
-            <p className="text-xs font-semibold tracking-[0.24em] text-blue-600 dark:text-blue-300 uppercase">
+            <p className="text-xs font-semibold tracking-[0.24em] text-blue-600 uppercase dark:text-blue-300">
               Vendas
             </p>
             <h1 className="mt-3 font-heading text-4xl font-bold sm:text-5xl">
               Vendas, em um só lugar.
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-foreground/50">
-              Acompanhe os produtos vendidos, os valores e os clientes pelo WhatsApp.
+              Acompanhe os produtos vendidos, os valores e os clientes pelo
+              WhatsApp.
             </p>
           </div>
         </header>
@@ -338,9 +336,24 @@ export function Clientes() {
         {/* KPIs */}
         <section className="grid grid-cols-1 gap-3 py-6 sm:grid-cols-3">
           {[
-            { label: "Clientes", value: isLoading || loadError ? "—" : customers.length.toLocaleString("pt-BR") },
-            { label: "Itens vendidos", value: isLoading || loadError ? "—" : totalItems.toLocaleString("pt-BR") },
-            { label: "Receita total", value: isLoading || loadError ? "—" : money(totalRevenue) },
+            {
+              label: "Clientes",
+              value:
+                isLoading || loadError
+                  ? "—"
+                  : customers.length.toLocaleString("pt-BR"),
+            },
+            {
+              label: "Itens vendidos",
+              value:
+                isLoading || loadError
+                  ? "—"
+                  : totalItems.toLocaleString("pt-BR"),
+            },
+            {
+              label: "Receita total",
+              value: isLoading || loadError ? "—" : money(totalRevenue),
+            },
           ].map((kpi, index) => (
             <div
               key={kpi.label}
@@ -357,164 +370,221 @@ export function Clientes() {
           ))}
         </section>
 
-        {/* Tabela de vendas */}
-        <section
-          className="animate-fade-up rounded-md border border-border bg-card p-5 sm:p-6"
-          style={{ animationDelay: "0.2s" }}
+        <div
+          aria-label="Seções de vendas"
+          className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-xl border border-border bg-card p-1"
+          role="tablist"
         >
-          <div className="relative z-10">
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-              <div>
-                <p className="text-xs font-semibold tracking-[0.16em] text-blue-600 dark:text-blue-300 uppercase">
-                  Histórico de vendas
-                </p>
-                <h2 className="mt-2 font-heading text-2xl font-bold">
-                  Vendas por cliente
-                </h2>
+          <button
+            aria-selected={activeTab === "history"}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+              activeTab === "history"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+            onClick={() => setActiveTab("history")}
+            role="tab"
+            type="button"
+          >
+            <MessageCircle size={16} />
+            Histórico de vendas
+          </button>
+          <button
+            aria-selected={activeTab === "invoice"}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+              activeTab === "invoice"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+            onClick={() => setActiveTab("invoice")}
+            role="tab"
+            type="button"
+          >
+            <Sparkles size={16} />
+            Importar venda com IA
+          </button>
+        </div>
+
+        {activeTab === "history" ? (
+          <section
+            className="animate-fade-up rounded-md border border-border bg-card p-5 sm:p-6"
+            style={{ animationDelay: "0.2s" }}
+          >
+            <div className="relative z-10">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-xs font-semibold tracking-[0.16em] text-blue-600 uppercase dark:text-blue-300">
+                    Histórico de vendas
+                  </p>
+                  <h2 className="mt-2 font-heading text-2xl font-bold">
+                    Vendas por cliente
+                  </h2>
+                </div>
+                <label className="flex h-10 w-full items-center gap-2 rounded-md border border-foreground/15 bg-foreground/[0.05] px-3 text-sm text-foreground/60 focus-within:border-blue-400/60 sm:w-64">
+                  <Search size={15} className="shrink-0 text-foreground/35" />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Buscar cliente ou produto..."
+                    className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-foreground/30"
+                  />
+                </label>
               </div>
-              <label className="flex h-10 w-full items-center gap-2 rounded-md border border-foreground/15 bg-foreground/[0.05] px-3 text-sm text-foreground/60 focus-within:border-blue-400/60 sm:w-64">
-                <Search size={15} className="shrink-0 text-foreground/35" />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar cliente ou produto..."
-                  className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-foreground/30"
-                />
-              </label>
-            </div>
 
-            <div className="mt-6 overflow-x-auto">
-              <table className="w-full min-w-[720px] text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-xs tracking-wide text-foreground/35 uppercase">
-                    <th className="pb-3 font-medium">Comprador</th>
-                    <th className="pb-3 font-medium">Produto</th>
-                    <th className="pb-3 font-medium">Valor pago</th>
-                    <th className="pb-3 font-medium">Qtd.</th>
-                    <th className="pb-3 font-medium">Telefone</th>
-                    <th className="pb-3 text-right font-medium">Contato</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {isLoading && (
-                    <tr>
-                      <td colSpan={6} className="py-10 text-center text-sm text-foreground/45">
-                        Carregando clientes...
-                      </td>
+              <div className="mt-6 overflow-x-auto">
+                <table className="w-full min-w-[720px] text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-left text-xs tracking-wide text-foreground/35 uppercase">
+                      <th className="pb-3 font-medium">Comprador</th>
+                      <th className="pb-3 font-medium">Produto</th>
+                      <th className="pb-3 font-medium">Valor pago</th>
+                      <th className="pb-3 font-medium">Qtd.</th>
+                      <th className="pb-3 font-medium">Telefone</th>
+                      <th className="pb-3 text-right font-medium">Contato</th>
                     </tr>
-                  )}
-                  {!isLoading && loadError && (
-                    <tr>
-                      <td colSpan={6} role="alert" className="py-10 text-center text-sm text-red-600 dark:text-red-300">
-                        {loadError}
-                      </td>
-                    </tr>
-                  )}
-                  {filtered.map((customer) => (
-                    <tr
-                      key={customer.id}
-                      className="border-b border-border transition last:border-0 hover:bg-foreground/[0.03]"
-                    >
-                      <td className="py-3.5 pr-4 font-medium text-foreground">
-                        {customer.name}
-                      </td>
-                      <td className="py-3.5 pr-4 text-foreground/70">
-                        {customer.product}
-                      </td>
-                      <td className="py-3.5 pr-4 font-medium">
-                        {money(customer.value)}
-                      </td>
-                      <td className="py-3.5 pr-4 text-foreground/70">
-                        {customer.quantity} un.
-                      </td>
-                      <td className="py-3.5 pr-4 text-foreground/50">
-                        {formatPhone(customer.phone)}
-                      </td>
-                      <td className="py-3.5 text-right">
-                        <div className="relative inline-block text-left">
-                          <button
-                            onClick={() => toggleMenu(customer.id)}
-                            disabled={!customer.phone}
-                            title={!customer.phone ? "Telefone não informado" : undefined}
-                            className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-                              openMenuId === customer.id
-                                ? "bg-[#25D366]/20 text-[#25D366]"
-                                : "bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20"
-                            }`}
-                          >
-                            <MessageCircle size={14} />
-                            WhatsApp
-                          </button>
+                  </thead>
+                  <tbody>
+                    {isLoading && (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          className="py-10 text-center text-sm text-foreground/45"
+                        >
+                          Carregando clientes...
+                        </td>
+                      </tr>
+                    )}
+                    {!isLoading && loadError && (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          role="alert"
+                          className="py-10 text-center text-sm text-red-600 dark:text-red-300"
+                        >
+                          {loadError}
+                        </td>
+                      </tr>
+                    )}
+                    {filtered.map((customer) => (
+                      <tr
+                        key={customer.id}
+                        className="border-b border-border transition last:border-0 hover:bg-foreground/[0.03]"
+                      >
+                        <td className="py-3.5 pr-4 font-medium text-foreground">
+                          {customer.name}
+                        </td>
+                        <td className="py-3.5 pr-4 text-foreground/70">
+                          {customer.product}
+                        </td>
+                        <td className="py-3.5 pr-4 font-medium">
+                          {money(customer.value)}
+                        </td>
+                        <td className="py-3.5 pr-4 text-foreground/70">
+                          {customer.quantity} un.
+                        </td>
+                        <td className="py-3.5 pr-4 text-foreground/50">
+                          {formatPhone(customer.phone)}
+                        </td>
+                        <td className="py-3.5 text-right">
+                          <div className="relative inline-block text-left">
+                            <button
+                              onClick={() => toggleMenu(customer.id)}
+                              disabled={!customer.phone}
+                              title={
+                                !customer.phone
+                                  ? "Telefone não informado"
+                                  : undefined
+                              }
+                              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                                openMenuId === customer.id
+                                  ? "bg-[#25D366]/20 text-[#25D366]"
+                                  : "bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20"
+                              }`}
+                            >
+                              <MessageCircle size={14} />
+                              WhatsApp
+                            </button>
 
-                          {openMenuId === customer.id && (
-                            <div className="animate-menu-expand absolute top-full right-0 z-20 mt-2 w-72 rounded-md border border-border bg-card p-3 text-left shadow-2xl shadow-black/40">
-                              <div className="flex items-center justify-between">
-                                <p className="text-xs font-semibold tracking-[0.12em] text-foreground/40 uppercase">
-                                  Mensagem rápida
-                                </p>
-                                <button
-                                  onClick={() => setOpenMenuId(null)}
-                                  className="text-foreground/30 transition hover:text-foreground/70"
-                                >
-                                  <X size={14} />
-                                </button>
-                              </div>
-
-                              <div className="mt-2 flex flex-col gap-1">
-                                {quickMessages.map((option) => (
+                            {openMenuId === customer.id && (
+                              <div className="animate-menu-expand absolute top-full right-0 z-20 mt-2 w-72 rounded-md border border-border bg-card p-3 text-left shadow-2xl shadow-black/40">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-xs font-semibold tracking-[0.12em] text-foreground/40 uppercase">
+                                    Mensagem rápida
+                                  </p>
                                   <button
-                                    key={option.text}
-                                    onClick={() => sendQuick(customer, option.text)}
-                                    className="rounded-md px-2.5 py-2 text-left text-sm text-foreground/75 transition hover:bg-foreground/[0.06] hover:text-foreground"
+                                    onClick={() => setOpenMenuId(null)}
+                                    className="text-foreground/30 transition hover:text-foreground/70"
                                   >
-                                    {option.label}
-                                  </button>
-                                ))}
-                              </div>
-
-                              <div className="mt-3 border-t border-border pt-3">
-                                <p className="mb-1.5 text-xs font-semibold tracking-[0.12em] text-foreground/40 uppercase">
-                                  Mensagem personalizada
-                                </p>
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    value={customMessage}
-                                    onChange={(e) => setCustomMessage(e.target.value)}
-                                    placeholder="Escreva sua mensagem..."
-                                    className="h-9 w-full rounded-md border border-foreground/15 bg-foreground/[0.05] px-2.5 text-xs text-foreground outline-none placeholder:text-foreground/30 focus:border-[#25D366]/60"
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") sendCustom(customer)
-                                    }}
-                                  />
-                                  <button
-                                    onClick={() => sendCustom(customer)}
-                                    disabled={!customMessage.trim()}
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#25D366] text-[#0B1020] transition hover:bg-[#1fb958] disabled:cursor-not-allowed disabled:opacity-30"
-                                  >
-                                    <Send size={14} />
+                                    <X size={14} />
                                   </button>
                                 </div>
+
+                                <div className="mt-2 flex flex-col gap-1">
+                                  {quickMessages.map((option) => (
+                                    <button
+                                      key={option.text}
+                                      onClick={() =>
+                                        sendQuick(customer, option.text)
+                                      }
+                                      className="rounded-md px-2.5 py-2 text-left text-sm text-foreground/75 transition hover:bg-foreground/[0.06] hover:text-foreground"
+                                    >
+                                      {option.label}
+                                    </button>
+                                  ))}
+                                </div>
+
+                                <div className="mt-3 border-t border-border pt-3">
+                                  <p className="mb-1.5 text-xs font-semibold tracking-[0.12em] text-foreground/40 uppercase">
+                                    Mensagem personalizada
+                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      value={customMessage}
+                                      onChange={(e) =>
+                                        setCustomMessage(e.target.value)
+                                      }
+                                      placeholder="Escreva sua mensagem..."
+                                      className="h-9 w-full rounded-md border border-foreground/15 bg-foreground/[0.05] px-2.5 text-xs text-foreground outline-none placeholder:text-foreground/30 focus:border-[#25D366]/60"
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter")
+                                          sendCustom(customer)
+                                      }}
+                                    />
+                                    <button
+                                      onClick={() => sendCustom(customer)}
+                                      disabled={!customMessage.trim()}
+                                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#25D366] text-[#0B1020] transition hover:bg-[#1fb958] disabled:cursor-not-allowed disabled:opacity-30"
+                                    >
+                                      <Send size={14} />
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {!isLoading && !loadError && filtered.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="py-10 text-center text-sm text-foreground/35">
-                        {search
-                          ? `Nenhum cliente encontrado para "${search}".`
-                          : "Nenhum cliente cadastrado."}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {!isLoading && !loadError && filtered.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          className="py-10 text-center text-sm text-foreground/35"
+                        >
+                          {search
+                            ? `Nenhum cliente encontrado para "${search}".`
+                            : "Nenhum cliente cadastrado."}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : (
+          <InvoiceSalesImport />
+        )}
       </div>
     </main>
   )

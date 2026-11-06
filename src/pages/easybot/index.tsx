@@ -266,10 +266,7 @@ export default function EasyBot() {
   }, [connection.status, loadStatus])
 
   useEffect(() => {
-    if (!selectedContactId) {
-      setMessages([])
-      return
-    }
+    if (!selectedContactId) return
     let active = true
     const refresh = () => {
       void apiRequest(
@@ -346,6 +343,7 @@ export default function EasyBot() {
           left.name.localeCompare(right.name, "pt-BR")
         )
       )
+      setMessages([])
       setSelectedContactId(created._id)
       setContactName("")
       setContactPhone("")
@@ -449,14 +447,14 @@ export default function EasyBot() {
 
   return (
     <main className="min-h-screen bg-background px-4 pt-20 pb-10 text-foreground sm:px-6">
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-medium text-blue-600 dark:text-blue-300">
+            <p className="text-sm font-medium text-primary">
               Automação de atendimento
             </p>
             <h1 className="mt-1 flex items-center gap-3 text-3xl font-bold tracking-tight">
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-300">
+              <span className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                 <Bot aria-hidden="true" size={24} />
               </span>
               EasyBot
@@ -467,7 +465,7 @@ export default function EasyBot() {
             </p>
           </div>
           <button
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isChangingConnection || isLoading || isConnecting}
             onClick={() => void changeConnection()}
             type="button"
@@ -585,7 +583,7 @@ export default function EasyBot() {
         </section>
 
         {!isLoading && !connectionReady ? (
-          <p className="rounded-xl border border-blue-500/20 bg-blue-500/5 px-4 py-3 text-sm text-blue-800 dark:text-blue-200">
+          <p className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-foreground">
             Conecte o WhatsApp para enviar mensagens. Contatos cadastrados só
             receberão respostas automáticas quando a conexão estiver ativa.
           </p>
@@ -595,7 +593,7 @@ export default function EasyBot() {
           <aside className="space-y-5">
             <section className={`${panelClass} p-5`}>
               <h2 className="flex items-center gap-2 font-semibold">
-                <Plus aria-hidden="true" className="text-blue-600" size={18} />
+                <Plus aria-hidden="true" className="text-primary" size={18} />
                 Cadastrar contato
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -606,7 +604,7 @@ export default function EasyBot() {
                   Nome
                   <input
                     autoComplete="name"
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2.5 font-normal transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2.5 font-normal transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
                     maxLength={100}
                     onChange={(event) => setContactName(event.target.value)}
                     placeholder="Nome do contato"
@@ -618,7 +616,7 @@ export default function EasyBot() {
                   WhatsApp com DDI e DDD
                   <input
                     autoComplete="tel"
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2.5 font-normal transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2.5 font-normal transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
                     maxLength={30}
                     onChange={(event) => setContactPhone(event.target.value)}
                     placeholder="+55 11 99999-9999"
@@ -628,7 +626,7 @@ export default function EasyBot() {
                   />
                 </label>
                 <button
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-60"
                   disabled={isSavingContact}
                   type="submit"
                 >
@@ -657,7 +655,7 @@ export default function EasyBot() {
                 </div>
                 <ShieldCheck
                   aria-label="Respostas automáticas somente para contatos cadastrados"
-                  className="text-blue-600"
+                  className="text-primary"
                   size={19}
                 />
               </div>
@@ -674,7 +672,7 @@ export default function EasyBot() {
                   {contacts.map((contact) => (
                     <li
                       className={`p-3 transition-colors ${
-                        selectedContactId === contact._id ? "bg-blue-500/5" : ""
+                        selectedContactId === contact._id ? "bg-primary/5" : ""
                       }`}
                       key={contact._id}
                     >
@@ -682,10 +680,13 @@ export default function EasyBot() {
                         <button
                           aria-pressed={selectedContactId === contact._id}
                           className="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left"
-                          onClick={() => setSelectedContactId(contact._id)}
+                          onClick={() => {
+                            setMessages([])
+                            setSelectedContactId(contact._id)
+                          }}
                           type="button"
                         >
-                          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-500/10 font-semibold text-blue-700 dark:text-blue-300">
+                          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
                             {contact.name.slice(0, 1).toUpperCase()}
                           </span>
                           <span className="min-w-0">
@@ -705,7 +706,7 @@ export default function EasyBot() {
                           }
                           className={`mt-1 rounded-lg p-1.5 transition-colors ${
                             contact.autoReplyEnabled
-                              ? "text-blue-600 hover:bg-blue-500/10"
+                              ? "text-primary hover:bg-primary/10"
                               : "text-muted-foreground hover:bg-muted"
                           }`}
                           onClick={() => void toggleAutoReply(contact)}
@@ -742,7 +743,7 @@ export default function EasyBot() {
             className={`${panelClass} flex min-h-[580px] flex-col overflow-hidden`}
           >
             <header className="flex items-center gap-3 border-b border-border px-5 py-4">
-              <span className="flex size-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-300">
+              <span className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <MessageCircle aria-hidden="true" size={19} />
               </span>
               <div className="min-w-0">
@@ -792,7 +793,7 @@ export default function EasyBot() {
                     <div
                       className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm sm:max-w-[75%] ${
                         message.direction === "outgoing"
-                          ? "rounded-br-md bg-blue-600 text-white"
+                          ? "rounded-br-md bg-primary text-primary-foreground"
                           : "rounded-bl-md border border-border bg-card text-foreground"
                       }`}
                     >
@@ -821,7 +822,7 @@ export default function EasyBot() {
             >
               <input
                 aria-label="Mensagem para enviar"
-                className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm transition outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 disabled:opacity-60"
+                className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
                 disabled={!selectedContact || !connectionReady || isSending}
                 maxLength={4096}
                 onChange={(event) => setDraftMessage(event.target.value)}
@@ -836,7 +837,7 @@ export default function EasyBot() {
               />
               <button
                 aria-label="Enviar mensagem"
-                className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={
                   !selectedContact ||
                   !connectionReady ||
